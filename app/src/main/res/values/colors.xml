@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App colors are defined in code (ui/theme/Color.kt); no XML color resources are used. -->
+</resources>

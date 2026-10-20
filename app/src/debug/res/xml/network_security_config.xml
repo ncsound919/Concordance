@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Debug-only network policy.
+
+    The self-hosted agent runs on a workstation on the local network, and the
+    developer's LAN address changes. Debug builds therefore permit cleartext
+    HTTP to any host so the phone can reach `http://192.168.x.x:8000`.
+
+    Release builds keep the main configuration (HTTPS-only, with cleartext
+    allowed solely for the emulator host alias). Do not copy this file into
+    `src/main`.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
