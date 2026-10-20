@@ -28,6 +28,7 @@ import com.example.concordance.integration.knowledge.IndraKnowledge
 import com.example.concordance.integration.knowledge.IndraResult
 import com.example.concordance.integration.community.CommunityPublisher
 import com.example.concordance.integration.supabase.SupabaseAuth
+import com.example.concordance.integration.supabase.SyncConflictBus
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import com.example.concordance.integration.api.CohortStudy
 import com.example.concordance.integration.api.CuratedVariantEvidence
@@ -1573,6 +1574,11 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     private val _communityPublishing = MutableStateFlow(false)
     val communityPublishing: StateFlow<Boolean> = _communityPublishing.asStateFlow()
 
+    // ---- Sync conflicts (phone vs server divergence) ----
+    val syncConflicts = SyncConflictBus.conflicts
+
+    fun clearSyncConflicts() = SyncConflictBus.clear()
+
     /**
      * Bumped after [importConfigFromJson] so settings screens re-read the keystore
      * instead of showing whatever was in their `remember` slot at first composition.
@@ -1884,7 +1890,7 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     /** Ask the agent to research a spoken/typed question and design experiments. */
-    fun runAgentResearch() {
+    fun runAgentResearch(useLlm: Boolean = true) {
         val query = _agentTranscript.value.trim()
         if (query.isBlank()) {
             agentNotice("Speak or type a research question first.")
@@ -1895,7 +1901,7 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
             _agentResearchResult.value = null
             try {
                 val config = _agentConfig.value
-                val outcome = agentClient.research(config, query)
+                val outcome = agentClient.research(config, query, useLlm)
                 when (outcome) {
                     is AgentOutcome.Ok -> {
                         _agentResearchResult.value = outcome.value

@@ -48,6 +48,7 @@ fun CapsulesScreen(
     val capsuleProvenance by viewModel.capsuleProvenance.collectAsState()
     val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsState()
     val communityPublishing by viewModel.communityPublishing.collectAsState()
+    val syncConflicts by viewModel.syncConflicts.collectAsState()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var jsonToVerify by remember { mutableStateOf("") }
@@ -72,6 +73,37 @@ fun CapsulesScreen(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(14.dp))
+
+        // Sync conflict banner
+        if (syncConflicts.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(WarningAmber.copy(alpha = 0.12f))
+                    .border(1.dp, WarningAmber, RoundedCornerShape(10.dp))
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "SYNC CONFLICTS (${syncConflicts.size})",
+                    style = MaterialTheme.concordance.overline,
+                    fontWeight = FontWeight.Bold,
+                    color = WarningAmber
+                )
+                syncConflicts.take(3).forEach { c ->
+                    Text(
+                        text = "${c.entityType} ${c.entityId}: ${c.reason}",
+                        style = MaterialTheme.concordance.caption,
+                        color = TextSecondary
+                    )
+                }
+                TextButton(onClick = { viewModel.clearSyncConflicts() }) {
+                    Text("Dismiss", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                }
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+        }
 
         // Title and Header
         Text(

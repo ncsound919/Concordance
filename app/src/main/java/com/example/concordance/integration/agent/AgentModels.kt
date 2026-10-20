@@ -63,8 +63,8 @@ data class AgentJob(
         get() = status.lowercase() in setOf("completed", "failed", "withheld", "stalled")
 
     /**
-     * The agent declined to give a verdict. `withheld` is a real answer â€” it means the
-     * evidence did not support a call â€” so the UI must present it as a result.
+     * The agent declined to give a verdict. `withheld` is a real answer — it means the
+     * evidence did not support a call — so the UI must present it as a result.
      */
     val wasRefused: Boolean
         get() = capsule?.verdict == "withheld" || status.lowercase() == "withheld"
@@ -144,12 +144,32 @@ data class EasyModeView(
 
 data class AgentResearchResult(
     val query: String,
+    val runId: String,
     val summary: String,
     val literatureQueries: List<String>,
     val hypotheses: List<String>,
     val experiments: List<AgentExperiment>,
     val nextSteps: List<String>,
+    val actionCounts: Map<String, Int>,
+    val decisions: List<AgentDecision>,
+    val criticVerdict: String,
+    val criticScore: Double,
+    val criticFindings: List<String>,
+    val paperDir: String,
+    val paperArtifacts: Int,
+    val llmUsed: Boolean,
+    val llmOk: Boolean,
+    val scaffold: Boolean,
     val rawJson: String
+)
+
+data class AgentDecision(
+    val candidate: String,
+    val step: String,
+    val action: String,
+    val score: Double,
+    val confidence: Double,
+    val reasons: List<String>
 )
 
 data class AgentExperiment(

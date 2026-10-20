@@ -57,10 +57,11 @@ class AgentClient(
     suspend fun health(config: AgentConfig): AgentOutcome<String> =
         call(config, "GET", "/health", null, "health")
 
-    suspend fun research(config: AgentConfig, query: String): AgentOutcome<AgentResearchResult> {
+    suspend fun research(config: AgentConfig, query: String, useLlm: Boolean = true): AgentOutcome<AgentResearchResult> {
         val body = JSONObject().apply {
             put("query", query)
             put("data_class", "research")
+            put("use_llm", useLlm)
         }.toString().toRequestBody(JSON)
         return parseBody(call(config, "POST", "/api/research", body, "research"), "research") { text ->
             val o = JSONObject(text)
@@ -85,13 +86,59 @@ class AgentClient(
                 val a = report?.optJSONArray(key) ?: return emptyList()
                 return (0 until a.length()).map { a.optString(it) }
             }
+            val decision = o.optJSONObject("decision")
+            val actionCounts = mutableMapOf<String, Int>()
+            decision?.optJSONObject("actions")?.let { a ->
+                a.keys().forEach { k -> actionCounts[k] = a.optInt(k) }
+            }
+            val decisions = mutableListOf<AgentDecision>()
+            decision?.optJSONArray("decisions")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val d = arr.optJSONObject(i) ?: continue
+                    val reasons = mutableListOf<String>()
+                    d.optJSONArray("reasons")?.let { r ->
+                        for (j in 0 until r.length()) reasons.add(r.optString(j))
+                    }
+                    decisions.add(
+                        AgentDecision(
+                            candidate = d.optString("candidate"),
+                            step = d.optString("step"),
+                            action = d.optString("action"),
+                            score = d.optDouble("score", 0.0),
+                            confidence = d.optDouble("confidence", 0.0),
+                            reasons = reasons
+                        )
+                    )
+                }
+            }
+            val critic = o.optJSONObject("critic")
+            val findings = mutableListOf<String>()
+            critic?.optJSONArray("findings")?.let { arr ->
+                for (i in 0 until arr.length()) {
+                    val f = arr.optJSONObject(i) ?: continue
+                    findings.add("${f.optString("severity")}: ${f.optString("message")}")
+                }
+            }
+            val paper = o.optJSONObject("paper")
+            val llm = o.optJSONObject("llm")
             AgentResearchResult(
                 query = o.optString("query", query),
+                runId = o.optString("run_id"),
                 summary = report?.optString("summary").orEmpty(),
                 literatureQueries = jsonArray("literature_queries"),
                 hypotheses = jsonArray("hypotheses"),
                 experiments = experiments,
                 nextSteps = jsonArray("next_steps"),
+                actionCounts = actionCounts,
+                decisions = decisions,
+                criticVerdict = critic?.optString("verdict").orEmpty(),
+                criticScore = critic?.optDouble("score", 0.0) ?: 0.0,
+                criticFindings = findings,
+                paperDir = paper?.optString("dir").orEmpty(),
+                paperArtifacts = paper?.optInt("artifacts", 0) ?: 0,
+                llmUsed = llm?.optBoolean("used", false) ?: false,
+                llmOk = llm?.optBoolean("ok", false) ?: false,
+                scaffold = o.optBoolean("scaffold", false),
                 rawJson = text
             )
         }

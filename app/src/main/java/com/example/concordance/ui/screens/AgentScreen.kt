@@ -109,7 +109,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             onTranscriptChange = { viewModel.setAgentTranscript(it) },
             onToggleDictation = { viewModel.toggleDictation() },
             unavailableReason = viewModel.dictationUnavailableReason,
-            onResearch = { viewModel.runAgentResearch() },
+            onResearch = { useLlm -> viewModel.runAgentResearch(useLlm) },
             busy = busy
         )
 
@@ -297,7 +297,7 @@ private fun DictationCard(
     onTranscriptChange: (String) -> Unit,
     onToggleDictation: () -> Unit,
     unavailableReason: String?,
-    onResearch: () -> Unit,
+    onResearch: (Boolean) -> Unit,
     busy: Boolean
 ) {
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -305,6 +305,7 @@ private fun DictationCard(
     ) { granted ->
         if (granted) onToggleDictation()
     }
+    var useLlm by remember { mutableStateOf(true) }
 
     AppSectionCard(title = "Dictate the request (on this phone)") {
         Text(
@@ -335,8 +336,30 @@ private fun DictationCard(
             }
             Text("e.g. \"EGFR L858R in brain\"", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
         }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = useLlm,
+                onCheckedChange = { useLlm = it },
+                enabled = !busy,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = ElectricCyan,
+                    uncheckedColor = TextSecondary
+                )
+            )
+            Column(Modifier.weight(1f)) {
+                Text("Use cloud model for this run", style = MaterialTheme.concordance.bodyDense, color = TextPrimary)
+                Text(
+                    "Off runs the deterministic scaffold (no model quota).",
+                    style = MaterialTheme.concordance.caption,
+                    color = TextSecondary
+                )
+            }
+        }
         Button(
-            onClick = onResearch,
+            onClick = { onResearch(useLlm) },
             enabled = !busy && transcript.isNotBlank(),
             colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep),
             modifier = Modifier.fillMaxWidth()
