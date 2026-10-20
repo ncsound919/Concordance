@@ -49,6 +49,7 @@ fun CapsulesScreen(
     val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsState()
     val communityPublishing by viewModel.communityPublishing.collectAsState()
     val syncConflicts by viewModel.syncConflicts.collectAsState()
+    var showConflictDialog by remember { mutableStateOf(false) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var jsonToVerify by remember { mutableStateOf("") }
@@ -101,10 +102,33 @@ fun CapsulesScreen(
                 TextButton(onClick = { viewModel.clearSyncConflicts() }) {
                     Text("Dismiss", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
                 }
+                TextButton(onClick = { showConflictDialog = true }) {
+                    Text("Resolve...", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                }
             }
-            Spacer(modifier = Modifier.height(10.dp))
         }
 
+        // Conflict resolution dialog
+        if (showConflictDialog && syncConflicts.isNotEmpty()) {
+            AlertDialog(
+                onDismissRequest = { showConflictDialog = false },
+                title = { Text("Resolve sync conflicts", style = MaterialTheme.concordance.cardTitle) },
+                text = {
+                    ConflictResolutionScreen(
+                        conflicts = syncConflicts,
+                        onResolve = { _, _ ->
+                            viewModel.clearSyncConflicts()
+                            showConflictDialog = false
+                        }
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showConflictDialog = false }) {
+                        Text("Close", style = MaterialTheme.concordance.buttonSmall)
+                    }
+                }
+            )
+        }
         // Title and Header
         Text(
             text = "CITABLE ARTIFACT REGISTRY",
