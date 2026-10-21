@@ -94,6 +94,11 @@ Sources consulted:
 
 ## Verification
 
+> The numbers in this section are from the pass on 2026-10-19. The current
+> state (verified 2026-10-21) is **292 unit tests, 0 failures**,
+> `:app:lintDebug` **0 errors**, and `:app:assembleRelease` green with R8
+> minification, resource shrinking and `lintVitalRelease`.
+
 - `:app:assembleDebug` — **BUILD SUCCESSFUL**.
 - `:app:testDebugUnitTest` — **183 tests, 0 failures, 0 errors** (28 suites).
 - `:app:lintDebug` — **0 errors, 43 warnings** (same warning count as the pre-existing baseline: dependency-version notices, launcher-icon shape, 16KB alignment, AGP notices). The six `java.time` `NewApi` errors were pre-existing in the Supabase/telemetry sync code and are now fixed for `minSdk 24`.
