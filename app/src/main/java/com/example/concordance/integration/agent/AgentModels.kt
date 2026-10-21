@@ -180,3 +180,15 @@ data class AgentExperiment(
     val estimatedDuration: String,
     val risk: String
 )
+
+
+data class AgentRefereeReport(
+    val verdict: String,
+    val reasons: List<String> = emptyList(),
+    val dimensions: Map<String, String> = emptyMap(),
+    val inputSha256: String? = null,
+    val decisionSha256: String? = null,
+    val reportSha256: String? = null,
+    val provenance: String? = null,
+    val disposition: String? = null
+)

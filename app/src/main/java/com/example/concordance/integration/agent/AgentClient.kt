@@ -182,6 +182,37 @@ class AgentClient(
     suspend fun job(config: AgentConfig, jobId: String): AgentOutcome<AgentJob> =
         parseBody(call(config, "GET", "/api/jobs/$jobId", null, "job:$jobId"), "job") { parseJob(it) }
 
+    suspend fun refereeAudit(
+        config: AgentConfig,
+        claim: JSONObject,
+        csvText: String,
+        dataClass: String = "phi",
+        targetBackend: String = "local"
+    ): AgentOutcome<AgentRefereeReport> {
+        val payload = JSONObject().apply {
+            put("claim", claim)
+            put("csv_text", csvText)
+            put("data_class", dataClass)
+            put("target_backend", targetBackend)
+        }
+        return parseBody(
+            call(config, "POST", "/api/referee/audit", payload.toString().toRequestBody(JSON), "referee:${claim.optString("claim_id")}"),
+            "referee_audit"
+        ) { body ->
+            val o = JSONObject(body)
+            AgentRefereeReport(
+                verdict = o.optString("verdict", "UNVERIFIABLE"),
+                reasons = (o.optJSONArray("reasons") ?: JSONArray()).let { a -> (0 until a.length()).map { a.optString(it) } },
+                dimensions = (o.optJSONObject("dimensions") ?: JSONObject()).let { d -> d.keys().asSequence().associateWith { d.optString(it) } },
+                inputSha256 = o.optString("input_sha256").ifBlank { null },
+                decisionSha256 = o.optString("decision_sha256").ifBlank { null },
+                reportSha256 = o.optString("report_sha256").ifBlank { null },
+                provenance = o.optString("provenance").ifBlank { null },
+                disposition = o.optString("disposition").ifBlank { null }
+            )
+        }
+    }
+
     /** The agent's own plain-language translation of a completed job. */
     suspend fun explainJob(config: AgentConfig, jobId: String): AgentOutcome<EasyModeView> =
         parseBody(call(config, "GET", "/api/jobs/$jobId/explain", null, "explain:$jobId"), "explain") {

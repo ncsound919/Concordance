@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.example.concordance.integration.api.Provenance
 import com.example.concordance.integration.aws.AwsCloudManager
 import com.example.concordance.integration.cloudflare.CloudflareR2Manager
+import com.example.concordance.integration.supabase.SyncConflict
+import com.example.concordance.integration.supabase.SyncConflictBus
 import com.example.concordance.model.Capsule
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.concordance.ui.components.EmptyState
@@ -116,8 +118,8 @@ fun CapsulesScreen(
                 text = {
                     ConflictResolutionScreen(
                         conflicts = syncConflicts,
-                        onResolve = { _, _ ->
-                            viewModel.clearSyncConflicts()
+                        onResolve = { conflict, resolution ->
+                            SyncConflictBus.resolve(conflict, resolution)
                             showConflictDialog = false
                         }
                     )

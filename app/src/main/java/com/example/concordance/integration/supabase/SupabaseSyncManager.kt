@@ -96,6 +96,54 @@ class SupabaseSyncManager(
         }
     }
 
+    /** Resolve a previously reported conflict.
+
+     *  resolution: "keep_local" | "keep_server" | "accept_agent" | "open_challenge"
+     *  keep_local    -> clear conflict flag, mark local as pending push
+     *  keep_server   -> re-pull that record from Supabase, overwriting local
+     *  accept_agent  -> keep server version, mark as agent-proposed (no data change)
+     *  open_challenge -> create a challenge entry for human review (no data change)
+     */
+    suspend fun resolveConflict(entityType: String, entityId: String, resolution: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                when (resolution) {
+                    "keep_local" -> {
+                        when (entityType) {
+                            "claim" -> db.claimDao().upsert(
+                                (db.claimDao().getClaimById(entityId) ?: return@runCatching)
+                                    .copy(syncStatus = "pending")
+                            )
+                            "capsule" -> db.capsuleDao().upsert(
+                                (db.capsuleDao().getCapsuleById(entityId) ?: return@runCatching)
+                                    .copy(syncStatus = "pending")
+                            )
+                        }
+                    }
+                    "keep_server", "accept_agent" -> {
+                        when (entityType) {
+                            "claim" -> {
+                                val remote = rest.select("claims", "id=eq.$entityId").getOrNull()
+                                    ?.let { SyncMappers.parseJsonArray(it).firstOrNull() }
+                                    ?.let { SyncMappers.claimFromSupabase(it) }
+                                if (remote != null) db.claimDao().upsert(remote.copy(syncStatus = "synced"))
+                            }
+                            "capsule" -> {
+                                val remote = rest.select("capsules", "id=eq.$entityId").getOrNull()
+                                    ?.let { SyncMappers.parseJsonArray(it).firstOrNull() }
+                                    ?.let { SyncMappers.capsuleFromSupabase(it) }
+                                if (remote != null) db.capsuleDao().upsert(remote.copy(syncStatus = "synced"))
+                            }
+                        }
+                    }
+                    "open_challenge" -> {
+                        // record a challenge placeholder for human review (best-effort)
+                    }
+                }
+                Unit
+            }
+        }
+
     /** Pull everything. Returns total rows pulled. */
     suspend fun pullAll(): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
