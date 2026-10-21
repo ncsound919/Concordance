@@ -130,6 +130,34 @@ object ApiRotationManager {
             avgLatencyMs = 220
         ),
         ApiProvider(
+            id = "pubpeer_api",
+            name = "PubPeer Post-Publication Review",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://pubpeer.com/api/v1",
+            avgLatencyMs = 210
+        ),
+        ApiProvider(
+            id = "osf_api",
+            name = "Open Science Framework (OSF)",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.osf.io/v2",
+            avgLatencyMs = 230
+        ),
+        ApiProvider(
+            id = "figshare_api",
+            name = "Figshare",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.figshare.com/v2",
+            avgLatencyMs = 235
+        ),
+        ApiProvider(
+            id = "zotero_api",
+            name = "Zotero Web API",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.zotero.org",
+            avgLatencyMs = 225
+        ),
+        ApiProvider(
             id = "pubchem_pug",
             name = "NCBI PubChem PUG-REST API",
             category = ProviderCategory.BIOCHEM_COMPOUNDS,

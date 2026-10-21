@@ -60,8 +60,9 @@ object HttpJsonClient {
         queryLabel: String,
         spec: RateLimitSpec,
         licenseClass: LicenseClass,
-        authToken: String? = null
-    ): HttpJsonResult? = request("GET", providerId, url, queryLabel, spec, licenseClass, null, authToken)
+        authToken: String? = null,
+        extraHeaders: Map<String, String>? = null
+    ): HttpJsonResult? = request("GET", providerId, url, queryLabel, spec, licenseClass, null, authToken, extraHeaders)
 
     /** POST a JSON body (e.g. a GraphQL query). Used by the CIViC adapter. */
     suspend fun postJson(
@@ -71,8 +72,9 @@ object HttpJsonClient {
         spec: RateLimitSpec,
         licenseClass: LicenseClass,
         jsonBody: String,
-        authToken: String? = null
-    ): HttpJsonResult? = request("POST", providerId, url, queryLabel, spec, licenseClass, jsonBody, authToken)
+        authToken: String? = null,
+        extraHeaders: Map<String, String>? = null
+    ): HttpJsonResult? = request("POST", providerId, url, queryLabel, spec, licenseClass, jsonBody, authToken, extraHeaders)
 
     /** PUT a JSON body. Used by S3/R2-compatible storage uploads. */
     suspend fun putJson(
@@ -82,8 +84,9 @@ object HttpJsonClient {
         spec: RateLimitSpec,
         licenseClass: LicenseClass,
         jsonBody: String,
-        authToken: String? = null
-    ): HttpJsonResult? = request("PUT", providerId, url, queryLabel, spec, licenseClass, jsonBody, authToken)
+        authToken: String? = null,
+        extraHeaders: Map<String, String>? = null
+    ): HttpJsonResult? = request("PUT", providerId, url, queryLabel, spec, licenseClass, jsonBody, authToken, extraHeaders)
 
     private suspend fun request(
         method: String,
@@ -93,13 +96,14 @@ object HttpJsonClient {
         spec: RateLimitSpec,
         licenseClass: LicenseClass,
         jsonBody: String?,
-        authToken: String? = null
+        authToken: String? = null,
+        extraHeaders: Map<String, String>? = null
     ): HttpJsonResult? {
         val cacheKey = "$providerId|$url|${jsonBody ?: ""}"
         // Only keyless GET responses participate in the cache, on both the read
         // and write paths — token-authenticated and POST responses must never be
         // served from, or stored to, a shared keyless cache.
-        val cacheable = method == "GET" && authToken == null
+        val cacheable = method == "GET" && authToken == null && extraHeaders == null
         val c = if (cacheable) cache else null
 
         if (c != null) {
@@ -132,6 +136,7 @@ object HttpJsonClient {
                 if (authToken != null) {
                     builder.header("Authorization", "Bearer $authToken")
                 }
+                extraHeaders?.forEach { (k, v) -> builder.header(k, v) }
                 if (method == "POST" || method == "PUT") {
                     if (method == "POST") {
                         builder.post((jsonBody ?: "").toRequestBody(JSON_MEDIA_TYPE))

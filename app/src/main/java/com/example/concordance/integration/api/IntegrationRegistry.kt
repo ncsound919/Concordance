@@ -24,7 +24,11 @@ object IntegrationRegistry {
         BiorxivAdapter,
         ChemblAdapter,
         UniProtAdapter,
-        GdcAdapter
+        GdcAdapter,
+        PubPeerAdapter,
+        OsfAdapter,
+        FigshareAdapter,
+        ZoteroAdapter
     )
 
     fun descriptor(id: String): AdapterDescriptor? =
@@ -105,4 +109,50 @@ object IntegrationRegistry {
     /** GDC projects (cohorts) matching a keyword. */
     suspend fun searchGdcProjects(keyword: String, limit: Int = 25): List<GdcProject> =
         runCatching { GdcAdapter.searchProjects(keyword, limit) }.getOrDefault(emptyList())
+
+    /** Wave-2 (2026-10) additions — see INTEGRATIONS_PLAN.md. */
+
+    /** PubPeer comments for a paper identified by DOI. */
+    suspend fun fetchPubPeerByDoi(doi: String, apiKey: String? = null): List<PubPeerPublication> =
+        runCatching { PubPeerAdapter.fetchByDoi(doi, apiKey) }.getOrDefault(emptyList())
+
+    /** PubPeer comments for a paper identified by PMID. */
+    suspend fun fetchPubPeerByPmid(pmid: String, apiKey: String? = null): List<PubPeerPublication> =
+        runCatching { PubPeerAdapter.fetchByPmid(pmid, apiKey) }.getOrDefault(emptyList())
+
+    /** OSF projects matching a keyword. */
+    suspend fun searchOsfNodes(term: String, limit: Int = 25, authToken: String? = null): List<OsfNode> =
+        runCatching { OsfAdapter.searchNodes(term, limit, authToken)?.first }.getOrDefault(emptyList())
+
+    /** Files attached to an OSF node (artifact provenance). */
+    suspend fun osfFiles(nodeId: String, authToken: String? = null): List<OsfFile> =
+        runCatching { OsfAdapter.listFiles(nodeId, authToken) }.getOrDefault(emptyList())
+
+    /** Create an OSF project (BYOK token). */
+    suspend fun createOsfProject(title: String, description: String?, authToken: String): String? =
+        runCatching { OsfAdapter.createProject(title, description, authToken) }.getOrNull()
+
+    /** Figshare articles matching a keyword. */
+    suspend fun searchFigshare(term: String, limit: Int = 25, authToken: String? = null): List<FigshareArticle> =
+        runCatching { FigshareAdapter.searchArticles(term, limit, authToken)?.first }.getOrDefault(emptyList())
+
+    /** Single Figshare article by id. */
+    suspend fun fetchFigshareArticle(id: Long, authToken: String? = null): FigshareArticle? =
+        runCatching { FigshareAdapter.fetchArticle(id, authToken) }.getOrNull()
+
+    /** Create a Figshare article (BYOK token). */
+    suspend fun createFigshareArticle(title: String, description: String?, tags: List<String>, authToken: String): Long? =
+        runCatching { FigshareAdapter.createArticle(title, description, tags, authToken) }.getOrNull()
+
+    /** Zotero library search by keyword (BYOK key + user id). */
+    suspend fun searchZoteroLibrary(userId: String, query: String, apiKey: String, limit: Int = 25): List<ZoteroItem> =
+        runCatching { ZoteroAdapter.searchLibrary(userId, query, apiKey, limit) }.getOrDefault(emptyList())
+
+    /** Zotero group library items (optionally scoped to a collection). */
+    suspend fun importZoteroGroup(groupId: String, collectionKey: String?, apiKey: String, limit: Int = 50): List<ZoteroItem> =
+        runCatching { ZoteroAdapter.fetchGroupItems(groupId, collectionKey, apiKey, limit) }.getOrDefault(emptyList())
+
+    /** Export items to a Zotero library (BYOK key). */
+    suspend fun exportToZotero(userId: String, items: List<JSONObject>, apiKey: String): Boolean =
+        runCatching { ZoteroAdapter.createItems(userId, items, apiKey) }.getOrDefault(false)
 }
