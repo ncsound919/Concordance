@@ -16,6 +16,7 @@ import com.example.concordance.integration.agent.AgentClient
 import com.example.concordance.integration.agent.AgentConfig
 import com.example.concordance.integration.agent.AgentJob
 import com.example.concordance.integration.agent.AgentResearchResult
+import com.example.concordance.integration.agent.AgentRefereeReport
 import com.example.concordance.integration.agent.AgentOutcome
 import com.example.concordance.integration.agent.AgentSettingsStore
 import com.example.concordance.integration.agent.AgentUpload
@@ -1479,6 +1480,10 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     private val _agentCorrectionEasy = MutableStateFlow<EasyModeView?>(null)
     val agentCorrectionEasy: StateFlow<EasyModeView?> = _agentCorrectionEasy.asStateFlow()
 
+    /** The last referee adjudication run through the agent. */
+    private val _agentRefereeReport = MutableStateFlow<AgentRefereeReport?>(null)
+    val agentRefereeReport: StateFlow<AgentRefereeReport?> = _agentRefereeReport.asStateFlow()
+
     private val _agentEasyView = MutableStateFlow<EasyModeView?>(null)
     val agentEasyView: StateFlow<EasyModeView?> = _agentEasyView.asStateFlow()
 
@@ -1746,6 +1751,64 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         _agentUpload.value = null
         _agentCorrection.value = null
         _agentCorrectionEasy.value = null
+        _agentRefereeReport.value = null
+    }
+
+    /**
+     * Run a referee adjudication through the agent.
+     *
+     * The claim is a JSON object and the prediction table is a CSV, both pasted
+     * in by the researcher; nothing is uploaded anywhere except the agent the
+     * user configured. The agent's refusal is surfaced as an answer with its
+     * reason, never as an error to retry, and every digest the engine reports
+     * is shown so the result can be checked against the report.
+     */
+    fun runAgentRefereeAudit(
+        claimJson: String,
+        csvText: String,
+        dataClass: String = "phi",
+        targetBackend: String = "local"
+    ) {
+        val trimmedClaim = claimJson.trim()
+        val trimmedCsv = csvText.trim()
+        if (trimmedClaim.isEmpty()) {
+            agentNotice("Paste the claim specification (JSON) first.")
+            return
+        }
+        if (trimmedCsv.isEmpty()) {
+            agentNotice("Paste the prediction table (CSV) first. The referee refuses to judge a claim without data.")
+            return
+        }
+        val claim = try {
+            org.json.JSONObject(trimmedClaim)
+        } catch (e: Exception) {
+            agentNotice("The claim specification is not valid JSON: ${e.message}")
+            return
+        }
+        viewModelScope.launch {
+            _agentBusy.value = true
+            _agentRefereeReport.value = null
+            try {
+                val config = _agentConfig.value
+                when (val outcome = agentClient.refereeAudit(config, claim, trimmedCsv, dataClass, targetBackend)) {
+                    is AgentOutcome.Ok -> {
+                        _agentRefereeReport.value = outcome.value
+                        _uiNotice.emit(refereeSummary(outcome.value))
+                    }
+                    is AgentOutcome.Refused ->
+                        agentNotice("The referee refused to adjudicate: ${outcome.reason}")
+                    is AgentOutcome.Failed -> agentNotice(outcome.message)
+                }
+            } finally {
+                _agentBusy.value = false
+            }
+        }
+    }
+
+    private fun refereeSummary(report: AgentRefereeReport): String {
+        val provenance = report.provenance?.takeIf { it.isNotBlank() }
+        val suffix = if (provenance != null) " (provenance: $provenance)" else ""
+        return "Referee verdict ${report.verdict}$suffix."
     }
 
     /**

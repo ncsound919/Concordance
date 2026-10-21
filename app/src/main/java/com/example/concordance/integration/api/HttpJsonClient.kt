@@ -49,6 +49,7 @@ object HttpJsonClient {
             val request = chain.request().newBuilder()
                 .header("User-Agent", "Concordance/0.1 (research tool; mailto:research@concordance.app)")
                 .header("Accept", "application/json")
+                .header("Accept-Encoding", "identity")
                 .build()
             chain.proceed(request)
         }

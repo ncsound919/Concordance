@@ -1,4 +1,6 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.api.tasks.testing.Test
 
 plugins {
   alias(libs.plugins.android.application)
@@ -80,6 +82,18 @@ android {
     includeInApk = false
     includeInBundle = true
   }
+}
+
+// Robolectric's Android SDK 36 sandbox requires JDK 21 at test runtime
+// ("Android SDK 36 requires Java 21"); a daemon running on JDK 17 fails every
+// Robolectric test at class init. Pin the *test* JVM to a JDK 21 toolchain so
+// the build no longer depends on a machine-specific `org.gradle.java.home`.
+tasks.withType<Test>().configureEach {
+    javaLauncher.set(
+        javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    )
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files

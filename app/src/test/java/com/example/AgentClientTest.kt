@@ -374,6 +374,53 @@ class AgentClientTest {
     }
 
     @Test
+    fun `referee audit posts the claim and table and returns the verdict with its digests`() = runBlocking {
+        enqueue(
+            200,
+            """
+            {"verdict":"REPRODUCED",
+             "reasons":["Cluster bootstrap reproduces the claimed interval"],
+             "dimensions":{"leakage":"none","baseline":"beat"},
+             "input_sha256":"${"a".repeat(64)}",
+             "decision_sha256":"${"b".repeat(64)}",
+             "report_sha256":"${"c".repeat(64)}",
+             "provenance":"computed",
+             "disposition":"commit"}
+            """.trimIndent()
+        )
+
+        val claim = org.json.JSONObject("""{"claim_id":"c1","claimed_auc":0.85}""")
+        val outcome = client.refereeAudit(config(), claim, "patient_id,label,score,split\n")
+
+        assertTrue("referee audit outcome was: $outcome", outcome is AgentOutcome.Ok)
+        val report = (outcome as AgentOutcome.Ok).value
+        assertEquals("REPRODUCED", report.verdict)
+        assertEquals(1, report.reasons.size)
+        assertEquals("none", report.dimensions["leakage"])
+        assertEquals("computed", report.provenance)
+        assertEquals("c".repeat(64), report.reportSha256)
+
+        val request = server.takeRequest()
+        assertEquals("/api/referee/audit", request.path)
+        val body = request.body.readUtf8()
+        assertTrue(body.contains("\"claim\""))
+        assertTrue(body.contains("\"csv_text\""))
+        assertTrue(body.contains("\"data_class\""))
+        assertTrue(body.contains("\"target_backend\""))
+    }
+
+    @Test
+    fun `a referee refusal is a result, not an error to retry`() = runBlocking {
+        enqueue(422, """{"detail":"PHI cannot be routed off-host"}""")
+
+        val claim = org.json.JSONObject("""{"claim_id":"c1"}""")
+        val outcome = client.refereeAudit(config(), claim, "patient_id,label,score,split\n")
+
+        assertTrue(outcome is AgentOutcome.Refused)
+        assertEquals(422, (outcome as AgentOutcome.Refused).status)
+    }
+
+    @Test
     fun `every call is recorded in the provenance log`() = runBlocking {
         enqueue(200, """{"status":"ok"}""")
         val before = com.example.concordance.integration.api.ProvenanceRecorder.records.value.size

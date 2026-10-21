@@ -33,6 +33,7 @@ import com.example.concordance.agent.EasyMode
 import com.example.concordance.integration.agent.AgentConfig
 import com.example.concordance.integration.agent.AgentExperiment
 import com.example.concordance.integration.agent.AgentResearchResult
+import com.example.concordance.integration.agent.AgentRefereeReport
 import com.example.concordance.integration.agent.AgentUpload
 import com.example.concordance.integration.agent.AgentUploads
 import com.example.concordance.integration.agent.EasyModeView
@@ -65,6 +66,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
     val upload by viewModel.agentUpload.collectAsState()
     val transcript by viewModel.agentTranscript.collectAsState()
     val researchResult by viewModel.agentResearchResult.collectAsState()
+    val refereeReport by viewModel.agentRefereeReport.collectAsState()
     val ack by viewModel.agentUploadAck.collectAsState()
     val easyMode by viewModel.easyMode.collectAsState()
     val communityBaseUrl by viewModel.communityBaseUrl.collectAsState()
@@ -138,13 +140,23 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             onRejected = { viewModel.notify(it) }
         )
 
+        RefereeAuditCard(
+            dataClass = dataClass,
+            busy = busy,
+            onAudit = { claimJson, csvText ->
+                viewModel.runAgentRefereeAudit(claimJson, csvText, dataClass, "local")
+            }
+        )
+
         upload?.let { UploadedFigureCard(it) }
 
         job?.let { AgentJobCard(it) }
 
         correction?.let { CorrectionResultCard(it) }
 
-        val hasResult = job != null || upload != null || correction != null
+        refereeReport?.let { RefereeReportCard(it) }
+
+        val hasResult = job != null || upload != null || correction != null || refereeReport != null
         if (!hasResult && !busy) {
             EmptyState(
                 title = "No agent result yet",
@@ -165,7 +177,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             if (easyMode) EasyModeCard(plainView) else ExpertCard(plainView, rawPayload)
         }
 
-        if (job != null || upload != null || correction != null) {
+        if (job != null || upload != null || correction != null || refereeReport != null) {
             TextButton(onClick = { viewModel.clearAgentResult() }) {
                 Text("Clear result", color = TextSecondary, style = MaterialTheme.concordance.buttonSmall)
             }
@@ -602,6 +614,173 @@ private fun CorrectionResultCard(result: com.example.concordance.integration.age
 /** Three decimals, always with a dot — a decimal comma would misread as a thousands separator. */
 private fun fmt3(value: Double): String = String.format(java.util.Locale.US, "%.3f", value)
 
+/**
+ * Referee adjudication through the agent.
+ *
+ * The claim specification (JSON) and the prediction table (CSV) are pasted in
+ * and go to the agent the user configured - nowhere else. The referee refuses
+ * to judge a claim without data, and a refusal comes back as an answer with
+ * its reason rather than as an error.
+ */
+@Composable
+private fun RefereeAuditCard(
+    dataClass: String,
+    busy: Boolean,
+    onAudit: (claimJson: String, csvText: String) -> Unit
+) {
+    var claim by remember { mutableStateOf("") }
+    var csv by remember { mutableStateOf("") }
+    var expanded by remember { mutableStateOf(false) }
+
+    AppSectionCard(title = "Referee adjudication") {
+        Text(
+            "A deterministic referee replays the claim against your prediction table: " +
+                "bootstrap the claimed interval, check the split for leakage, compare against " +
+                "locked baselines. It refuses when the data cannot support a verdict.",
+            style = MaterialTheme.concordance.bodyDense,
+            color = TextSecondary,
+            lineHeight = 16.sp
+        )
+
+        TextButton(onClick = { expanded = !expanded }) {
+            Text(
+                if (expanded) "Hide the inputs" else "Show the inputs",
+                color = TextSecondary,
+                style = MaterialTheme.concordance.buttonSmall
+            )
+        }
+
+        if (expanded) {
+            OutlinedTextField(
+                value = claim,
+                onValueChange = { claim = it },
+                label = { Text("Claim specification (JSON)", style = MaterialTheme.concordance.bodyDense) },
+                placeholder = {
+                    Text(
+                        "{\"claim_id\": \"...\", \"claimed_auc\": 0.85, ...}",
+                        style = MaterialTheme.concordance.monoValue
+                    )
+                },
+                minLines = 3,
+                maxLines = 8,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = MaterialTheme.concordance.monoValue,
+                colors = fieldColors()
+            )
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = csv,
+                onValueChange = { csv = it },
+                label = {
+                    Text(
+                        "Prediction table (CSV: patient_id, label, split, score)",
+                        style = MaterialTheme.concordance.bodyDense
+                    )
+                },
+                minLines = 3,
+                maxLines = 8,
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = MaterialTheme.concordance.monoValue,
+                colors = fieldColors()
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        Text(
+            "Data class: $dataClass · routed to your own agent (target backend: local). " +
+                "Nothing is sent to a managed platform.",
+            style = MaterialTheme.concordance.monoId,
+            color = TextSecondary
+        )
+        Spacer(Modifier.height(8.dp))
+
+        Button(
+            onClick = { onAudit(claim, csv) },
+            enabled = !busy,
+            colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
+        ) {
+            if (busy) {
+                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
+                Spacer(Modifier.width(6.dp))
+            }
+            Text("Run referee audit", style = MaterialTheme.concordance.buttonSmall)
+        }
+    }
+}
+
+/**
+ * The referee's verdict.
+ *
+ * The digests are shown because they are the point: `report_sha256` is what
+ * makes the verdict checkable, and `provenance` says whether the numbers were
+ * computed from the table or are a reference.
+ */
+@Composable
+private fun RefereeReportCard(report: AgentRefereeReport) {
+    AppSectionCard(title = "Referee verdict") {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Badge(report.verdict, verdictColor(report.verdict))
+        }
+        Spacer(Modifier.height(8.dp))
+
+        report.provenance?.takeIf { it.isNotBlank() }?.let { provenance ->
+            WarningBox(
+                if (provenance.equals("computed", ignoreCase = true)) {
+                    "Provenance: computed from the table you supplied."
+                } else {
+                    "Provenance: $provenance. These numbers are not computed from your table."
+                }
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (report.reasons.isNotEmpty()) {
+            BulletList("Why", report.reasons)
+            Spacer(Modifier.height(8.dp))
+        }
+
+        if (report.dimensions.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                report.dimensions.forEach { (name, value) ->
+                    Text(
+                        "$name: $value",
+                        style = MaterialTheme.concordance.monoId,
+                        color = TextSecondary
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                "report_sha256: ${report.reportSha256 ?: "—"}",
+                style = MaterialTheme.concordance.monoId,
+                color = TextSecondary
+            )
+            Text(
+                "decision_sha256: ${report.decisionSha256 ?: "—"}",
+                style = MaterialTheme.concordance.monoId,
+                color = TextSecondary
+            )
+            Text(
+                "input_sha256: ${report.inputSha256 ?: "—"}",
+                style = MaterialTheme.concordance.monoId,
+                color = TextSecondary
+            )
+        }
+
+        report.disposition?.takeIf { it.isNotBlank() }?.let { disposition ->
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Disposition: $disposition",
+                style = MaterialTheme.concordance.monoId,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
 @Composable
 private fun UploadCard(
     context: Context,
@@ -967,9 +1146,17 @@ private fun statusColor(job: com.example.concordance.integration.agent.AgentJob)
 
 @Composable
 private fun verdictColor(verdict: String): Color = when (verdict.lowercase()) {
+    // Adjudication verdicts.
     "supported" -> NeonEmerald
     "not_supported" -> VividCoral
     "inconclusive" -> WarningAmber
+    // Referee verdicts.
+    "reproduced" -> NeonEmerald
+    "not_reproduced" -> VividCoral
+    "fails_baseline" -> VividCoral
+    "leakage_detected" -> VividCoral
+    "unverifiable" -> WarningAmber
+    "out_of_scope" -> TextSecondary
     else -> TextSecondary
 }
 

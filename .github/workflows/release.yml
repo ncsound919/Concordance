@@ -13,26 +13,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # JDK 21 for the Robolectric test JVM (see the toolchain block in
+      # app/build.gradle.kts). `gradle.properties` no longer pins
+      # `org.gradle.java.home`, so the JDK is selected here.
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Gates: a tag is only allowed to produce an artifact if the unit tests
+      # and Android Lint are green.
+      - name: Unit tests (Robolectric + MockWebServer)
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
       - name: Build debug APK
-        run: ./gradlew :app:assembleDebug
+        run: ./gradlew :app:assembleDebug --stacktrace
+
       - name: Compute sha256
         id: sha
         run: |
           cd app/build/outputs/apk/debug
+          sha256sum app-debug.apk > app-debug.apk.sha256
           echo "sha256=$(sha256sum app-debug.apk | awk '{print $1}')" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/debug/app-debug.apk.sha256
           body: |
             Concordance ${{ github.ref_name }}
 
             SHA-256: ${{ steps.sha.outputs.sha256 }}
             See RELEASE_NOTES.md for details.
+
       - name: Upload release metadata to Supabase (optional)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

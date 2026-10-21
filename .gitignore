@@ -20,3 +20,11 @@ receipt_key.txt
 app_key.txt
 .env
 .env.local
+
+# Release signing material. Never commit a release keystore: the release build
+# reads it from KEYSTORE_PATH / STORE_PASSWORD / KEY_PASSWORD instead.
+# (`debug.keystore` is intentionally tracked: it is the standard AOSP debug
+# key with the well-known "android" password, used only for local installs.
+# The release build type uses a different, out-of-band signingConfig.)
+*.jks
+release*.keystore

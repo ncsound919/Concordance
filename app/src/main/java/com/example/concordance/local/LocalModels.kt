@@ -2,6 +2,7 @@ package com.example.concordance.local
 
 import android.content.Context
 import java.io.File
+import java.util.Locale
 
 /**
  * On-device model layout.
@@ -73,6 +74,12 @@ object LocalModels {
     /** Human-readable size, e.g. "2.32 GB". */
     fun describe(file: File): String {
         val gb = file.length() / 1_073_741_824.0
-        return if (gb >= 1.0) String.format("%.2f GB", gb) else String.format("%.0f MB", file.length() / 1_048_576.0)
+        // Locale.US: byte sizes use SI units, so the decimal separator must not
+        // follow the device locale (Turkish locales would render "2,32 GB").
+        return if (gb >= 1.0) {
+            String.format(Locale.US, "%.2f GB", gb)
+        } else {
+            String.format(Locale.US, "%.0f MB", file.length() / 1_048_576.0)
+        }
     }
 }

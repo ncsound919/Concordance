@@ -104,11 +104,18 @@ object UniProtAdapter : IntegrationAdapter {
         emptyList()
     }
 
-    private fun recommendedProteinName(desc: JSONObject?): String = try {
-        desc?.optJSONArray("recommendedProteinNames")?.optJSONObject(0)
-            ?.optJSONObject("fullName")?.optString("value").orEmpty()
-    } catch (e: Exception) {
-        ""
+    private fun recommendedProteinName(desc: JSONObject?): String {
+        return try {
+            // New REST API uses "recommendedName" (singular object); older dumps
+            // used "recommendedProteinNames" (array). Handle both.
+            val fromSingular = desc?.optJSONObject("recommendedName")
+                ?.optJSONObject("fullName")?.optString("value").orEmpty()
+            if (fromSingular.isNotBlank()) return fromSingular
+            desc?.optJSONArray("recommendedProteinNames")?.optJSONObject(0)
+                ?.optJSONObject("fullName")?.optString("value").orEmpty()
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     private fun firstFunctionText(comments: JSONArray?): String? {

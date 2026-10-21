@@ -27,13 +27,17 @@ and use `https://…`, or run `adb reverse tcp:8000 tcp:8000` and point the app 
 `http://127.0.0.1:8000`. Keep the agent on your own network: it is self-hosted
 precisely so nothing has to leave it.
 
-The tab does four things: connect, dictate, **adjudicate**, and **correct**. *Adjudicate*
-asks whether a claimed difference survives the study's design. *Correct* asks what the
-difference becomes once the assay's blind spot is accounted for — site and assay
-sensitivity go in; the corrected odds ratio, the plausible range, the reported retention
-`r`, the threshold `r*` and the smallest defensible `r` come back. Either result can be
-read aloud, and either one can come back **withheld**, which the screen shows as an
-answer with its reason rather than as a zero.
+The tab does five things: connect, dictate, **adjudicate**, **correct**, and
+**referee**. *Adjudicate* asks whether a claimed difference survives the study's
+design. *Correct* asks what the difference becomes once the assay's blind spot
+is accounted for — site and assay sensitivity go in; the corrected odds ratio,
+the plausible range, the reported retention `r`, the threshold `r*` and the
+smallest defensible `r` come back. *Referee* hands a claim specification and a
+prediction table to the deterministic referee on the agent and returns its
+verdict together with the `report_sha256`, `decision_sha256` and `input_sha256`
+digests that make the verdict checkable. Either result can be read aloud, and
+either one can come back **withheld**, which the screen shows as an answer with
+its reason rather than as a zero.
 
 ### What the client is careful about
 
@@ -52,6 +56,9 @@ answer with its reason rather than as a zero.
    requires an explicit acknowledgement; the agent OCRs locally and returns
    `evidence_tier: derived`, `human_verified: false`. Nothing is adjudicated from OCR
    text until you confirm the numbers.
+5. **A referee verdict is shown with its provenance and its digests.** The referee
+   either computes from the table you supplied or says so; the screen shows which,
+   and never presents a number without the `report_sha256` it came from.
 
 ## Voice output: Kokoro
 
@@ -98,24 +105,53 @@ The Gradle wrapper is pinned to **Gradle 9.3.1** and the toolchain needs **JDK 1
 # Unit tests (Robolectric + MockWebServer). No device or emulator needed.
 ./gradlew :app:testDebugUnitTest
 
+# Lint. This is a build gate: it must report 0 errors.
+./gradlew :app:lintDebug
+
 # Debug APK
 ./gradlew :app:assembleDebug
+
+# Release APK (R8 + resource shrinking). Needs a signing keystore; see below.
+KEYSTORE_PATH=/path/to/upload.jks STORE_PASSWORD=… KEY_PASSWORD=… \
+  ./gradlew :app:assembleRelease
 ```
+
+JDK 21 is requested through the Gradle **toolchain** mechanism
+(`app/build.gradle.kts` pins the test JVM's `javaLauncher`), not through a
+machine-specific `org.gradle.java.home`, so the build works on any machine and
+on CI.
+
+The release build is verified: `:app:assembleRelease` completes with R8
+minification, resource shrinking and `lintVitalRelease` all green.
 
 Key test classes:
 
 | Class | What it locks in |
 |---|---|
-| `AgentClientTest` (23 tests) | Real HTTP against a mock server: refusal semantics, capsule parsing, multipart uploads with their data class, correction and its plain half, provenance digests, and that bodies are never logged |
+| `AgentClientTest` (25 tests) | Real HTTP against a mock server: refusal semantics, capsule parsing, multipart uploads with their data class, correction and its plain half, referee adjudication with its digests, and that bodies are never logged |
 | `EasyModeTest` (9 tests) | Mandatory caveats: "no signal" is never proof of absence; assumed numbers are flagged; the spoken summary never invents a number |
 | `PcmTest` (7 tests) | The 16-bit WAV encoder used for Kokoro output, checked byte by byte |
-| `VoiceAssetsTest` (17 tests) | Phoneme parsing, vocabulary loading, voice decoding, WAV encoding, where the phonemiser is looked for, and the honest "what is missing" reporting |
+| `VoiceAssetsTest` (10 tests) | Phoneme parsing, vocabulary loading, voice decoding, WAV encoding, where the phonemiser is looked for, and the honest "what is missing" reporting |
 
-The module currently runs **183 unit tests**, all green, and `:app:lintDebug` is
-expected to report 0 errors (run it in CI to confirm).
+The module currently runs **292 unit tests** (10 of them live-network smoke
+tests, skipped unless credentials are present), all green, and `:app:lintDebug`
+reports **0 errors**.
 
 ### Not covered by these tests
 
 Kokoro inference itself, audible playback, real dictation, and the screen's rendering
 all require a device (and, for Kokoro, the model files above). Everything around them
 is unit-tested on the JVM.
+
+### Releasing
+
+The release build is signed with the keystore at `KEYSTORE_PATH` (default
+`my-upload-key.jks` in the repository root) using the `upload` alias, with the
+passwords taken from the `STORE_PASSWORD` and `KEY_PASSWORD` environment
+variables. **No release keystore is committed**: `*.jks` and `release*.keystore`
+are gitignored, and the tracked `debug.keystore` is only the standard AOSP
+debug key used for local installs.
+
+CI (`.github/workflows/ci.yml`) runs the unit tests, lint and a debug build on
+every pull request; `.github/workflows/release.yml` runs the same gates before
+publishing the tagged APK.

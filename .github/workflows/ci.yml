@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: unit tests, lint, assemble
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 21 is required: Robolectric's Android SDK 36 sandbox refuses to
+      # run on an older JVM ("Android SDK 36 requires Java 21"). The Gradle
+      # daemon may run on any supported JDK; the *test* JVM is pinned to 21 by
+      # the toolchain configured in app/build.gradle.kts. `gradle.properties`
+      # deliberately does not pin `org.gradle.java.home` any more, so the JDK
+      # has to be provided here.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # Installs the Android command line tools and accepts the SDK licences
+      # so AGP can fetch the compileSdk 36.1 platform it needs.
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests (Robolectric + MockWebServer)
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Lint
+        run: ./gradlew :app:lintDebug --stacktrace
+
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

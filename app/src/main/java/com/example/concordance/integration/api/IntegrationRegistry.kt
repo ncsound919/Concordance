@@ -4,6 +4,7 @@ import com.example.concordance.integration.clinicaltrials.ClinicalTrialStudy
 import com.example.concordance.integration.byok.KeyStore
 import com.example.concordance.integration.byok.LicenseStore
 import com.example.concordance.integration.rotation.ProviderCategory
+import org.json.JSONObject
 
 /**
  * Central registration point for live integrations. Managers call into this
@@ -122,7 +123,7 @@ object IntegrationRegistry {
 
     /** OSF projects matching a keyword. */
     suspend fun searchOsfNodes(term: String, limit: Int = 25, authToken: String? = null): List<OsfNode> =
-        runCatching { OsfAdapter.searchNodes(term, limit, authToken)?.first }.getOrDefault(emptyList())
+        runCatching { OsfAdapter.searchNodes(term, limit, authToken)?.first ?: emptyList() }.getOrDefault(emptyList())
 
     /** Files attached to an OSF node (artifact provenance). */
     suspend fun osfFiles(nodeId: String, authToken: String? = null): List<OsfFile> =
@@ -134,7 +135,7 @@ object IntegrationRegistry {
 
     /** Figshare articles matching a keyword. */
     suspend fun searchFigshare(term: String, limit: Int = 25, authToken: String? = null): List<FigshareArticle> =
-        runCatching { FigshareAdapter.searchArticles(term, limit, authToken)?.first }.getOrDefault(emptyList())
+        runCatching { FigshareAdapter.searchArticles(term, limit, authToken)?.first ?: emptyList() }.getOrDefault(emptyList())
 
     /** Single Figshare article by id. */
     suspend fun fetchFigshareArticle(id: Long, authToken: String? = null): FigshareArticle? =

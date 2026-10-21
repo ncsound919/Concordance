@@ -33,7 +33,7 @@ object FigshareAdapter : IntegrationAdapter {
         id = "figshare_api",
         displayName = "Figshare",
         category = ProviderCategory.LITERATURE,
-        authType = AuthType.ACCESS_TOKEN,
+        authType = AuthType.NONE,
         licenseClass = LicenseClass.OPEN,
         rateLimit = RateLimitSpec(requestsPerSecond = 2.0, burst = 4),
         capabilities = setOf(Capability.SEARCH, Capability.FETCH_METADATA),
@@ -62,7 +62,7 @@ object FigshareAdapter : IntegrationAdapter {
     }
 
     /** Article search by keyword. */
-    suspend fun searchArticles(term: String, limit: Int = 25, authToken: String? = null): Pair<List<FigshareArticle>, Provenance?>? {
+    suspend fun searchArticles(term: String, limit: Int = 25, authToken: String? = null): Pair<List<FigshareArticle>, Provenance>? {
         val t = term.trim()
         if (t.isBlank()) return null
         val body = JSONObject()
@@ -149,10 +149,10 @@ object FigshareAdapter : IntegrationAdapter {
         return FigshareArticle(
             id = id,
             title = o.optString("title"),
-            description = o.optString("description").ifBlank { null },
-            doi = o.optString("doi").ifBlank { null },
-            publishedDate = o.optString("published_date").ifBlank { null },
-            url = o.optString("url").ifBlank { null },
+            description = if (o.isNull("description")) null else o.optString("description").ifBlank { null },
+            doi = if (o.isNull("doi")) null else o.optString("doi").ifBlank { null },
+            publishedDate = if (o.isNull("published_date")) null else o.optString("published_date").ifBlank { null },
+            url = if (o.isNull("url")) null else o.optString("url").ifBlank { null },
             tags = tags,
             categories = cats
         )

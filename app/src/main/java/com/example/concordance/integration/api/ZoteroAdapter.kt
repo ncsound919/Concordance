@@ -37,7 +37,7 @@ object ZoteroAdapter : IntegrationAdapter {
         displayName = "Zotero (reference library)",
         category = ProviderCategory.LITERATURE,
         authType = AuthType.API_KEY,
-        licenseClass = LicenseClass.OPEN,
+        licenseClass = LicenseClass.ACADEMIC_ONLY,
         rateLimit = RateLimitSpec(requestsPerSecond = 1.0, burst = 2),
         capabilities = setOf(Capability.SEARCH, Capability.FETCH_METADATA),
         docsUrl = "https://www.zotero.org/support/dev/web_api/v3/start"
@@ -133,14 +133,14 @@ object ZoteroAdapter : IntegrationAdapter {
             ZoteroItem(
                 key = o.optString("key"),
                 version = o.optInt("version", 0),
-                itemType = d.optString("itemType"),
+                itemType = if (d.isNull("itemType")) "" else d.optString("itemType"),
                 title = title,
                 creators = creators,
-                publicationTitle = d.optString("publicationTitle").ifBlank { null },
-                date = d.optString("date").ifBlank { null },
-                doi = d.optString("DOI").ifBlank { null },
-                url = d.optString("url").ifBlank { null },
-                abstractNote = d.optString("abstractNote").ifBlank { null },
+                publicationTitle = if (d.isNull("publicationTitle")) null else d.optString("publicationTitle").ifBlank { null },
+                date = if (d.isNull("date")) null else d.optString("date").ifBlank { null },
+                doi = if (d.isNull("DOI")) null else d.optString("DOI").ifBlank { null },
+                url = if (d.isNull("url")) null else d.optString("url").ifBlank { null },
+                abstractNote = if (d.isNull("abstractNote")) null else d.optString("abstractNote").ifBlank { null },
                 tags = tags
             )
         }

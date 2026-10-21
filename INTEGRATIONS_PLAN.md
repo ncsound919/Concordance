@@ -138,8 +138,15 @@ in `concordance-website` (`app/api/v1/`) and mirror data in Supabase.
   `ApiRotationManager`; fixture tests in `Wave1AdaptersTest`.
   Note: run tests with Java 21 (`JAVA_HOME` → JDK 21) — SDK 36 Robolectric
   requires it.
-- **Wave 2 — BYOK + mirror:** PubPeer, Zotero, OSF/Figshare (device BYOK) and
-  Retraction Watch mirror (Supabase ingest + claim flagging).
+- **Wave 2 — BYOK + mirror:** ✅ SHIPPED (2026-10-21)
+  `PubPeerAdapter` (OPEN, key optional), `OsfAdapter` + `FigshareAdapter`
+  (OPEN public read, BYOK token for writes), `ZoteroAdapter` + `ZoteroSettings`
+  (ACADEMIC_ONLY, BYOK key + user/group id, Zotero-API-Key header support
+  added to HttpJsonClient) — all registered in `IntegrationRegistry` +
+  rotation pool. Server side: migration `0017_retractions.sql`, moderation flag
+  POST route `app/api/v1/moderation/flags/route.ts`, ingester
+  `scripts/ingest-retraction-watch.mjs` (+ npm script), device-side
+  `RetractionCheck` + `integration/retraction/README.md`.
 - **Wave 3 — server-side two-way:** DataCite DOI minting (needs DataCite account)
   and ClinVar submission (needs NCBI submission workflow).
 

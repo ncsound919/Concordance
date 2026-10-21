@@ -41,7 +41,7 @@ object OsfAdapter : IntegrationAdapter {
         id = "osf_api",
         displayName = "Open Science Framework",
         category = ProviderCategory.LITERATURE,
-        authType = AuthType.ACCESS_TOKEN,
+        authType = AuthType.NONE,
         licenseClass = LicenseClass.OPEN,
         rateLimit = RateLimitSpec(requestsPerSecond = 2.0, burst = 4),
         capabilities = setOf(Capability.SEARCH, Capability.FETCH_METADATA),
@@ -70,7 +70,7 @@ object OsfAdapter : IntegrationAdapter {
     }
 
     /** Public project search by title keyword. */
-    suspend fun searchNodes(term: String, limit: Int = 25, authToken: String? = null): Pair<List<OsfNode>, Provenance?>? {
+    suspend fun searchNodes(term: String, limit: Int = 25, authToken: String? = null): Pair<List<OsfNode>, Provenance>? {
         val t = term.trim()
         if (t.isBlank()) return null
         val encoded = URLEncoder.encode(t, "UTF-8")
@@ -142,10 +142,10 @@ object OsfAdapter : IntegrationAdapter {
             OsfNode(
                 id = id,
                 title = a.optString("title"),
-                description = a.optString("description").ifBlank { null },
-                category = a.optString("category").ifBlank { null },
-                dateCreated = a.optString("date_created").ifBlank { null },
-                dateModified = a.optString("date_modified").ifBlank { null },
+                description = if (a.isNull("description")) null else a.optString("description").ifBlank { null },
+                category = if (a.isNull("category")) null else a.optString("category").ifBlank { null },
+                dateCreated = if (a.isNull("date_created")) null else a.optString("date_created").ifBlank { null },
+                dateModified = if (a.isNull("date_modified")) null else a.optString("date_modified").ifBlank { null },
                 public = a.optBoolean("public", false)
             )
         }
@@ -160,10 +160,10 @@ object OsfAdapter : IntegrationAdapter {
             val a = o.optJSONObject("attributes") ?: JSONObject()
             OsfFile(
                 id = o.optString("id"),
-                name = a.optString("name"),
-                kind = a.optString("kind"),
+                name = if (a.isNull("name")) "" else a.optString("name"),
+                kind = if (a.isNull("kind")) "" else a.optString("kind"),
                 size = a.optLong("size", -1L).takeIf { it >= 0 },
-                downloadUrl = a.optString("download").ifBlank { null }
+                downloadUrl = if (a.isNull("download")) null else a.optString("download").ifBlank { null }
             )
         }
     } catch (e: Exception) {

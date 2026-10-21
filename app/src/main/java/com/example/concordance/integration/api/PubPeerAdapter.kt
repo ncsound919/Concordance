@@ -36,7 +36,7 @@ object PubPeerAdapter : IntegrationAdapter {
         id = "pubpeer_api",
         displayName = "PubPeer (post-pub review)",
         category = ProviderCategory.LITERATURE,
-        authType = AuthType.API_KEY,
+        authType = AuthType.NONE,
         licenseClass = LicenseClass.OPEN,
         rateLimit = RateLimitSpec(requestsPerSecond = 1.0, burst = 2),
         capabilities = setOf(Capability.SEARCH, Capability.FETCH_METADATA),
@@ -91,8 +91,8 @@ object PubPeerAdapter : IntegrationAdapter {
             PubPeerPublication(
                 id = o.optString("id"),
                 title = o.optString("title"),
-                doi = o.optString("doi").ifBlank { null },
-                pmid = o.optString("pmid").ifBlank { null },
+                doi = if (o.isNull("doi")) null else o.optString("doi").ifBlank { null },
+                pmid = if (o.isNull("pmid")) null else o.optString("pmid").ifBlank { null },
                 comments = parseComments(o.optJSONArray("comments"))
             )
         }
@@ -106,10 +106,10 @@ object PubPeerAdapter : IntegrationAdapter {
             val c = arr.optJSONObject(i) ?: return@mapNotNull null
             PubPeerComment(
                 id = c.optString("id"),
-                author = c.optString("author_name").ifBlank { c.optString("author") },
-                text = c.optString("text"),
-                createdAt = c.optString("created_at"),
-                type = c.optString("comment_type").ifBlank { null }
+                author = if (c.isNull("author_name")) (if (c.isNull("author")) "" else c.optString("author")) else c.optString("author_name").ifBlank { c.optString("author") },
+                text = if (c.isNull("text")) "" else c.optString("text"),
+                createdAt = if (c.isNull("created_at")) "" else c.optString("created_at"),
+                type = if (c.isNull("comment_type")) null else c.optString("comment_type").ifBlank { null }
             )
         }
     } catch (e: Exception) {

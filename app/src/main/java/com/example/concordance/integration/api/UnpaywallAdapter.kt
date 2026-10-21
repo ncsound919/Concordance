@@ -72,8 +72,7 @@ object UnpaywallAdapter : IntegrationAdapter {
         val doi = normalizeDoi(doiOrUrl)
         if (!looksLikeDoi(doi)) return null
         val email = URLEncoder.encode(contactEmail ?: "research@concordance.app", "UTF-8")
-        val encoded = URLEncoder.encode(doi, "UTF-8")
-        val url = "$BASE/$encoded?email=$email"
+        val url = "$BASE/$doi?email=$email"
 
         val resp = HttpJsonClient.getJson(
             providerId = descriptor.id,

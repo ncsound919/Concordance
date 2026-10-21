@@ -93,9 +93,8 @@ object BiorxivAdapter : IntegrationAdapter {
     suspend fun fetchVersionHistory(doiOrUrl: String): List<PreprintVersion> {
         val doi = UnpaywallAdapter.normalizeDoi(doiOrUrl)
         if (!UnpaywallAdapter.looksLikeDoi(doi)) return emptyList()
-        val encoded = URLEncoder.encode(doi, "UTF-8")
         for (server in listOf("biorxiv", "medrxiv")) {
-            val url = "$BASE/details/$server/$encoded"
+            val url = "$BASE/details/$server/$doi"
             val resp = HttpJsonClient.getJson(
                 providerId = descriptor.id,
                 url = url,
