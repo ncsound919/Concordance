@@ -20,7 +20,7 @@
   provenance).
 
 ## Tests
-- App: **292 unit tests, 0 failures** (10 live-network smoke tests skipped without
+- App: **556 unit tests, 0 failures** (10 live-network smoke tests skipped without
   credentials), `:app:lintDebug` **0 errors**.
 - App release build: `:app:assembleRelease` succeeds with R8 minification, resource
   shrinking and `lintVitalRelease` green.

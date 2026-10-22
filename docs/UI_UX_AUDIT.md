@@ -95,7 +95,7 @@ Sources consulted:
 ## Verification
 
 > The numbers in this section are from the pass on 2026-10-19. The current
-> state (verified 2026-10-21) is **292 unit tests, 0 failures**,
+> state (verified 2026-10-22) is **556 unit tests, 0 failures**,
 > `:app:lintDebug` **0 errors**, and `:app:assembleRelease` green with R8
 > minification, resource shrinking and `lintVitalRelease`.
 
@@ -120,7 +120,23 @@ Sources consulted:
 - Contrast / token guard clean; `lintDebug` 0 errors.
 - Device smoke-tested on Samsung SM-S938U (light + dark, nav/back, agent adjudication).
 
-## Phase 3 — Next (proposed start)
+## Phase 3 — Skins (completed, verified 2026-10-22)
+- `Skin.CLINICAL` keeps the app's instrument-panel identity; `Skin.SITE`
+  reproduces the Concordance website — the CSS custom properties from
+  `app/globals.css`, the blueprint-dot backdrop, the fade-up entrance and the
+  site's larger corner radii. Persisted alongside the light/dark mode and
+  chosen from a palette button in the top bar.
+- Section cards gained a brand-edge gradient and a surface gradient; stat
+  tiles fade along their own accent colour; the app bar's version mark uses
+  the brand gradient; the selected navigation item gets a tinted indicator.
+- The contrast guard now checks every palette token against every surface it
+  can sit on, for every skin. That exposed two real defects, both fixed: the
+  clinical dark control outline was 2.885:1 against the elevated surface
+  (needs 3:1) and the clinical light muted text was 4.233:1 against it (needs
+  4.5:1) — captions sit on exactly that surface inside a stat tile.
+- The fade-up entrance respects the system "Remove animations" setting.
+
+## Phase 4 — Next (proposed start)
 1. Supabase sync / account (apply migration `001_init.sql` + wire sign-in, capsules sync to S3/R2).
 2. Voice / STT pipeline (device microphone, on-device transcription, agent result voice).
 3. Camera / image upload / VLM OCR (`Photograph` button, image pipeline to agent).

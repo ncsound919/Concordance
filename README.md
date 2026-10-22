@@ -96,6 +96,27 @@ Then add the phonemiser to `jniLibs/` and rebuild. If anything is missing the ap
 TextToSpeech engine. Nothing is downloaded automatically — model weights are never
 pulled from a managed platform.
 
+## Appearance
+
+The app has two **skins**, chosen independently of the light/dark setting
+(palette button in the top bar):
+
+| Skin | What it is |
+|---|---|
+| **Clinical** | The original instrument-panel look: deep navy, electric cyan, tight radii, glow. |
+| **Website** | The Concordance website's palette and surface treatment — the same CSS custom properties the site defines in `app/globals.css`, plus the site's blueprint-dot backdrop, fade-up entrance and larger corner radii. |
+
+Two tokens are deliberately *not* copied verbatim from the site: the website
+uses `--color-text-subtle` and `--color-border-hover` for decoration and
+borders, while the app uses them as small text and as an interactive control's
+outline, where its own contract is stricter (4.5:1 and 3:1 against every
+surface). The website skin uses the next accessible step instead. A palette
+test pins the tokens that *are* copied verbatim, so the two products cannot
+drift apart silently.
+
+Both skins pass WCAG 2.2 AA in light and dark, for every token against every
+surface it can sit on.
+
 ## Build and test
 
 The Gradle wrapper is pinned to **Gradle 9.3.1** and the toolchain needs **JDK 17+**
@@ -128,14 +149,24 @@ Key test classes:
 
 | Class | What it locks in |
 |---|---|
+| `StatisticalEngineTest` (52 tests) | The engine the whole product rests on: the Wilson interval, the inverse normal CDF against published quantiles, Fisher, the feasibility rules and the four verdicts |
 | `AgentClientTest` (25 tests) | Real HTTP against a mock server: refusal semantics, capsule parsing, multipart uploads with their data class, correction and its plain half, referee adjudication with its digests, and that bodies are never logged |
+| `ConcordanceContrastTest` | WCAG 2.2 AA for every palette token, in every skin, against every surface it can sit on |
+| `SkinPreferenceTest` | The chosen skin survives a restart, and is independent of the light/dark mode |
 | `EasyModeTest` (9 tests) | Mandatory caveats: "no signal" is never proof of absence; assumed numbers are flagged; the spoken summary never invents a number |
 | `PcmTest` (7 tests) | The 16-bit WAV encoder used for Kokoro output, checked byte by byte |
 | `VoiceAssetsTest` (10 tests) | Phoneme parsing, vocabulary loading, voice decoding, WAV encoding, where the phonemiser is looked for, and the honest "what is missing" reporting |
 
-The module currently runs **292 unit tests** (10 of them live-network smoke
-tests, skipped unless credentials are present), all green, and `:app:lintDebug`
-reports **0 errors**.
+The module currently runs **556 unit tests** (10 of them live-network smoke
+tests, skipped unless credentials are present), all green, and
+`:app:lintDebug` reports **0 errors**.
+
+The design gallery can be rendered without a device:
+
+```bash
+./gradlew :app:testDebugUnitTest -Proborazzi.test.record=true
+# writes app/build/screenshots/*.png
+```
 
 ### Not covered by these tests
 
