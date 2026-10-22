@@ -187,10 +187,19 @@ object StatisticalEngine {
                     (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1.0)
         } else {
             val r = if (q < 0.0) p else 1.0 - p
-            var s = sqrt(-ln(r))
+            // The tail coefficients are Beasley-Springer-Moro's, which are
+            // scaled for q = sqrt(-2 ln r). The previous sqrt(-ln r), together
+            // with the inverted tail sign, made this branch return the wrong
+            // sign and the wrong magnitude and left the function
+            // discontinuous at |q| = 0.42. The consequence was a z of -0.16
+            // instead of +2.80 in `requiredSample`, which understated the
+            // required sample size by a factor of about 300.
+            var s = sqrt(-2.0 * ln(r))
             var res = (((((c[0] * s + c[1]) * s + c[2]) * s + c[3]) * s + c[4]) * s + c[5]) /
                     ((((d[0] * s + d[1]) * s + d[2]) * s + d[3]) * s + 1.0)
-            if (q < 0.0) -res else res
+            // BSM evaluates the tail polynomial for the smaller tail
+            // probability, so the upper tail needs the sign flipped.
+            if (q < 0.0) res else -res
         }
     }
 
