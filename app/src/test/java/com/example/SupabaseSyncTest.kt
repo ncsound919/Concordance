@@ -1,5 +1,6 @@
 package com.example
 
+import androidx.room.Room
 import com.example.concordance.data.ClaimEntity
 import com.example.concordance.data.ConcordanceDatabase
 import com.example.concordance.integration.supabase.InMemorySupabaseSessionStore
@@ -46,7 +47,10 @@ class SupabaseSyncTest {
         store = InMemorySupabaseSessionStore()
         auth = SupabaseAuth(store, harness.client)
         rest = PostgRestClient(auth, harness.client)
-        db = inMemoryDatabase()
+        db = Room.inMemoryDatabaseBuilder(
+            org.robolectric.RuntimeEnvironment.getApplication(),
+            ConcordanceDatabase::class.java
+        ).allowMainThreadQueries().build()
     }
 
     @After
