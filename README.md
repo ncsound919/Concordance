@@ -103,8 +103,8 @@ The app has two **skins**, chosen independently of the light/dark setting
 
 | Skin | What it is |
 |---|---|
-| **Clinical** | The original instrument-panel look: deep navy, electric cyan, tight radii, glow. |
-| **Website** | The Concordance website's palette and surface treatment — the same CSS custom properties the site defines in `app/globals.css`, plus the site's blueprint-dot backdrop, fade-up entrance and larger corner radii. |
+| **Clinical** | The app's own look, layered: deep navy, electric cyan, a brand-edge gradient on every card, gradient surfaces, a tinted navigation indicator and a fade-up entrance. |
+| **Website** | The Concordance website: the same CSS custom properties the site defines in `app/globals.css`, and the site's flat treatment — opaque cards with a hairline border, no gradients, no shadows, the site's padding, over the blueprint-dot texture the site uses in its hero. |
 
 Two tokens are deliberately *not* copied verbatim from the site: the website
 uses `--color-text-subtle` and `--color-border-hover` for decoration and

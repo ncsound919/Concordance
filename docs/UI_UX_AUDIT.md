@@ -121,11 +121,14 @@ Sources consulted:
 - Device smoke-tested on Samsung SM-S938U (light + dark, nav/back, agent adjudication).
 
 ## Phase 3 — Skins (completed, verified 2026-10-22)
-- `Skin.CLINICAL` keeps the app's instrument-panel identity; `Skin.SITE`
-  reproduces the Concordance website — the CSS custom properties from
-  `app/globals.css`, the blueprint-dot backdrop, the fade-up entrance and the
-  site's larger corner radii. Persisted alongside the light/dark mode and
-  chosen from a palette button in the top bar.
+- `Skin.CLINICAL` keeps the app's identity, now layered: a brand-edge
+  gradient on every card, gradient surfaces, a gradient app-bar mark, a tinted
+  navigation indicator and a fade-up entrance.
+- `Skin.SITE` reproduces the Concordance website: the CSS custom properties
+  from `app/globals.css` and the site's flat treatment - opaque cards with a
+  hairline border, no gradients, no shadows, the site's padding - over the
+  blueprint-dot texture the site uses in its hero. Persisted alongside the
+  light/dark mode and chosen from a palette button in the top bar.
 - Section cards gained a brand-edge gradient and a surface gradient; stat
   tiles fade along their own accent colour; the app bar's version mark uses
   the brand gradient; the selected navigation item gets a tinted indicator.
