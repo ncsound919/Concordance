@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -681,20 +682,33 @@ fun ThresholdCard(
     color: Color,
     modifier: Modifier = Modifier
 ) {
+    val skin = LocalSkin
+    val shape = RoundedCornerShape(skin.cardRadius)
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(SlateCard)
-            .border(1.dp, color.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
-            .padding(10.dp),
+            .clip(shape)
+            .then(
+                if (skin.layered) {
+                    Modifier.background(
+                        Brush.verticalGradient(
+                            listOf(SlateCard, SlateCardElevated.copy(alpha = 0.6f))
+                        )
+                    )
+                } else {
+                    Modifier.background(SlateCard)
+                }
+            )
+            .border(1.dp, color.copy(alpha = 0.4f), shape)
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = title, style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = color)
         Text(
             text = value,
-            style = MaterialTheme.concordance.metricValue,
+            style = MaterialTheme.concordance.metricValue.copy(
+                brush = Brush.horizontalGradient(listOf(color, color.copy(alpha = 0.75f)))
+            ),
             fontWeight = FontWeight.ExtraBold,
-            color = TextPrimary,
             fontFamily = FontFamily.Monospace
         )
         Text(text = subtitle, style = MaterialTheme.concordance.caption, color = TextMuted, maxLines = 1)

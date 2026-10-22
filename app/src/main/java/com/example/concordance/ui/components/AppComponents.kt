@@ -69,29 +69,38 @@ fun AppSectionCard(
 ) {
     val skin = LocalSkin
     val shape = RoundedCornerShape(skin.cardRadius)
-    val cardBrush = rememberCardBrush()
-    val brandBrush = rememberBrandBrush()
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (skin.entranceAnimation) Modifier.fadeUp() else Modifier)
+            .then(if (skin.layered) Modifier.fadeUp() else Modifier)
             .clip(shape)
-            .background(cardBrush)
-            .border(1.dp, SlateCardBorder, shape)
-            .padding(Dimens.CardPadding),
+            .then(
+                if (skin.layered) {
+                    // Layered: a surface gradient plus a hairline brand edge
+                    // along the top, so a flat box reads as a deliberate object.
+                    Modifier
+                        .background(rememberCardBrush())
+                        .border(1.dp, SlateCardBorder, shape)
+                } else {
+                    // Website: flat, opaque card with a hairline border.
+                    Modifier
+                        .background(SlateCard)
+                        .border(1.dp, SlateCardBorder, shape)
+                }
+            )
+            .padding(skin.cardPadding),
         verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
     ) {
-        // Brand edge: a hairline gradient along the top of the card. It is the
-        // cheapest way to make a flat surface read as a deliberate object
-        // rather than a box.
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .clip(RoundedCornerShape(topStart = skin.cardRadius, topEnd = skin.cardRadius))
-                .background(brandBrush),
-        )
+        if (skin.layered) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(topStart = skin.cardRadius, topEnd = skin.cardRadius))
+                    .background(rememberBrandBrush()),
+            )
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXXS)) {
             Text(
@@ -130,10 +139,16 @@ fun AppStatTile(
     Column(
         modifier = modifier
             .clip(shape)
-            .background(
-                Brush.verticalGradient(
-                    listOf(SlateCardElevated, SlateCardElevated.copy(alpha = 0.55f))
-                )
+            .then(
+                if (skin.layered) {
+                    Modifier.background(
+                        Brush.verticalGradient(
+                            listOf(SlateCardElevated, SlateCardElevated.copy(alpha = 0.55f))
+                        )
+                    )
+                } else {
+                    Modifier.background(SlateCardElevated)
+                }
             )
             .border(1.dp, SlateCardBorder.copy(alpha = 0.7f), shape)
             .padding(horizontal = Dimens.SpaceM, vertical = Dimens.SpaceS),

@@ -12,44 +12,47 @@ import androidx.core.content.edit
  * Visual skins.
  *
  * A skin is a palette *and* a surface treatment. Two skins can share a hue and
- * still look completely different: [CLINICAL] is the app's instrument-panel
- * look (flat navy, neon accents, tight radii, glow), while [SITE] reproduces
- * the Concordance website - the same CSS custom properties the site defines in
- * `app/globals.css`, softer surfaces, the blueprint-grid backdrop, the site's
- * fade-up entrance and its larger corner radii.
+ * still look completely different.
  *
- * The two are independent of the light/dark choice: a skin is picked first,
- * then the system/dark/light toggle applies within it.
+ * [CLINICAL] is the app's own identity - the original "instrument panel"
+ * look, now layered: a brand-edge gradient along the top of each card, a
+ * surface gradient, a tinted navigation indicator and a fade-up entrance.
+ *
+ * [SITE] reproduces the Concordance website. Its palette is the CSS custom
+ * properties the site defines in `app/globals.css`, and its treatment is the
+ * site's: flat, opaque cards with a hairline border and generous padding
+ * (`rounded-xl border border-slate-border bg-slate-card p-5`), no gradients
+ * and no shadows, over the blueprint-dot texture the site uses in its hero.
  */
 enum class Skin(
     /** Short name shown in the picker. */
     val label: String,
     /** One-line description shown under the name. */
     val blurb: String,
-    /** Draw the blueprint grid behind the content, as the website does. */
+    /** Draw the blueprint grid behind the content, as the website's hero does. */
     val blueprintBackdrop: Boolean,
-    /** Let accent surfaces cast a soft glow, as the app's clinical look does. */
-    val glow: Boolean,
+    /** Layered treatment: brand edge, surface gradient, tinted indicators, fade-up. */
+    val layered: Boolean,
     /** Corner radius for section cards. */
     val cardRadius: Dp,
-    /** Animate content in with the site's fade-up. */
-    val entranceAnimation: Boolean,
+    /** Padding inside a section card. */
+    val cardPadding: Dp,
 ) {
     CLINICAL(
         label = "Clinical",
-        blurb = "The original instrument-panel look: deep navy, electric cyan, tight radii.",
+        blurb = "The app's own look: layered cards, a brand edge and a tinted accent.",
         blueprintBackdrop = false,
-        glow = true,
+        layered = true,
         cardRadius = 12.dp,
-        entranceAnimation = false,
+        cardPadding = 16.dp,
     ),
     SITE(
         label = "Website",
-        blurb = "The website's palette and surface treatment, with the blueprint grid.",
+        blurb = "The website's palette and flat, hairline-bordered card treatment.",
         blueprintBackdrop = true,
-        glow = false,
-        cardRadius = 16.dp,
-        entranceAnimation = true,
+        layered = false,
+        cardRadius = 12.dp,
+        cardPadding = 20.dp,
     ),
 }
 

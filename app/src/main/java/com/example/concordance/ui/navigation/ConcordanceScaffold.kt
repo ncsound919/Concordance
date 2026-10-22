@@ -92,6 +92,9 @@ fun ConcordanceScaffold(
 ) {
     val useRail = LocalConfiguration.current.screenWidthDp >= 600
     val skin = LocalSkin
+    // Layered skins tint the selected destination; the website's flat
+    // treatment uses a plain raised surface instead.
+    val indicatorColor = if (skin.layered) ElectricCyan.copy(alpha = 0.14f) else SlateCardElevated
 
     val themeIcon: ImageVector = when (themeMode) {
         ThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
@@ -133,13 +136,21 @@ fun ConcordanceScaffold(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(rememberBrandBrush())
+                                .then(
+                                    if (skin.layered) {
+                                        Modifier.background(rememberBrandBrush())
+                                    } else {
+                                        Modifier
+                                            .background(ElectricCyan.copy(alpha = 0.12f))
+                                            .border(1.dp, ElectricCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                    }
+                                )
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 text = "v0.1",
                                 style = MaterialTheme.concordance.chip,
-                                color = MidnightDeep,
+                                color = if (skin.layered) MidnightDeep else ElectricCyan,
                             )
                         }
                         Column {
@@ -224,7 +235,7 @@ fun ConcordanceScaffold(
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = ElectricCyan,
                                 selectedTextColor = ElectricCyan,
-                                indicatorColor = ElectricCyan.copy(alpha = 0.14f),
+                                indicatorColor = indicatorColor,
                             ),
                         )
                     }
@@ -269,7 +280,7 @@ fun ConcordanceScaffold(
                             colors = NavigationRailItemDefaults.colors(
                                 selectedIconColor = ElectricCyan,
                                 selectedTextColor = ElectricCyan,
-                                indicatorColor = ElectricCyan.copy(alpha = 0.14f),
+                                indicatorColor = indicatorColor,
                             ),
                         )
                     }
@@ -297,7 +308,7 @@ fun ConcordanceScaffold(
                             colors = NavigationRailItemDefaults.colors(
                                 selectedIconColor = ElectricCyan,
                                 selectedTextColor = ElectricCyan,
-                                indicatorColor = ElectricCyan.copy(alpha = 0.14f),
+                                indicatorColor = indicatorColor,
                             ),
                         )
                     }
