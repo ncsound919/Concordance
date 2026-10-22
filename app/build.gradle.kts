@@ -96,12 +96,6 @@ tasks.withType<Test>().configureEach {
             languageVersion.set(JavaLanguageVersion.of(21))
         }
     )
-    // Forward roborazzi's record/verify switch to the test JVM so
-    // `gradlew :app:testDebugUnitTest -Proborazzi.test.record=true` writes the
-    // design gallery to app/build/screenshots.
-    listOf("roborazzi.test.record", "roborazzi.test.verify").forEach { key ->
-        System.getProperty(key)?.let { value -> systemProperty(key, value) }
-    }
     // Coverage instrumentation. `includeNoLocationClasses` keeps the classes
     // with no debug metadata (which would otherwise be reported as untested
     // noise) out of the report.
