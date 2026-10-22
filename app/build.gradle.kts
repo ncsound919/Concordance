@@ -9,6 +9,8 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.secrets)
   alias(libs.plugins.google.services)
+  // Core Gradle plugin: adds the JaCoCo coverage agent to every Test task.
+  id("jacoco")
 }
 
 android {
@@ -92,6 +94,60 @@ tasks.withType<Test>().configureEach {
     javaLauncher.set(
         javaToolchains.launcherFor {
             languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    )
+    // Forward roborazzi's record/verify switch to the test JVM so
+    // `gradlew :app:testDebugUnitTest -Proborazzi.test.record=true` writes the
+    // design gallery to app/build/screenshots.
+    listOf("roborazzi.test.record", "roborazzi.test.verify").forEach { key ->
+        System.getProperty(key)?.let { value -> systemProperty(key, value) }
+    }
+    // Coverage instrumentation. `includeNoLocationClasses` keeps the classes
+    // with no debug metadata (which would otherwise be reported as untested
+    // noise) out of the report.
+    extensions.configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*", "kotlin.*", "androidx.*")
+    }
+}
+
+/**
+ * Line coverage of the app's own code, from the unit-test suite.
+ *
+ *   ./gradlew :app:jacocoTestReport
+ *
+ * The HTML report lands in `app/build/reports/jacoco/jacocoTestReport/html`
+ * and the XML in `app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml`.
+ * The class directories are collected from the build output rather than from a
+ * hard-coded path, because the AGP output layout changes between versions.
+ */
+tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Generates the JaCoCo coverage report for the debug unit tests."
+    dependsOn(tasks.withType<Test>())
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+
+    sourceDirectories.setFrom(files("src/main/java"))
+    // The app's own compiled classes. The output layout differs between AGP
+    // versions (AGP 8 used `tmp/kotlin-classes`, AGP 9 uses
+    // `intermediates/built_in_kotlinc`), so the directories are globbed rather
+    // than hard-coded. Only the debug *main* variant is included: the unit
+    // test classes and the release variant are not app code.
+    classDirectories.setFrom(
+        files(layout.buildDirectory.dir("intermediates")).asFileTree.matching {
+            include("**/compileDebugKotlin/classes/**/*.class")
+            include("**/compileDebugJavaWithJavac/classes/**/*.class")
+            include("**/kotlin-classes/debug/**/*.class")
+        }
+    )
+    executionData.setFrom(
+        tasks.withType<Test>().map { test ->
+            test.extensions.getByType<JacocoTaskExtension>().destinationFile
         }
     )
 }

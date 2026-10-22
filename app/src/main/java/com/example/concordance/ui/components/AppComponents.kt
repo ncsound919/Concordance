@@ -20,14 +20,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.contentDescription
@@ -37,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.Dimens
+import com.example.ui.theme.LocalSkin
 import com.example.ui.theme.SlateCard
 import com.example.ui.theme.SlateCardBorder
 import com.example.ui.theme.SlateCardElevated
@@ -44,6 +48,9 @@ import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.concordance
+import com.example.ui.theme.fadeUp
+import com.example.ui.theme.rememberBrandBrush
+import com.example.ui.theme.rememberCardBrush
 
 /**
  * Shared visual primitives.
@@ -60,33 +67,47 @@ fun AppSectionCard(
     subtitle: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = Dimens.ShapeM,
-        color = SlateCard,
-        contentColor = TextPrimary,
-        border = BorderStroke(1.dp, SlateCardBorder),
+    val skin = LocalSkin
+    val shape = RoundedCornerShape(skin.cardRadius)
+    val cardBrush = rememberCardBrush()
+    val brandBrush = rememberBrandBrush()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (skin.entranceAnimation) Modifier.fadeUp() else Modifier)
+            .clip(shape)
+            .background(cardBrush)
+            .border(1.dp, SlateCardBorder, shape)
+            .padding(Dimens.CardPadding),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
     ) {
-        Column(
-            modifier = Modifier.padding(Dimens.CardPadding),
-            verticalArrangement = Arrangement.spacedBy(Dimens.SpaceM),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXXS)) {
+        // Brand edge: a hairline gradient along the top of the card. It is the
+        // cheapest way to make a flat surface read as a deliberate object
+        // rather than a box.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .clip(RoundedCornerShape(topStart = skin.cardRadius, topEnd = skin.cardRadius))
+                .background(brandBrush),
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceXXS)) {
+            Text(
+                text = title,
+                style = MaterialTheme.concordance.cardTitle,
+                color = TextPrimary,
+            )
+            if (subtitle != null) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.concordance.cardTitle,
-                    color = TextPrimary,
+                    text = subtitle,
+                    style = MaterialTheme.concordance.caption,
+                    color = TextSecondary,
                 )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.concordance.caption,
-                        color = TextSecondary,
-                    )
-                }
             }
-            content()
         }
+        content()
     }
 }
 
@@ -98,17 +119,29 @@ fun AppStatTile(
     accent: Color = TextPrimary,
     hint: String? = null,
 ) {
+    val skin = LocalSkin
+    val shape = RoundedCornerShape(skin.cardRadius)
+    // The value fades along its own accent colour rather than using a fixed
+    // brand gradient: a caller that passes a semantic colour (danger, success)
+    // must not have it overwritten by the brand hue.
+    val valueBrush = remember(accent) {
+        Brush.horizontalGradient(listOf(accent, accent.copy(alpha = 0.72f)))
+    }
     Column(
         modifier = modifier
-            .clip(Dimens.ShapeM)
-            .background(SlateCardElevated)
+            .clip(shape)
+            .background(
+                Brush.verticalGradient(
+                    listOf(SlateCardElevated, SlateCardElevated.copy(alpha = 0.55f))
+                )
+            )
+            .border(1.dp, SlateCardBorder.copy(alpha = 0.7f), shape)
             .padding(horizontal = Dimens.SpaceM, vertical = Dimens.SpaceS),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
             text = value,
-            style = MaterialTheme.concordance.metricValue,
-            color = accent,
+            style = MaterialTheme.concordance.metricValue.copy(brush = valueBrush),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )

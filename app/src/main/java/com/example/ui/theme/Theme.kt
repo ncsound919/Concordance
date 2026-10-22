@@ -73,12 +73,61 @@ private val LightColorScheme = lightColorScheme(
     onError = Color.White,
 )
 
+// --- Website skin ---------------------------------------------------------
+// The site's own hues, with the `on*` colours chosen so that Material's
+// button and container roles stay legible against them.
+
+private val SiteDarkColorScheme = darkColorScheme(
+    primary = SitePrimary,
+    onPrimary = Color(0xFF00363D),
+    primaryContainer = Color(0xFF004F58),
+    onPrimaryContainer = Color(0xFF97F0FF),
+    secondary = SitePrimaryActive,
+    onSecondary = Color(0xFF00363D),
+    secondaryContainer = Color(0xFF004E5B),
+    onSecondaryContainer = Color(0xFFA6EEFF),
+    tertiary = SiteSuccess,
+    onTertiary = Color(0xFF003915),
+    background = SiteBackground,
+    onBackground = SiteTextPrimary,
+    surface = SiteSurface,
+    onSurface = SiteTextPrimary,
+    surfaceVariant = SiteSurfaceElevated,
+    onSurfaceVariant = SiteTextSecondary,
+    outline = SiteBorderStrong,
+    error = SiteDanger,
+    onError = Color.White,
+)
+
+private val SiteLightColorScheme = lightColorScheme(
+    primary = SiteDayPrimary,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFB6ECF7),
+    onPrimaryContainer = Color(0xFF00363D),
+    secondary = SiteDayPrimaryActive,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFB6ECF7),
+    onSecondaryContainer = Color(0xFF00363D),
+    tertiary = SiteDaySuccess,
+    onTertiary = Color.White,
+    background = SiteDayBackground,
+    onBackground = SiteDayTextPrimary,
+    surface = SiteDaySurface,
+    onSurface = SiteDayTextPrimary,
+    surfaceVariant = SiteDaySurfaceElevated,
+    onSurfaceVariant = SiteDayTextSecondary,
+    outline = SiteDayBorderStrong,
+    error = SiteDayDanger,
+    onError = Color.White,
+)
+
 // ---- Theme -------------------------------------------------------------
 
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
+    skin: Skin = Skin.CLINICAL,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -86,10 +135,12 @@ fun MyApplicationTheme(
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        skin == Skin.SITE && darkTheme -> SiteDarkColorScheme
+        skin == Skin.SITE -> SiteLightColorScheme
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val palette = if (darkTheme) darkPalette() else lightPalette()
+    val palette = if (darkTheme) darkPalette(skin) else lightPalette(skin)
 
     // The app can be dark while the system is light (and vice versa), so drive
     // the status/navigation bar icon colour from the resolved app theme.
@@ -106,6 +157,7 @@ fun MyApplicationTheme(
 
     CompositionLocalProvider(
         LocalConcordanceColors provides palette,
+        LocalSkinState provides skin,
         LocalConcordanceTextStyles provides concordanceTextStyles(),
     ) {
         MaterialTheme(

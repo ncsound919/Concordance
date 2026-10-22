@@ -36,7 +36,9 @@ import com.example.concordance.ui.screens.AuthScreen
 import com.example.concordance.ui.navigation.ConcordanceScaffold
 import com.example.concordance.ui.navigation.NavigationState
 import com.example.concordance.ui.screens.RegistryScreen
+import com.example.ui.theme.Skin
 import com.example.ui.theme.ThemeMode
+import com.example.ui.theme.createSkinPreferenceStore
 import com.example.ui.theme.createThemePreferenceStore
 import com.example.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
@@ -79,7 +81,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = androidx.compose.ui.platform.LocalContext.current
             val themeStore = remember { createThemePreferenceStore(context) }
+            val skinStore = remember { createSkinPreferenceStore(context) }
             var themeMode by rememberSaveable { mutableStateOf(themeStore.load()) }
+            var skin by rememberSaveable { mutableStateOf(skinStore.load()) }
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val darkTheme = when (themeMode) {
                 ThemeMode.SYSTEM -> systemDark
@@ -87,10 +91,11 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.LIGHT -> false
             }
 
-            MyApplicationTheme(darkTheme = darkTheme) {
+            MyApplicationTheme(darkTheme = darkTheme, skin = skin) {
                 ConcordanceApp(
                     viewModel = viewModel,
                     themeMode = themeMode,
+                    skin = skin,
                     onCycleTheme = {
                         themeMode = when (themeMode) {
                             ThemeMode.SYSTEM -> ThemeMode.DARK
@@ -98,6 +103,10 @@ class MainActivity : ComponentActivity() {
                             ThemeMode.LIGHT -> ThemeMode.SYSTEM
                         }
                         themeStore.save(themeMode)
+                    },
+                    onSelectSkin = {
+                        skin = it
+                        skinStore.save(it)
                     },
                 )
             }
@@ -110,11 +119,14 @@ class MainActivity : ComponentActivity() {
 fun ConcordanceApp(
     viewModel: ConcordanceViewModel,
     themeMode: ThemeMode = ThemeMode.SYSTEM,
+    skin: Skin = Skin.CLINICAL,
     onCycleTheme: () -> Unit = {},
+    onSelectSkin: (Skin) -> Unit = {},
 ) {
     val navState = rememberSaveable(saver = NavigationState.Saver) { NavigationState() }
     var showRegulatoryDialog by rememberSaveable { mutableStateOf(false) }
     var showMigrationDialog by rememberSaveable { mutableStateOf(false) }
+    var showSkinPicker by rememberSaveable { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = androidx.compose.ui.platform.LocalContext.current
     val sessionStore = remember { createSupabaseSessionStore(context) }
@@ -131,6 +143,7 @@ fun ConcordanceApp(
         snackbarHostState = snackbarHostState,
         themeMode = themeMode,
         onCycleTheme = onCycleTheme,
+        onOpenSkinPicker = { showSkinPicker = true },
         onInfo = { showRegulatoryDialog = true },
     ) {
         when (navState.current) {
@@ -205,6 +218,14 @@ fun ConcordanceApp(
 
     if (showRegulatoryDialog) {
         RegulatoryDisclaimerDialog(onDismiss = { showRegulatoryDialog = false })
+    }
+
+    if (showSkinPicker) {
+        com.example.concordance.ui.components.SkinPickerDialog(
+            current = skin,
+            onSelect = { onSelectSkin(it) },
+            onDismiss = { showSkinPicker = false },
+        )
     }
 
     if (showMigrationDialog) {
