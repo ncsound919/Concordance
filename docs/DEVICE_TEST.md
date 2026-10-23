@@ -151,3 +151,38 @@ not passes.
 `27-publish-url-guard`, `32-airplane-test-fixed`, `43-mic-nospeech`, `48-ingest-401`,
 `52-font130-fixed`, `60-landscape-tabs`, `73-working`, `75-activity-log`, `78-step-done`,
 `84-corpus-message2`, `92-interrupted`, `95-rotate-during-job`.
+
+## Run 2026-10-23 — crash reporter and Play build
+
+Installed `app-debug.apk` (127,439,992 bytes, 17:00) built from `main` after the
+crash-reporter change; the device already held the release key state from the
+14:00 APK.
+
+### Passed
+
+- Cold launch, five-tab navigation, no crash; Adjudicate renders the withheld
+  verdict for the abstract-only anchor.
+- **Copy Quote** → `Copied.` snackbar.
+- **Mint Capsule** → `Generated citable capsule a112b41d (SHA-256 sealed over
+  every field) … Linked 2 provenance records.` Capsules tab shows
+  `Artifacts (2)`, the permalink `https://concordance.app/c/a112b41d`, the
+  SHA-256 prefix and the provenance digest.
+- **Test connection** with no key → *"The agent rejected the credentials (401).
+  Check the API key. The health route is public, so it answers without a key."*
+  in about 1 s.
+- **Publish to community** with no website URL → *"Publish failed: Set the
+  website URL in the Agent tab before publishing"* — the URL guard still runs
+  before the sign-in message.
+- **Live work / Go** with a research goal → mode `High power`, step 1, then
+  `Slow step: no corpus folder chosen — pick one on the Agent tab`. The control
+  path works; the corpus is what stopped it.
+- Screenshots captured for the Play listing (720×1560, composed to 1080×1920).
+
+### Not run
+
+- Mic + Kokoro, camera/OCR, Supabase sync (needs a signed-in account), and the
+  agent research-loop card on hardware. Airplane mode was skipped deliberately:
+  the only adb transport is wireless debugging, so it would disconnect the
+  device mid-run. Font scale and landscape were not re-run this session.
+- The three oversized llama.cpp natives are absent from a cold clone
+  (`NATIVE-LIBS.md`), so a runtime-complete build still needs them restored.
