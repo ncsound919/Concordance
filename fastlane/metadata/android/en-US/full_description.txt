@@ -1,0 +1,23 @@
+Concordance is a research tool for adjudicating organotropism claims: which organ a cancer is likely to involve, given a reported prevalence, an odds ratio and its confidence interval.
+
+It does not simply repeat the number you enter. It applies a detection-corrected estimate, so a claim that looks strong in a screened population is not overstated in a less-screened one, and it shows the point at which that correction would flip the verdict.
+
+WHAT IT DOES
+
+- Adjudicates a claim from counts or from a summary anchor (OR, CI, reference prevalence).
+- Refuses rather than guesses: an anchor with a zero cell, a missing interval, events outside the totals, or an OR outside its own CI is marked "not estimable" with the reason, instead of printing a number.
+- Produces citable capsules. Every field of a capsule — verdict, prose, assumptions, limitations, inputs, timestamp — is covered by one SHA-256 digest, so a published capsule can be checked for tampering rather than trusted.
+- Runs deterministic referee audits over a prediction CSV, returning a verdict, the evidence tier and content hashes.
+- Keeps a local claim registry with statuses and challenge history.
+
+PRIVACY
+
+Aggregate and public data only for anything sent to shared compute; a claim marked PHI is refused at the boundary, and PHI stays on the device. API keys are held in encrypted preferences. The optional on-device extraction model runs locally and is never required.
+
+OFFLINE
+
+Adjudication, capsules, the registry and audits work offline. Cloud sync and publication need a connection and a signed-in account.
+
+IMPORTANT
+
+Concordance is a research and evidence-appraisal tool. It is not a medical device, it does not diagnose or treat any condition, and it must not be used as clinical advice. Estimates depend entirely on the data entered.

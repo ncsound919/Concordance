@@ -1,0 +1,1 @@
+First release: detection-corrected adjudication, citable capsules with a SHA-256 over every field, a local claim registry, deterministic referee audits, and optional on-device extraction.

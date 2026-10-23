@@ -1,0 +1,391 @@
+Short answer: Cloudflare *can*, but not for free, and not without a paid plan — and it isn't the cheapest of your options.
+
+## Why Workers alone can't do it
+
+Workers have no shell and no long-lived process: no `git`, no `npm`, no `tsc`. Gitea's `act_runner` is a daemon that polls gitea.com for jobs, so it needs a real container.
+
+Workers **Builds** is Cloudflare's own CI, and it connects to **Artifacts, GitHub or GitLab only** — a Gitea repo can't be attached at all ([docs](https://developers.cloudflare.com/workers/ci-cd/builds/)). It is genuinely free though: **3,000 build minutes/month, 2 vCPU, 8 GB RAM, 20 min timeout** on the Free plan.
+
+**Containers** can run `act_runner`, but: Workers **Paid $5/mo required**, still public beta, and a polling runner never idles so it never sleeps. A `lite` instance (1/16 vCPU, 256 MiB, 2 GB disk) running 24/7:
+
+| Item | Usage | Included | Overage |
+|---|---|---|---|
+| Memory | 182 GiB-h | 25 | ~$1.42 |
+| Disk | 1,460 GB-h | 200 | ~$0.32 |
+| vCPU | idle polling | 375 min | ~$0.05 |
+| Plan | — | — | $5.00 |
+| **Total** | | | **≈ $6.80/mo** |
+
+## What your CI actually needs
+
+I checked [package.json](ecosystem/ecosystem-control/server/package.json): two commands, no network, no wrangler, no D1.
+
+- `typecheck` → `tsc --noEmit`
+- `verify` → `node verify-schema.mjs`, which uses Node's built-in `node:sqlite` against `schema.sql` + `seed.sql` in memory
+
+That's about 30 seconds of plain Node. Nothing about it requires Cloudflare — which is why paying $6.80/mo for a beta container to run it is the worst-value option on the table.
+
+## The cheaper shapes
+
+| Option | Monthly | Trade-off |
+|---|---|---|
+| **Modal webhook** — Gitea push → FastAPI endpoint → run both commands in a container | **$0** (inside your existing Modal credits) | Same pattern as your marketing consumer; you write the endpoint |
+| **EC2 `act_runner`** on the box already hosting the referee | **$0** marginal | Real Gitea Actions UX, `.gitea/workflows` works, but a new daemon on that host |
+| **Cloudflare Containers + `act_runner`** | ~$6.80 | All-Cloudflare, beta, bills 24/7 |
+| **Workers Builds** against the GitHub mirror | $0 | Runs your test command in the build step free — but a Gitea push doesn't trigger it |
+
+Any of these needs a Gitea credential with repo-read (to clone) and commit-status write (to mark the commit red/green).
+
+My read: you already run nine Modal services and a webhook consumer, so the Modal option adds no new vendor and no new always-on process. The EC2 runner is the better choice only if you specifically want standard Gitea Actions and `if:`/matrix syntax.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The CI hop is live and has already written a real green status back to Gitea.
+
+## What exists now
+
+| Piece | Where |
+|---|---|
+| Webhook endpoint | `https://tap4500--ecosystem-control-ci-web.us-east.modal.run/gitea` |
+| Health | `…modal.run/health` → `{"ok":true,"app":"ecosystem-control-ci","watched":"refs/heads/main"}` |
+| Modal app | `ecosystem-control-ci`, secret `gitea-ci` (`GITEA_TOKEN`, `GITEA_WEBHOOK_SECRET`) |
+| Gitea hook | id **48166** on `tap4500/ecosystem-control`, events `push`, secret set |
+| Code | [ci/checks.py](ecosystem/ecosystem-control/ci/checks.py), [ci/web_app.py](ecosystem/ecosystem-control/ci/web_app.py), [ci/modal_ci.py](ecosystem/ecosystem-control/ci/modal_ci.py), [ci/test_checks.py](ecosystem/ecosystem-control/ci/test_checks.py), [ci/README.md](ecosystem/ecosystem-control/ci/README.md) |
+
+A push to `main` → Gitea POSTs to Modal → signature checked → container clones the pushed sha, runs `npm ci`, `npm run typecheck`, `node verify-schema.mjs` → posts `modal-ci / typecheck+schema`. Nothing runs between pushes; there is no daemon and no idle container to pay for.
+
+## Verified against the live deployment
+
+- **21 unit tests** over the pure half (signature, push filter, step plan, state mapping) — all pass.
+- **Real signed push** for `c7db4173…` → `202 {"accepted":true,"run":"fc-01M5MMGCSJFD1DG4NKV16SV22P"}` → Gitea commit status came back **`success` — "install ok | typecheck ok | verify ok"**.
+- **Rejections**: no signature → `401`; bad signature → `401`; non-JSON → `400`; `pull_request` event → `202 accepted:false`; `refs/heads/topic` → `202 ignored ref`; all-zero sha and `[skip ci]` covered by tests.
+- The first deploy warned that I was calling Modal's blocking client inside an async handler; switched to `spawn.aio` and confirmed the warning is gone on the next run.
+- `npm run typecheck` and `node verify-schema.mjs` both exit `0` locally, so the green status is truthful rather than accidental.
+
+## Three things to know
+
+1. **The green status came from a correctly-signed payload I sent, not a real `git push`** — I didn't create a commit. The hook is registered and will fire normally on your next push.
+2. **The `ci/` files are uncommitted** (`?? ci/…` plus a two-line `.gitignore` addition). They exist only in your working tree right now, so Gitea main doesn't have them yet.
+3. **Right after a deploy, for ~1 minute, requests can still land on a warm container from the previous version** — I saw five stale `422`s immediately after the first deploy and clean `202`s after that. It self-resolves; worth knowing before you debug a 422 that isn't reproducible.
+
+Rotation is one move: `modal secret create gitea-ci --from-dotenv … --force`, then update hook 48166's secret. Your copy of the webhook secret is at `D:\docs\ecosystem-control-ci-secret.txt`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fixed and redeployed as **v2**. I could not reproduce the crash loop from outside — the live app answered every request I threw at it — so I went after the two mechanisms that produce exactly that symptom, both of which were real.
+
+## What was actually wrong
+
+**1. Startup could die on a SQLite lock shared across containers (the crash-loop mechanism).**
+
+`app/store.py` opened the volume database with `sqlite3.connect(path, check_same_thread=False)` — no busy timeout — and then ran `executescript(_SCHEMA)` plus a column migration on *every* connection. The web app scales to several containers that all point at the same `/data/agent.db`; when a few start together, one gets `database is locked`, the lifespan raises, the container exits, Modal restarts it, and the dashboard shows "crash looping". That matches the intermittency: it depends on how many containers start at once, which is why a single request looks fine.
+
+```python
+conn = sqlite3.connect(str(path), check_same_thread=False, timeout=30)
+conn.execute("PRAGMA busy_timeout=30000;")
+conn.execute("PRAGMA journal_mode=WAL;")
+```
+
+plus `_load_persisted_state_resilient()` in the lifespan — four attempts with exponential backoff, retrying only on `sqlite3.OperationalError` and still refusing to start on anything else.
+
+**2. The container was looking for the estate on your Windows machine.**
+
+The Modal secrets carry `ECOSYSTEM_ROOT=C:/Users/tap45/ecosystem`, and `modal_agent.py` used `os.environ.setdefault(...)`, so the secret won and the image's staged estate at `/root/ecosystem` was never used. Now `configure_container_env()` assigns the container paths explicitly, and both the app and the probe call that one function instead of keeping their own copy.
+
+## Verified
+
+- Startup probe against the **real image and real secrets**: `import ok`, `lifespan ok`, `ecosystem_root: /root/ecosystem` (was `C:/Users/tap45/ecosystem`).
+- Deployed **v2** (11:33 EDT). Cold `/health` → `{"status":"ok"}`; 10 parallel requests → ten `200`s; the earlier 30-parallel burst also returned 200s while containers were starting.
+- `modal app logs` after the deploy: 98 lines, **zero** tracebacks, zero "refusing to start", zero "database is locked".
+- `tests/test_storage.py` → 3 passed.
+
+## What I could not verify, and one thing to know
+
+- **The local test suite will not run here.** The venv is broken independently of this change: `pydantic-core 2.46.4` versus pydantic's required `2.50.1`, and a protobuf gencode/runtime mismatch (`6.33.5` vs `5.29.6`). `tests/test_main_routes_smoke.py` errors at collection for that reason, so I relied on the in-image probe plus the storage tests.
+- **`modal_agent.py` is untracked in git.** The file that makes this deployment reproducible has never been committed, which is why the earlier audit found a stale entrypoint being deployed instead of it.
+
+Changed: [modal_agent.py](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/modal_agent.py), [app/main.py:147](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/app/main.py#L147), [app/store.py:96](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/app/store.py#L96).
+
+If anything looks off in the next few minutes, `modal rollback concordance-agent v1` puts the previous deployment back. The temporary startup probe I used has been deleted, and `probe-report.json` is off the volume.
+
+
+
+Everything is written up in [SESSION_LOG.md](cloud/SESSION_LOG.md). Here it is in full.
+
+## What changed in one line
+
+Six more marketplace tools became live APIs (nine total, 40 documented routes), every endpoint got a bearer-token gate, and the research loop now actually iterates — design → execute → paper → grade → redesign — stopping on a high-value paper or a cap.
+
+## The fleet
+
+| Service | Routes | Runtime | What the loop gets |
+| --- | --- | --- | --- |
+| `research-orchestrator` | 8 | Express + SQLite | hypothesis registry, validity gates, hash-chained ledger |
+| `oncono-agent` | 9 | Express | trials, ClinVar, PubMed, CIViC, OncoKB, Ensembl, detection scoring |
+| `discourse` | 1 | Express | adversarial review before promotion |
+| `overlay-chemlab` | 5 | Node (cloned from GitHub) | SMILES descriptors, Lipinski/Veber/FBDD, green metrics |
+| `ancestralmt` | 4 | Next 16 + Prisma | ancestry bias, diversity score over a 2.4M-sample cohort |
+| `onconosim` | 5 | Next 16 + Prisma | PROTAC kinetics, neoepitope and priming indices |
+| `prometheus` | 3 | Next + Prisma | signal detection, export bundles |
+| `fieldbridge` | 3 | tsx over its own library | deterministic gap scoring, flow matrix, validation |
+| `cellular-map` | 2 | FastAPI 3.11 | hub and path scoring |
+
+Every route answered in the last live probe: **40/40**. A full sweep of all nine costs **$0.000824** at the blended Modal rate ($0.00003508/s for 2 cores + 4 GiB). Warm calls run 150–800 ms; cold starts 1–9 s.
+
+Six of these were built this session, which meant fixing: Next standalone servers exiting silently (use `next start`, `HOSTNAME=0.0.0.0`), `next: not found` (use `npm run build`), bun lockfiles (`npm install`), Prisma apps needing seeded SQLite on the volume, ChemLab living in its own repo (image clones it), Cellular-Map's unbuildable `dowhy`/`cvxpy` pins (deploy the runtime subset its routers import), FieldBridge having no server at all (wrote [api-server.ts](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/fieldbridge/src/api-server.ts)), and a Windows console crash after a successful upload (`PYTHONIOENCODING=utf-8`). One durability lesson: **a subset deploy deletes the functions it does not mention** — the app now holds all nine because the final deploy used `CONCORDANCE_TOOLS=all`.
+
+## Auth
+
+[gate.py](cloud/gate.py) is a bearer-token proxy in every container: the tool binds loopback, only the gate's port is published, wrong or missing token gets 401, no token configured gets 503. Verified 401 → 200 on all nine origins. Token is the Modal secret `concordance-tool-token`; the local copy is the gitignored `cloud/.token`.
+
+## The loop
+
+[experiment_loop.py](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/app/experiment_loop.py) grades every paper on six dimensions (evidence sources, evidence volume, critic verdict, design quality, novelty, execution), names the weakest, and aims the **next** iteration at it — plus carries one prior design forward as a replication. It stops on pass, budget, time, iteration cap, error or breakthrough, writes a journal per loop and a `grade.md` beside each paper. Experiments execute against real endpoints before the paper is written, so `results.json` carries what ran.
+
+Live evidence, not test fixtures:
+
+- ctDNA colorectal, 1 iteration → **pass, 78 (B)**, 2 experiments executed, 7 artifacts, **$0.000237**, 9.6 s.
+- The same through `POST /api/research/loop` → HTTP 200, **78 (B)**, $0.000211 — the phone-facing path works.
+- KRAS G12C resistance, 2 iterations, threshold 100 → **95 (A)** both times, 4 of 4 evidence sources, $0.00042 total.
+- The very first run scored 53 (D) with a `revise` critic; that run is what drove the template and evidence fixes.
+
+**37 tests pass** (fleet, loop, decision loop, API gaps) — including the 10 new loop tests covering every stop rule and the grade file. The full agent suite can't run in this environment; the suite above is what covers the changed code.
+
+## Catalogue and docs
+
+[catalog.py](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/app/catalog.py) lists all nine services with measured latency bands and cost models (21 endpoints total), so an experiment can be priced before it runs. [ENDPOINTS.md](cloud/ENDPOINTS.md) is generated from the probe, never hand-edited; [README.md](cloud/README.md) carries auth, deploy, add-a-tool and the lessons above.
+
+## Still open, stated plainly
+
+`math-x` needs model keys before it can boot, so it is not deployed. The three batch tools (`oncoreplay`, `oncokb-attention`, `brain-met-esr1`) are CLI/Snakefile pipelines, not HTTP services. `cellular-map` runs without Neo4j/Redis and says so. `/api/validation` still 503s until Overlay Oncology exists. The loop's designer is deterministic — it targets rubric gaps with real templates and real API calls, it does not invent novel mechanisms; wiring the AI gateway into `design_next` is where genuine novelty comes from. And the Concordance phone screen still has no card for `/api/research/loop` — the endpoint is verified but the Kotlin UI does not call it yet.
+Reconciling the website is the right next move, and it has to end with one tree that both deploys and carries the signal/proxy layer. First, exactly what the deployed tree is missing and what the shared routes already look like.
+
+The producer diffs are clean, self-contained additions, and `lib/webhooks.ts` is already identical. Checking the remaining dependencies and the UI surface before porting.
+
+All imports line up. Checking the last two dependencies, then porting.
+
+Porting the feature files now.
+
+Now wiring the three producers and the publication result.
+
+
+
+
+
+
+
+
+
+
+The deployed tree already has `AGENT_URL`/`AGENT_KEY`, while the ported proxy reads `AGENT_BASE_URL`/`AGENT_API_KEY` — I'll make one accept the other rather than ship two names.
+
+
+
+
+
+
+
+Typecheck clean. Running the ported suites.
+
+All 1,021 tests pass — the DB suites now run too, so the previously skipped 406 are executed, not skipped. Building.
+
+Build passes. Before committing, I need to be sure the files I touched weren't already dirty from another session.
+
+
+
+
+One integration check before I call this done: whether middleware intercepts the new API route.
+
+
+
+
+The website is reconciled: **commit `93a4255`** in [site and marketing/concordance-website](site%20and%20marketing/concordance-website) — 29 files, +3,831/−11. One tree now has both the locale refactor and the marketing/agent layer.
+
+**What the deployed tree gained**
+
+- `lib/research-signal.ts` and `lib/signal-dispatch.ts` — the signal contract and the fail-soft emitter.
+- The three producers, wired in: [publications](site%20and%20marketing/concordance-website/app/api/publications/route.ts), [challenges](site%20and%20marketing/concordance-website/app/api/challenges/route.ts) and the [sprint judge](site%20and%20marketing/concordance-website/app/api/v1/sprints/%5Bslug%5D/judge/route.ts). `publishArtifact` now returns the artifact row the signal is built from rather than re-reading it.
+- The browser proxy: `app/api/v1/agent/[...path]/route.ts` plus `agent-proxy.ts`, `agent-proxy-server.ts`, `tool-roster.ts`, `AgentLab`, `ToolRoster`, 10 tool images, and the lab page now renders the agent panel instead of a "coming soon" card.
+
+**Adaptations the merge needed**
+
+- The proxy route used Next 14's synchronous `params`; the deployed tree is Next 15, so both handlers and their test now await it.
+- `AGENT_BASE_URL`/`AGENT_API_KEY` would have been a second set of names beside the existing `AGENT_URL`/`AGENT_KEY`. The proxy reads the new names first and falls back to the old ones, so the deployment config you already have works unchanged.
+- I kept the deployed timestamp transport (HTTPS engine, no child process) rather than the sibling copy's filesystem version — that is the one Cloudflare can actually run.
+
+**Verification**
+
+- `tsc --noEmit` clean.
+- `next build` passes and emits `/api/v1/agent/[...path]`; the middleware matcher already excludes `/api`, so the proxy is reachable rather than redirected to login.
+- **1,021 tests across 135 files, 0 failed.** The Supabase stack is up on this machine, so the 406 suites that were skipping now execute and pass — this is stronger evidence than the audit's 548-pass baseline.
+- The repo's 119 pre-existing dirty files are untouched; only my 29 files were staged.
+
+**Not done, and what still blocks "no laptop"**
+
+The change is committed but **not deployed**, and the live site will keep serving the old bundle until it is. More importantly, this repo has **no git remote at all** — that commit exists only on this laptop, which is the exact condition the no-laptop plan is meant to remove. Deploying also needs four Worker secrets (`AGENT_BASE_URL`/`AGENT_API_KEY` or the existing pair, and `MARKETING_SIGNAL_URL`/`MARKETING_SIGNAL_SECRET`), and the signal hop is untested live because the secret is not set here. The other clusters from the inventory — Android, brain-met, AetherDesk, overlay365 — are still as they were.
+
+The inventory now records this cluster as done: [DEDUP-2026-10-23.md](DEDUP-2026-10-23.md).
+
+The next step that actually moves the deployment is giving this repo a remote and pushing the two commits, since everything downstream assumes the source lives somewhere other than this disk.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The blockers are now resolved far enough that every project’s own release gate is green. The remaining items require accounts, hosts, or devices rather than code changes.
+
+**Fixed this pass**
+- **Website database tests:** started Docker Desktop and the local Supabase stack. The previously skipped suites ran for real: **954 passed, 0 failed** across 130 files.
+- **Aetherdesk:** CI gate is **4390 passed, 0 failed, 18 skipped**. Also verified agent-ui `146/146`, mobile `18/18`, oncology hop `59/59`.
+- **rescue-gocron:** ran `go test ./...` in a Linux Go container — **all packages pass**. Fixed the obsolete web-UI test that assumed no built `dist/index.html`.
+- **Older Oncology snapshot:** synced the shared C-index implementation and the corrected tests. Both canonical and older copies now pass **1646 tests, 11 skipped, 0 failed**; `tsc` passes on both.
+- **Android release:** `:app:assembleRelease` initially failed in R8 on PDFBox’s optional `com.gemalto.jp2.JP2Decoder`. Added a narrow `-dontwarn` rule in [proguard-rules.pro](Concordance-main/app/proguard-rules.pro); the **91 MB release APK builds, signs, and verifies** (`apksigner`: Verifies, one signer).
+- **Cloud fleet:** fresh token-authenticated probe now answers **47/47 routes across 11 services**; regenerated [ENDPOINTS.md](cloud/ENDPOINTS.md).
+- **Wiring:** fixed a false missing `/api/fleet` in [check-contracts.mjs](wiring/check-contracts.mjs) caused by Kotlin query interpolation; refreshed both OpenAPI snapshots. Contracts now **PASS, 26/26 phone paths**, and the deployed referee includes `/audit_batch`. Direct referee parity is **PARITY OK**.
+- **PowerShell:** all 7 `.ps1` scripts parse cleanly with the Windows PowerShell 5.1 AST parser.
+
+Full details and exact commands are in [AUDIT-2026-10-23.md](AUDIT-2026-10-23.md).
+
+**Still external**
+1. Aetherdesk needs a public host and the `AETHERDESK_SIGNAL_SECRET` pair before the Cloudflare gateway can fan out to it.
+2. Full agent→referee parity needs `AGENT_API_KEY`; only the referee key is present here.
+3. `referee.overlay365.online` is unhealthy (TLS), while the Modal URL works. Fix or retire that custom domain.
+4. Android Play Console upload and the physical-device checklist still need an operator/device.
+
+The Aetherdesk CI gate excludes 795 e2e/ai/chaos/cognitive/integration tests by design; an unfiltered run still reports failures in those live-service harnesses, which is documented separately from the release gate.
+
+Docker Desktop and the local Supabase stack are still running so the 954-test result is reproducible. Stop the stack with `npx supabase stop` when you are done.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The designer is no longer a pure function of the grade, and the decision model now earns its place in the pipeline.
+
+## What changed
+
+`design_next` used to map `grade["weakest"]` to exactly one template, so the same question always produced the same protocol. In [experiment_loop.py](Oncology-Ecosystem-main/Oncology-Ecosystem-main/apps/oncology-agent/app/experiment_loop.py) it now:
+
+- **Ranks a pool of 18 designs** — three per rubric dimension, added alongside the original six templates — with `app/decision.py`'s `score_candidate` (evidence, novelty, feasibility, specificity, risk).
+- **Gives the model something real to score.** The first attempt tied every design at 0.5704 because the candidates declared identical structure. Each design now carries a `required_evidence` list and a parseable `estimated_duration`, so scores spread across 0.72–0.88 and the model's gate actually separates them.
+- **Lets the model decide eligibility, and the seed decide the pick.** Only designs the model gated as well as its best (same `proceed`/`revise`/`prune` action) are candidates; inside that set a seeded rank-weighted draw chooses. Nothing the model rejected can win on novelty alone.
+- **Never re-runs the protocol it just ran.** A design whose exact hypothesis is already in the prior report is dropped while a fresh one exists, so iteration 2 differs from iteration 1 by construction.
+- **Rotates the target dimension.** The weakest dimension is the default, not a rule: once an iteration has run, a competing dimension within 0.05 of the weakest can take over, and the previous target is kept only if it still clearly wins.
+- **Varies thresholds too**, where more than one is defensible (page size, |d| cutoff, fan-out depth), recorded in the experiment.
+- **Records all of it**: `design.seed`, `design.chosen`, `design.candidates` (all 18 with score and action) and each experiment's own decision score. `AGENT_DESIGN_SEED` replays a run exactly.
+
+## Evidence
+
+- 30 seeds on one question: **15 runs opened with the model's top design, 15 with an alternative** in the same dimension (8 / 7 split) — preference biased the draw without freezing it.
+- One loop, two iterations: `Source-by-source yield audit` + `Evidence density sweep`, then `Cross-source concordance` + `Dose-response decision rule` — different designs and different secondaries without any extra configuration.
+- Two consecutive fresh runs of the same question opened on different designs (cross-source, then yield audit).
+- Live against the deployed fleet, every run still grades **A 95.0**, executes 2 experiments, writes a 7-artifact paper chain with critic pass, and spends the same per-call amounts (e.g. $0.000098 for the BRAF/V600E run). The agent was redeployed and answers `/health` 200, so the phone's loop card gets this behaviour.
+
+## Verification
+
+`test_experiment_loop.py` went from 10 to 16 tests, adding coverage for the recorded ranking, seed replay, the env pin, pool variety across seeds, repeat exclusion and threshold selection; `test_fleet.py` is unchanged at 14. Both files pass (30 tests), and `pytest -k "design or loop"` is 26 passed. Three ruff warnings remain in that file, all pre-existing (`Callable` import style, a quoted annotation, an unused `pytest` import) and untouched.
+
+Limitation worth stating plainly: this is variety in *selection*, not invention — the designs are still hand-written, so the novelty dimension can only recombine what is in the pool. Wiring `ai_gateway.complete` into the designer is what would let it write new protocols.
+

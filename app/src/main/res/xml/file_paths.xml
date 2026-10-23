@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Only the app's private cache is exposed to the camera app, and only for the file being
+  captured. OCR uploads must never touch shared storage.
+-->
+<paths>
+    <cache-path name="captures" path="captures/" />
+</paths>

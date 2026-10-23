@@ -1,0 +1,30 @@
+*.iml
+.gradle
+.kotlin
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+# Local secrets — never commit them; .env.example is the checked-in template.
+.env
+.env.*
+!.env.example
+debug.keystore
+
+# Build outputs (Gradle/AGP)
+**/build/
+
+# Oversized prebuilt natives (>30 MB) exceed the Gitea upload cap.
+# Restore from the build machine or an artifact store; see NATIVE-LIBS.md.
+app/src/main/jniLibs/arm64-v8a/libllama-common.so
+app/src/main/jniLibs/arm64-v8a/libllama-server-impl.so
+app/src/main/jniLibs/arm64-v8a/libllama.so
