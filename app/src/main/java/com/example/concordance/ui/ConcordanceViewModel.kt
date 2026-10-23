@@ -1635,18 +1635,35 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
 
     fun setCommunityBaseUrl(url: String) {
         val clean = url.trim().trimEnd('/')
-        if (clean.isBlank()) return
+        if (clean.isBlank()) {
+            viewModelScope.launch { _uiNotice.emit("Set the website URL before publishing (Agent tab).") }
+            return
+        }
+        if (clean.startsWith("http://") && !isLoopbackHost(clean)) {
+            viewModelScope.launch { _uiNotice.emit("Community URL must use HTTPS outside the device.") }
+            return
+        }
         agentSettings.setCommunityBaseUrl(clean)
         _communityBaseUrl.value = clean
         agentNotice("Community URL saved.")
     }
 
+    private fun isLoopbackHost(url: String): Boolean =
+        url.contains("://localhost", ignoreCase = true) ||
+            url.contains("://127.0.0.1", ignoreCase = true) ||
+            url.contains("://10.0.2.2", ignoreCase = true)
+
     fun publishClaimToCommunity(claim: Anchor) {
         if (_communityPublishing.value) return
+        val baseUrl = _communityBaseUrl.value
+        if (baseUrl.isBlank()) {
+            viewModelScope.launch { _uiNotice.emit("Set the website URL in the Agent tab before publishing.") }
+            return
+        }
         viewModelScope.launch {
             _communityPublishing.value = true
             try {
-                CommunityPublisher.publishClaim(supabaseAuth, _communityBaseUrl.value, claim)
+                CommunityPublisher.publishClaim(supabaseAuth, baseUrl, claim)
                     .onSuccess { published ->
                         val stamp = if (published.timestamped) " with an RFC 3161 timestamp" else ""
                         _uiNotice.emit("Published ${claim.label.take(40)} to the community$stamp. ${published.url}")
@@ -1660,10 +1677,15 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
 
     fun publishCapsuleToCommunity(capsule: Capsule) {
         if (_communityPublishing.value) return
+        val baseUrl = _communityBaseUrl.value
+        if (baseUrl.isBlank()) {
+            viewModelScope.launch { _uiNotice.emit("Set the website URL in the Agent tab before publishing.") }
+            return
+        }
         viewModelScope.launch {
             _communityPublishing.value = true
             try {
-                CommunityPublisher.publishCapsule(supabaseAuth, _communityBaseUrl.value, capsule)
+                CommunityPublisher.publishCapsule(supabaseAuth, baseUrl, capsule)
                     .onSuccess { published ->
                         val stamp = if (published.timestamped) " with an RFC 3161 timestamp" else ""
                         _uiNotice.emit("Published ${capsule.id} to the community$stamp. ${published.url}")

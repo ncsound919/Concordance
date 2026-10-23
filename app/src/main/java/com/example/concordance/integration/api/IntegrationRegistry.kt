@@ -29,7 +29,9 @@ object IntegrationRegistry {
         PubPeerAdapter,
         OsfAdapter,
         FigshareAdapter,
-        ZoteroAdapter
+        ZoteroAdapter,
+        UnpaywallAdapter,
+        GnomadAdapter
     )
 
     fun descriptor(id: String): AdapterDescriptor? =

@@ -20,7 +20,7 @@ The `Agent` destination connects the phone to your own agent instance.
 | Easy-mode policy (caveats, spoken summary) | `agent/EasyMode.kt` |
 | Voice in/out | `voice/OnDeviceSpeechRecognizer.kt`, `voice/SpeechSynthesizer.kt`, `voice/KokoroTtsSynthesizer.kt` |
 
-Default URL is `http://10.0.2.2:8000` (an emulator's route to the host's loopback).
+Default URL is the deployed Modal agent (`https://tap4500--concordance-agent-fastapi-app.us-east.modal.run`); new installs work from a cold start with no workstation in the path. The field stays editable for a self-hosted agent.
 The app permits cleartext only for `10.0.2.2`, `localhost` and `127.0.0.1`; every
 other host must use HTTPS. On a physical device, either configure TLS on the agent
 and use `https://…`, or run `adb reverse tcp:8000 tcp:8000` and point the app at

@@ -347,7 +347,7 @@ class AgentClient(
         label: String
     ): AgentOutcome<String> {
         if (!config.isConfigured) {
-            return AgentOutcome.Failed("No agent URL configured. Set it to your self-hosted agent, e.g. http://10.0.2.2:8000")
+            return AgentOutcome.Failed("No agent URL configured. Set it on the Agent tab (cloud default: https://tap4500--concordance-agent-fastapi-app.us-east.modal.run)")
         }
         val url = config.normalizedBaseUrl + path
         val builder = Request.Builder().url(url)

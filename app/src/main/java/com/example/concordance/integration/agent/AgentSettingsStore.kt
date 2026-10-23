@@ -88,9 +88,17 @@ class AgentSettingsStore(context: Context) {
     }
 
     companion object {
-        /** Emulator alias for the host machine's loopback interface. */
-        const val DEFAULT_URL = "http://10.0.2.2:8000"
-        const val DEFAULT_COMMUNITY_URL = "http://10.0.2.2:3001"
+        /** The deployed agent. New installs start here (no workstation in the path). */
+        const val CLOUD_AGENT_URL = "https://tap4500--concordance-agent-fastapi-app.us-east.modal.run"
+        /** The deployed website, used for community publication. */
+        const val CLOUD_COMMUNITY_URL = "https://concordance-web.tap4500.workers.dev"
+
+        /** Emulator alias for a locally run agent, kept for development. */
+        const val LOCAL_AGENT_URL = "http://10.0.2.2:8000"
+        const val LOCAL_COMMUNITY_URL = "http://10.0.2.2:3001"
+
+        const val DEFAULT_URL = CLOUD_AGENT_URL
+        const val DEFAULT_COMMUNITY_URL = CLOUD_COMMUNITY_URL
         const val DEFAULT_TIMEOUT_SECONDS = 90L
         private const val SECURE_PREFS = "agent_settings_secure"
         private const val LEGACY_PREFS = "agent_settings"

@@ -1,10 +1,11 @@
 package com.example.concordance.integration.agent
 
 /**
- * Connection settings for the self-hosted adjudication agent.
+ * Connection settings for the adjudication agent.
  *
- * The agent is expected to run on your own machine or LAN (an emulator reaches the
- * host loopback at 10.0.2.2). Nothing in this client talks to a managed platform.
+ * New installs default to the deployed cloud agent; a self-hosted instance can
+ * still be pointed at via the Agent tab. The client talks only to the URL it is
+ * given and never to a managed platform implicitly.
  */
 data class AgentConfig(
     val baseUrl: String = "",
