@@ -46,6 +46,18 @@ class DecisionModelTest {
     )
 
     @Test
+    fun `decision prompt defines every tier and route key`() {
+        val prompt = DecisionModel.buildPrompt(state())
+        // Without the definitions a 4B model answered "abstract_only" for a
+        // claim that clearly carried counts; the keys alone are not enough.
+        assertTrue(prompt.contains("- counts: Both arms have event and total counts"))
+        assertTrue(prompt.contains("- summary: Only a summary effect size"))
+        assertTrue(prompt.contains("- abstract_only: Neither counts nor an effect size"))
+        assertTrue(prompt.contains("- accept: Grounded in the abstract"))
+        assertTrue(prompt.contains("- review: Thin, inconsistent"))
+    }
+
+    @Test
     fun `consistent counts with a plausible OR are auto-accepted`() {
         val answers = DecisionModel.ruleAnswers(state())
         assertEquals("counts", answers["tier"]?.choice)

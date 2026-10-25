@@ -141,11 +141,23 @@ object SpeechOutput {
     /** Where the platform keeps libraries extracted from the APK — the only executable place. */
     fun nativeLibDir(context: Context): File = File(context.applicationInfo.nativeLibraryDir)
 
-    /** Human-readable reason Kokoro cannot be used, or null when it can. */
-    fun kokoroUnavailableReason(context: Context, kokoroDir: File = defaultKokoroDir(context)): String? =
-        if (LocalModels.kokoroReady(context)) {
-            null
-        } else {
-            "Kokoro files are missing from ${LocalModels.kokoroDir(context)}"
+    /**
+     * Human-readable reason Kokoro cannot be used, or null when it can.
+     *
+     * The app's own storage path is long and differs per install; print the
+     * files that are missing instead of a `/storage/emulated/...` line the
+     * operator cannot act on.
+     */
+    fun kokoroUnavailableReason(context: Context, kokoroDir: File = defaultKokoroDir(context)): String? {
+        if (LocalModels.kokoroReady(context)) return null
+        val dir = LocalModels.kokoroDir(context)
+        val missing = buildList {
+            if (!File(dir, "model.onnx").isFile) add("model.onnx")
+            if (!File(dir, "voices.bin").isFile) add("voices.bin")
+            if (!File(dir, "tokens.txt").isFile) add("tokens.txt")
+            if (!File(dir, "espeak-ng-data").isDirectory) add("espeak-ng-data/")
         }
+        return "Kokoro is missing ${missing.joinToString(", ")}. Put those in the app's " +
+            "files/kokoro folder, then reopen this tab."
+    }
 }

@@ -33,9 +33,12 @@ import com.example.concordance.integration.byok.KeyStore
 import com.example.concordance.integration.byok.LicenseStore
 import com.example.concordance.integration.rotation.LicenseClass
 import com.example.concordance.local.LocalLlmStatus
+import com.example.concordance.local.LocalModelCatalog
 import com.example.concordance.local.LocalModels
+import com.example.concordance.local.ModelDownloadStatus
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import java.io.File
 
 /**
  * BYOK (bring-your-own-key) settings: license acknowledgments and API keys
@@ -125,9 +128,13 @@ fun ByokSettingsTab(
         // On-device models: weights live outside the APK in the app's external files dir.
         item {
             val llmStatus by viewModel.localLlmStatus.collectAsState()
+            val downloadStatus by viewModel.modelDownloadStatus.collectAsState()
             val models = remember(configRevision) { viewModel.installedLocalModels() }
             var selected by remember(models) { mutableStateOf(models.firstOrNull()) }
             val kokoroReady = remember(configRevision) { viewModel.localKokoroReady() }
+            val freeBytes = remember(configRevision) { viewModel.localFreeSpaceBytes() }
+            var pendingDelete by remember { mutableStateOf<File?>(null) }
+            val activeDownload = downloadStatus as? ModelDownloadStatus.Downloading
 
             Column(
                 modifier = Modifier
@@ -153,13 +160,14 @@ fun ByokSettingsTab(
 
                 if (models.isEmpty()) {
                     Text(
-                        "No model installed. Copy a .gguf file to " +
+                        "No model installed yet. Download one below, or copy a .gguf file to " +
                                 "Android/data/${context.packageName}/files/models/ and reopen this tab.",
                         style = MaterialTheme.concordance.bodyDense,
                         color = TextSecondary
                     )
                 } else {
                     models.forEach { file ->
+                        val running = (llmStatus as? LocalLlmStatus.Ready)?.model == file.name
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(
                                 selected = selected?.absolutePath == file.absolutePath,
@@ -172,6 +180,11 @@ fun ByokSettingsTab(
                                     style = MaterialTheme.concordance.overline,
                                     color = TextSecondary
                                 )
+                            }
+                            if (!running) {
+                                TextButton(onClick = { pendingDelete = file }) {
+                                    Text("Delete", style = MaterialTheme.concordance.overline, color = WarningGold)
+                                }
                             }
                         }
                     }
@@ -203,6 +216,173 @@ fun ByokSettingsTab(
                         else -> TextSecondary
                     }
                 )
+
+                val decisionModelName = (llmStatus as? LocalLlmStatus.Ready)?.model
+                Text(
+                    if (decisionModelName != null) {
+                        "Decision gate: typed rules + on-device second opinion ($decisionModelName)"
+                    } else {
+                        "Decision gate: typed rules classifier (offline, always on)"
+                    },
+                    style = MaterialTheme.concordance.overline,
+                    color = TextSecondary,
+                    lineHeight = 15.sp
+                )
+
+                HorizontalDivider(color = SlateCardBorder)
+
+                Text(
+                    "ADD A MODEL",
+                    style = MaterialTheme.concordance.overline,
+                    fontWeight = FontWeight.Bold,
+                    color = ElectricCyan
+                )
+                Text(
+                    "${LocalModels.describeBytes(freeBytes)} free on this phone. " +
+                        "Downloads are checked against the publisher's SHA-256 before they are usable; " +
+                        "the app never loads a partial file.",
+                    style = MaterialTheme.concordance.overline,
+                    color = TextSecondary,
+                    lineHeight = 15.sp
+                )
+
+                LocalModelCatalog.entries.forEach { model ->
+                    val file = File(LocalModels.modelsDir(context), model.fileName)
+                    val installed = file.isFile
+                    val sizeMatches = installed && file.length() == model.sizeBytes
+                    val downloading = activeDownload?.takeIf { it.fileName == model.fileName }
+                    val failure = (downloadStatus as? ModelDownloadStatus.Failed)
+                        ?.takeIf { it.fileName == model.fileName }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                    ) {
+                        Text(
+                            model.displayName,
+                            style = MaterialTheme.concordance.bodyDense,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "${LocalModels.describeBytes(model.sizeBytes)} · ${model.license} · ${model.source}",
+                            style = MaterialTheme.concordance.overline,
+                            color = TextSecondary
+                        )
+                        Text(
+                            model.description,
+                            style = MaterialTheme.concordance.overline,
+                            color = TextMuted,
+                            lineHeight = 14.sp
+                        )
+
+                        when {
+                            downloading != null -> {
+                                LinearProgressIndicator(
+                                    progress = { downloading.fraction },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp)),
+                                    color = ElectricCyan,
+                                    trackColor = SlateCardBorder
+                                )
+                                Text(
+                                    "Downloading ${(downloading.fraction * 100).toInt()}% — " +
+                                        "${LocalModels.describeBytes(downloading.bytes)} of " +
+                                        LocalModels.describeBytes(downloading.total),
+                                    style = MaterialTheme.concordance.overline,
+                                    color = TextSecondary
+                                )
+                                OutlinedButton(onClick = { viewModel.cancelLocalModelDownload() }) {
+                                    Text("Cancel download")
+                                }
+                            }
+
+                            sizeMatches -> {
+                                Text(
+                                    "Installed · size matches",
+                                    style = MaterialTheme.concordance.overline,
+                                    color = Color(0xFF4CAF50)
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = { viewModel.verifyLocalModel(model) }) {
+                                        Text("Verify")
+                                    }
+                                    OutlinedButton(onClick = { pendingDelete = file }) {
+                                        Text("Delete")
+                                    }
+                                }
+                            }
+
+                            installed -> {
+                                Text(
+                                    "A different or incomplete file already uses this name.",
+                                    style = MaterialTheme.concordance.overline,
+                                    color = WarningGold
+                                )
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = { pendingDelete = file }) {
+                                        Text("Delete")
+                                    }
+                                    Button(
+                                        onClick = { viewModel.downloadLocalModel(model) },
+                                        enabled = activeDownload == null,
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = ElectricCyan,
+                                            contentColor = Color.Black
+                                        )
+                                    ) { Text("Download again") }
+                                }
+                            }
+
+                            else -> {
+                                Button(
+                                    onClick = { viewModel.downloadLocalModel(model) },
+                                    enabled = activeDownload == null,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = ElectricCyan,
+                                        contentColor = Color.Black
+                                    )
+                                ) { Text("Download") }
+                            }
+                        }
+
+                        failure?.let {
+                            Text(
+                                "Download failed: ${it.message}",
+                                style = MaterialTheme.concordance.overline,
+                                color = Color(0xFFE57373)
+                            )
+                        }
+                    }
+                }
+
+                pendingDelete?.let { file ->
+                    AlertDialog(
+                        onDismissRequest = { pendingDelete = null },
+                        title = { Text("Delete this model?") },
+                        text = {
+                            Text(
+                                "${file.name} will be removed from this phone. " +
+                                    "You can download it again from this screen."
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    viewModel.deleteLocalModel(file)
+                                    pendingDelete = null
+                                }
+                            ) { Text("Delete", color = Color(0xFFE57373)) }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { pendingDelete = null }) { Text("Cancel") }
+                        }
+                    )
+                }
 
                 HorizontalDivider(color = SlateCardBorder)
 

@@ -95,9 +95,13 @@ import com.example.concordance.voice.OnDeviceSpeechRecognizer
 import com.example.concordance.voice.SpeechEvent
 import com.example.concordance.voice.SpeechOutput
 import com.example.concordance.voice.SpeechSynthesizer
+import com.example.concordance.local.InstallableModel
 import com.example.concordance.local.LocalLlmService
 import com.example.concordance.local.LocalLlmStatus
 import com.example.concordance.local.LocalModels
+import com.example.concordance.local.ModelDownloadService
+import com.example.concordance.local.ModelDownloadStatus
+import com.example.concordance.local.ModelDownloader
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -848,6 +852,23 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         }
         ProvenanceRecorder.setPersist { repository.saveProvenance(it) }
         HttpJsonClient.setCache(repository.responseCache())
+        // A finished GGUF changes what the BYOK screen lists, and the operator
+        // needs to know whether the checksum held.
+        viewModelScope.launch {
+            ModelDownloadService.status.collect { status ->
+                when (status) {
+                    is ModelDownloadStatus.Installed -> {
+                        _configRevision.value += 1
+                        _uiNotice.emit("${status.displayName} installed and verified.")
+                    }
+
+                    is ModelDownloadStatus.Failed ->
+                        _uiNotice.emit("Download failed: ${status.message}")
+
+                    else -> Unit
+                }
+            }
+        }
         // Apply persisted runtime tuning to the integration layer on startup.
         ApiRotationManager.setFailureThreshold(_cbThreshold.value)
         ApiRotationManager.setCooldownMs(_cbCooldownSeconds.value * 1000L)
@@ -1552,6 +1573,10 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     private val _agentPapersBusy = MutableStateFlow(false)
     val agentPapersBusy: StateFlow<Boolean> = _agentPapersBusy.asStateFlow()
 
+    /** Why the last paper-list read failed, so the card can say it instead of "none". */
+    private val _agentPapersError = MutableStateFlow<String?>(null)
+    val agentPapersError: StateFlow<String?> = _agentPapersError.asStateFlow()
+
     private val _agentAnchors = MutableStateFlow<List<AgentAnchor>>(emptyList())
     val agentAnchors: StateFlow<List<AgentAnchor>> = _agentAnchors.asStateFlow()
 
@@ -1774,6 +1799,78 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     fun stopLocalModel() = LocalLlmService.stop(getApplication())
 
     fun localKokoroReady(): Boolean = LocalModels.kokoroReady(getApplication())
+
+    /** Live download state, shared with [ModelDownloadService]. */
+    val modelDownloadStatus: StateFlow<ModelDownloadStatus> = ModelDownloadService.status
+
+    fun localFreeSpaceBytes(): Long = LocalModels.freeSpaceBytes(getApplication())
+
+    /**
+     * Download a catalog model through the foreground service. Refuses when the
+     * remaining space cannot hold the weights plus head-room for the temp file.
+     */
+    fun downloadLocalModel(model: InstallableModel) {
+        if (modelDownloadStatus.value is ModelDownloadStatus.Downloading) {
+            agentNotice("A model download is already running.")
+            return
+        }
+        val target = java.io.File(LocalModels.modelsDir(getApplication()), model.fileName)
+        if (target.isFile && target.length() == model.sizeBytes) {
+            agentNotice("${model.displayName} is already installed. Use Verify to re-hash it.")
+            return
+        }
+        val free = LocalModels.freeSpaceBytes(getApplication())
+        val needed = model.sizeBytes + 256L * 1024 * 1024
+        if (free in 1 until needed) {
+            agentNotice(
+                "Not enough storage: ${LocalModels.describeBytes(free)} free, " +
+                    "${LocalModels.describeBytes(needed)} needed (model plus temp file)."
+            )
+            return
+        }
+        ModelDownloadService.start(getApplication(), model)
+    }
+
+    fun cancelLocalModelDownload() = ModelDownloadService.cancel(getApplication())
+
+    fun deleteLocalModel(file: java.io.File) {
+        val running = (localLlmStatus.value as? LocalLlmStatus.Ready)?.model == file.name
+        if (running) {
+            agentNotice("Stop ${file.name} before deleting it.")
+            return
+        }
+        if (LocalModels.deleteModel(getApplication(), file)) {
+            _configRevision.value += 1
+            agentNotice("Deleted ${file.name}.")
+        } else {
+            agentNotice("Could not delete ${file.name}.")
+        }
+    }
+
+    /** Re-hash an installed catalog model and report whether it matches. */
+    fun verifyLocalModel(model: InstallableModel) {
+        viewModelScope.launch {
+            val file = java.io.File(LocalModels.modelsDir(getApplication()), model.fileName)
+            if (!file.isFile) {
+                _uiNotice.emit("${model.displayName} is not installed.")
+                return@launch
+            }
+            _uiNotice.emit("Verifying ${model.fileName}…")
+            val problem = ModelDownloader().verify(file, model)
+            _uiNotice.emit(
+                if (problem == null) {
+                    "Verified ${model.fileName}: SHA-256 matches the publisher."
+                } else {
+                    "Verification failed: $problem"
+                }
+            )
+        }
+    }
+
+    /** Ask the BYOK screen to re-read the models directory. */
+    fun refreshLocalModels() {
+        _configRevision.value += 1
+    }
 
     /** Speaks a fixed line so the operator can confirm the on-device voice. */
     fun testLocalVoice() {
@@ -2011,11 +2108,21 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     fun loadAgentPaperRuns() {
         viewModelScope.launch {
             _agentPapersBusy.value = true
+            _agentPapersError.value = null
             try {
                 when (val outcome = agentClient.researchRuns(_agentConfig.value)) {
-                    is AgentOutcome.Ok -> _agentPaperRuns.value = outcome.value
-                    is AgentOutcome.Refused -> _uiNotice.emit("Paper list refused: ${outcome.reason}")
-                    is AgentOutcome.Failed -> _uiNotice.emit("Could not list papers: ${outcome.message}")
+                    is AgentOutcome.Ok -> {
+                        _agentPaperRuns.value = outcome.value
+                        _agentPapersError.value = null
+                    }
+                    is AgentOutcome.Refused -> {
+                        _agentPapersError.value = "the agent refused: ${outcome.reason}"
+                        _uiNotice.emit("Paper list refused: ${outcome.reason}")
+                    }
+                    is AgentOutcome.Failed -> {
+                        _agentPapersError.value = outcome.message
+                        _uiNotice.emit("Could not list papers: ${outcome.message}")
+                    }
                 }
             } finally {
                 _agentPapersBusy.value = false

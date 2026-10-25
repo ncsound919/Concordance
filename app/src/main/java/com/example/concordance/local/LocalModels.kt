@@ -2,6 +2,7 @@ package com.example.concordance.local
 
 import android.content.Context
 import java.io.File
+import java.util.Locale
 
 /**
  * On-device model layout.
@@ -51,8 +52,24 @@ object LocalModels {
     const val DEFAULT_VOICE_ID = 27
     const val DEFAULT_VOICE_NAME = "bm_lewis"
 
-    /** Preferred model when several are installed. */
-    private val PREFERRED_PREFIXES = listOf("Qwen3.8", "medgemma", "Qwen3.5", "Qwen3-", "gemma-4")
+    /**
+     * Preferred model when several are installed.
+     *
+     * Qwen3.5-4B is the current small tier (Qwen2.5 is retired). The order is
+     * explicit rather than family-only: adding the 0.8B light tier must not
+     * silently become the default just because its file name sorts first.
+     * Anything unrecognised sorts last.
+     */
+    private val PREFERRED_PREFIXES = listOf(
+        "Qwen3.5-4B",
+        "Qwen3.5-2B",
+        "Qwen3.5-0.8B",
+        "Qwen3.5-9B",
+        "Qwen3.5",
+        "medgemma",
+        "Qwen3-",
+        "gemma-4"
+    )
 
     fun modelsDir(context: Context): File =
         File(context.getExternalFilesDir(null) ?: context.filesDir, "models")
@@ -95,9 +112,36 @@ object LocalModels {
 
     fun runtimeReady(context: Context): Boolean = runtimeBinary(context).isFile
 
+    /** Bytes free for model weights; creates the directory so the answer is real. */
+    fun freeSpaceBytes(context: Context): Long {
+        val dir = modelsDir(context).apply { mkdirs() }
+        return dir.usableSpace
+    }
+
+    /**
+     * Delete a model from the app's model directory, plus any partial download.
+     * Refuses paths outside that directory so a bug cannot delete arbitrary files.
+     */
+    fun deleteModel(context: Context, file: File): Boolean {
+        val dir = modelsDir(context).canonicalFile
+        val target = file.canonicalFile
+        if (target.parentFile != dir || target.extension.lowercase() != "gguf") return false
+        val part = File(dir, "${target.name}.part")
+        if (part.isFile) part.delete()
+        return target.isFile && target.delete()
+    }
+
     /** Human-readable size, e.g. "2.32 GB". */
-    fun describe(file: File): String {
-        val gb = file.length() / 1_073_741_824.0
-        return if (gb >= 1.0) String.format("%.2f GB", gb) else String.format("%.0f MB", file.length() / 1_048_576.0)
+    fun describe(file: File): String = describeBytes(file.length())
+
+    /** Human-readable byte count, e.g. "2.32 GB" or "512 MB". */
+    fun describeBytes(bytes: Long): String {
+        if (bytes <= 0) return "0 MB"
+        val gb = bytes / 1_073_741_824.0
+        return if (gb >= 1.0) {
+            String.format(Locale.US, "%.2f GB", gb)
+        } else {
+            String.format(Locale.US, "%.0f MB", bytes / 1_048_576.0)
+        }
     }
 }

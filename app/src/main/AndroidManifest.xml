@@ -83,6 +83,13 @@
                 android:value="Keeps the on-device language model server alive while the app is in use" />
         </service>
 
+        <!-- On-device model downloads. dataSync keeps a multi-GB transfer alive while the
+             operator leaves the app; the file is verified before it is renamed into place. -->
+        <service
+            android:name="com.example.concordance.local.ModelDownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <!-- High-power research: delegates experiments to cloud compute. -->
         <service
             android:name="com.example.concordance.autonomy.HighPowerResearchService"

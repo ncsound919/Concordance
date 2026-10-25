@@ -85,8 +85,12 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
     val paper by viewModel.agentPaper.collectAsState()
     val paperVerification by viewModel.agentPaperVerification.collectAsState()
     val papersBusy by viewModel.agentPapersBusy.collectAsState()
+    val papersError by viewModel.agentPapersError.collectAsState()
     val pendingDecisions by viewModel.pendingDecisions.collectAsState()
     LaunchedEffect(Unit) { viewModel.loadPendingDecisions() }
+    // Show the chains the agent already wrote instead of an empty card the
+    // operator has to guess about. The read is a directory listing, not a run.
+    LaunchedEffect(Unit) { viewModel.loadAgentPaperRuns() }
     val ack by viewModel.agentUploadAck.collectAsState()
     val easyMode by viewModel.easyMode.collectAsState()
     val communityBaseUrl by viewModel.communityBaseUrl.collectAsState()
@@ -162,6 +166,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             paper = paper,
             verification = paperVerification,
             busy = papersBusy,
+            error = papersError,
             onRefresh = { viewModel.loadAgentPaperRuns() },
             onOpen = { viewModel.openAgentPaper(it) },
             onVerify = { viewModel.verifyAgentPaper(it) },
@@ -1024,6 +1029,7 @@ private fun PaperRunsCard(
     paper: AgentResearchRunDetail?,
     verification: AgentResearchVerification?,
     busy: Boolean,
+    error: String?,
     onRefresh: () -> Unit,
     onOpen: (String) -> Unit,
     onVerify: (String) -> Unit,
@@ -1061,10 +1067,21 @@ private fun PaperRunsCard(
 
         if (runs.isEmpty()) {
             Text(
-                "No paper chains listed yet. Run the research loop once, then refresh. " +
-                    "The list is a directory read on the agent, so refreshing is free.",
+                if (error != null) {
+                    "Could not list paper chains: $error"
+                } else {
+                    "No paper chains listed yet. Run the research loop once, then refresh. " +
+                        "The list is a directory read on the agent, so refreshing is free."
+                },
                 style = MaterialTheme.concordance.bodyDense,
-                color = TextSecondary,
+                color = if (error != null) VividCoral else TextSecondary,
+                lineHeight = 16.sp
+            )
+        } else if (error != null) {
+            Text(
+                "Showing the last list; refresh failed: $error",
+                style = MaterialTheme.concordance.bodyDense,
+                color = VividCoral,
                 lineHeight = 16.sp
             )
         }

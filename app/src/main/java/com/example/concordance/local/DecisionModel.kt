@@ -249,7 +249,15 @@ object DecisionModel {
             append(", brain=").append(state.brainEvents ?: "null").append("/").append(state.brainTotal ?: "null")
             append(", other=").append(state.otherEvents ?: "null").append("/").append(state.otherTotal ?: "null")
             append(", odds_ratio=").append(state.oddsRatio ?: "null")
-            append("\n\nReply exactly:\n")
+            append("\n\nTier definitions:\n")
+            REVIEW_QUESTIONS.first { it.name == "tier" }.criteria.forEach { (key, description) ->
+                append("- ").append(key).append(": ").append(description).append('\n')
+            }
+            append("Route definitions:\n")
+            REVIEW_QUESTIONS.first { it.name == "route" }.criteria.forEach { (key, description) ->
+                append("- ").append(key).append(": ").append(description).append('\n')
+            }
+            append("\nReply exactly:\n")
             append("{\"support\": <0.0-1.0>, \"tier\": \"<$allowedTiers>\", ")
             append("\"route\": \"<accept|review>\", \"confidence\": <0.0-1.0>}")
             append("\nsupport = how well the abstract backs the extraction; ")

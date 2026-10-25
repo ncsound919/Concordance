@@ -186,3 +186,54 @@ crash-reporter change; the device already held the release key state from the
   device mid-run. Font scale and landscape were not re-run this session.
 - The three oversized llama.cpp natives are absent from a cold clone
   (`NATIVE-LIBS.md`), so a runtime-complete build still needs them restored.
+
+## On-device models and paper chains (2026-10-25)
+
+Small tier is **Qwen3.5-4B Q4_K_M** (2.74 GB, no-think prompt for extraction);
+`Qwen2.5-0.5B` was removed. `LocalModels.PREFERRED_PREFIXES` now puts `Qwen3.5`
+first, so a newer 4B quant is chosen over any older file.
+
+| Check | Result |
+|---|---|
+| llama.cpp b11748 loads Qwen3.5-4B on the phone | `model loaded` / `listening on 127.0.0.1:8099`, CPU, 6 threads |
+| Extraction, ESR1 Y537S abstract | correct JSON in **10.6 s** (gene ESR1, 24/60 vs 18/60, OR 3.4, CI 1.5-7.7), no `reasoning_content` |
+| Decision gate (typed classifier) | valid JSON in **5.6 s**; after adding tier/route definitions to the prompt, tier `counts` in **1.8 s** warm |
+| Kokoro assets + sherpa JNI | `model.onnx`, `voices.bin`, `tokens.txt`, `espeak-ng-data/` and `libsherpa-onnx-jni.so` present; Agent tab reports **"Voice: Kokoro bm_lewis (on-device)"** (no "voice files missing") |
+| Agent connection | `Test connection` → *"Connected to https://tap4500--concordance-agent-fastapi-app.us-east.modal.run"* |
+| Research loop | seed ingested (`seed-20261025T091900Z-a266f5`) → **"Paper chain: 7 files written"** at `/data/research/20261025T091932Z-…` |
+| Generated papers list | after `Refresh papers`: **2 chain(s)**, timestamps, file counts, critic verdict, and `Open paper.md` renders the draft in-app |
+
+The paper list only appears after the agent is deployed with
+`app/routers/research_runs.py` and the `paper_chain.list_runs` directory scan;
+the old deployment returned no runs even though the chain existed on the volume.
+
+Decision-model note: the on-device classifier is the rules gate in
+`DecisionModel` (always on) plus the local model's second opinion when the
+llama.cpp service is running. The agent's Jev "System One" model is separate: it
+now starts inside the agent process and is reported by `GET /api/decision/jev`.
+
+## Re-test after the Qwen3.5 / installer build (2026-10-25, SM-S938U)
+
+| Check | Result |
+|---|---|
+| `adb install -r app-debug.apk` over the previous build | **Success**; existing data and keys kept |
+| Kokoro files after reinstall | `model.onnx` (325,560,556 B), `voices.bin`, `tokens.txt`, `espeak-ng-data/` all under `Android/data/com.aistudio.concordance.rkzv/files/kokoro/` |
+| Agent tab voice line | **"Voice: Kokoro bm_lewis (on-device)"** |
+| BYOK → Test voice | playout confirmed in `AudioFlinger`; Kokoro, not system TTS |
+| Local models list | only `Qwen3.5-4B-Q4_K_M.gguf` (2.55 GiB); no Qwen2.5 file on the phone |
+| Start local model | **"Ready — Qwen3.5-4B-Q4_K_M.gguf on 127.0.0.1:8080"**, decision gate switches to *typed rules + on-device second opinion* |
+| `/health` over `adb forward` | `{"status":"ok"}` |
+| Add-a-model section | Qwen3.5 4B shows *Installed · size matches* with Verify/Delete; Qwen3.5 0.8B offers Download (508 MB); 83.23 GB free |
+| Agent connection | `Connected to https://tap4500--concordance-agent-fastapi-app.us-east.modal.run. Figure OCR is not installed on the agent. 2 anchors available.` |
+| Generated papers | list loads on tab open (no button press): **2 chain(s)** (7 files each, critic `revise` and `pass`); `Open paper.md` renders the full draft |
+| Agent JEV status | `GET /api/decision/jev` → `available: true`, backend `deterministic`, tasks `mode, propose, triage, novelty, priority` |
+| Local JEV classifier | live `POST /v1/systemone` classified a ctDNA/detection-limit reason as `detection_limit` (0.571) over `underpowered` (0.381) |
+
+The old **"agent rejected the credentials (401)"** row in Recent activity is
+historical: it was recorded before the key was saved. A fresh `Test connection`
+passes with the same stored key.
+
+Downloader behaviour is covered by `ModelDownloaderTest` (6 JVM tests: verified
+download, hash mismatch, resume with `Range`, server ignoring `Range`, truncated
+body, catalog sanity). The 0.8B download was not exercised on the phone to avoid
+spending the operator's data for a redundant check.
