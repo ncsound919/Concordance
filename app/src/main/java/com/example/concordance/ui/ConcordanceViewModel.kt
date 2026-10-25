@@ -18,7 +18,10 @@ import com.example.concordance.integration.agent.AgentConfig
 import com.example.concordance.integration.agent.AgentExperiment
 import com.example.concordance.integration.agent.AgentJob
 import com.example.concordance.integration.agent.AgentRefereeReport
+import com.example.concordance.integration.agent.AgentResearchRun
+import com.example.concordance.integration.agent.AgentResearchRunDetail
 import com.example.concordance.integration.agent.AgentResearchResult
+import com.example.concordance.integration.agent.AgentResearchVerification
 import com.example.concordance.integration.agent.AgentOutcome
 import com.example.concordance.integration.agent.AgentPendingDecision
 import com.example.concordance.integration.agent.AgentSettingsStore
@@ -1536,6 +1539,19 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     private val _agentLoop = MutableStateFlow<com.example.concordance.integration.agent.AgentLoopResult?>(null)
     val agentLoop: StateFlow<com.example.concordance.integration.agent.AgentLoopResult?> = _agentLoop.asStateFlow()
 
+    /** Paper chains on the agent, and the one the operator opened. */
+    private val _agentPaperRuns = MutableStateFlow<List<AgentResearchRun>>(emptyList())
+    val agentPaperRuns: StateFlow<List<AgentResearchRun>> = _agentPaperRuns.asStateFlow()
+
+    private val _agentPaper = MutableStateFlow<AgentResearchRunDetail?>(null)
+    val agentPaper: StateFlow<AgentResearchRunDetail?> = _agentPaper.asStateFlow()
+
+    private val _agentPaperVerification = MutableStateFlow<AgentResearchVerification?>(null)
+    val agentPaperVerification: StateFlow<AgentResearchVerification?> = _agentPaperVerification.asStateFlow()
+
+    private val _agentPapersBusy = MutableStateFlow(false)
+    val agentPapersBusy: StateFlow<Boolean> = _agentPapersBusy.asStateFlow()
+
     private val _agentAnchors = MutableStateFlow<List<AgentAnchor>>(emptyList())
     val agentAnchors: StateFlow<List<AgentAnchor>> = _agentAnchors.asStateFlow()
 
@@ -1989,6 +2005,65 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     /**
+     * List the paper chains the agent has written. Read-only and unmetered: it
+     * is a directory listing, so opening this card costs nothing.
+     */
+    fun loadAgentPaperRuns() {
+        viewModelScope.launch {
+            _agentPapersBusy.value = true
+            try {
+                when (val outcome = agentClient.researchRuns(_agentConfig.value)) {
+                    is AgentOutcome.Ok -> _agentPaperRuns.value = outcome.value
+                    is AgentOutcome.Refused -> _uiNotice.emit("Paper list refused: ${outcome.reason}")
+                    is AgentOutcome.Failed -> _uiNotice.emit("Could not list papers: ${outcome.message}")
+                }
+            } finally {
+                _agentPapersBusy.value = false
+            }
+        }
+    }
+
+    /** Open one paper chain. The markdown is returned whole, not re-rendered. */
+    fun openAgentPaper(runId: String) {
+        if (runId.isBlank()) return
+        viewModelScope.launch {
+            _agentPapersBusy.value = true
+            _agentPaperVerification.value = null
+            try {
+                when (val outcome = agentClient.researchRun(_agentConfig.value, runId)) {
+                    is AgentOutcome.Ok -> {
+                        _agentPaper.value = outcome.value
+                        if (outcome.value.paper.isBlank()) {
+                            _uiNotice.emit("Run $runId has no paper.md; other chain files are available.")
+                        }
+                    }
+                    is AgentOutcome.Refused -> _uiNotice.emit("Paper refused: ${outcome.reason}")
+                    is AgentOutcome.Failed -> _uiNotice.emit("Could not read paper: ${outcome.message}")
+                }
+            } finally {
+                _agentPapersBusy.value = false
+            }
+        }
+    }
+
+    /** Re-hash the opened chain and check its signed receipt. */
+    fun verifyAgentPaper(runId: String) {
+        if (runId.isBlank()) return
+        viewModelScope.launch {
+            when (val outcome = agentClient.verifyResearchRun(_agentConfig.value, runId)) {
+                is AgentOutcome.Ok -> _agentPaperVerification.value = outcome.value
+                is AgentOutcome.Refused -> _uiNotice.emit("Verification refused: ${outcome.reason}")
+                is AgentOutcome.Failed -> _uiNotice.emit("Could not verify paper: ${outcome.message}")
+            }
+        }
+    }
+
+    fun closeAgentPaper() {
+        _agentPaper.value = null
+        _agentPaperVerification.value = null
+    }
+
+    /**
      * List the deployed ecosystem APIs, and with [check] ask the agent to probe each
      * one. The probe is metered on the agent, so the answer is whether it answers now,
      * not whether a URL is configured.
@@ -2039,6 +2114,10 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
                 when (val outcome = agentClient.researchLoop(_agentConfig.value, goal)) {
                     is AgentOutcome.Ok -> {
                         _agentLoop.value = outcome.value
+                        // The loop writes a paper chain on the agent. Refresh the
+                        // list immediately so the result is not a path with no
+                        // way to read it.
+                        loadAgentPaperRuns()
                         _uiNotice.emit("Loop stopped: ${outcome.value.stopReason}")
                     }
                     is AgentOutcome.Refused -> _uiNotice.emit("Loop refused: ${outcome.reason}")

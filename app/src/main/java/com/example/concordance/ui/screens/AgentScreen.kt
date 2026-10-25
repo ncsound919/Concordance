@@ -41,7 +41,10 @@ import com.example.concordance.integration.agent.AgentFleetService
 import com.example.concordance.integration.agent.AgentLoopResult
 import com.example.concordance.integration.agent.AgentPendingDecision
 import com.example.concordance.integration.agent.AgentRefereeReport
+import com.example.concordance.integration.agent.AgentResearchRun
+import com.example.concordance.integration.agent.AgentResearchRunDetail
 import com.example.concordance.integration.agent.AgentResearchResult
+import com.example.concordance.integration.agent.AgentResearchVerification
 import com.example.concordance.integration.agent.AgentUpload
 import com.example.concordance.integration.agent.AgentUploads
 import com.example.concordance.integration.agent.EasyModeView
@@ -78,6 +81,10 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
     val upload by viewModel.agentUpload.collectAsState()
     val transcript by viewModel.agentTranscript.collectAsState()
     val researchResult by viewModel.agentResearchResult.collectAsState()
+    val paperRuns by viewModel.agentPaperRuns.collectAsState()
+    val paper by viewModel.agentPaper.collectAsState()
+    val paperVerification by viewModel.agentPaperVerification.collectAsState()
+    val papersBusy by viewModel.agentPapersBusy.collectAsState()
     val pendingDecisions by viewModel.pendingDecisions.collectAsState()
     LaunchedEffect(Unit) { viewModel.loadPendingDecisions() }
     val ack by viewModel.agentUploadAck.collectAsState()
@@ -148,6 +155,17 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             busy = busy,
             onCheck = { viewModel.loadAgentFleet(true) },
             onRunLoop = { viewModel.runAgentResearchLoop(researchSeed.orEmpty()) },
+        )
+
+        PaperRunsCard(
+            runs = paperRuns,
+            paper = paper,
+            verification = paperVerification,
+            busy = papersBusy,
+            onRefresh = { viewModel.loadAgentPaperRuns() },
+            onOpen = { viewModel.openAgentPaper(it) },
+            onVerify = { viewModel.verifyAgentPaper(it) },
+            onClose = { viewModel.closeAgentPaper() },
         )
 
         if (pendingDecisions.isNotEmpty()) {
@@ -991,6 +1009,147 @@ private fun UploadedFigureCard(upload: com.example.concordance.integration.agent
         Text("sha256 ${upload.uploadSha256.take(24)}...", style = MaterialTheme.concordance.monoId, color = TextSecondary, fontFamily = FontFamily.Monospace)
         if (upload.disclaimer.isNotBlank()) {
             Text(upload.disclaimer, style = MaterialTheme.concordance.monoId, color = TextSecondary, lineHeight = 14.sp)
+        }
+    }
+}
+
+/**
+ * The paper chains the agent has written, with the server-side directory and
+ * the markdown itself. A run that cannot be read is not a result: this card
+ * is what turns `paper.dir` into something the operator can actually see.
+ */
+@Composable
+private fun PaperRunsCard(
+    runs: List<AgentResearchRun>,
+    paper: AgentResearchRunDetail?,
+    verification: AgentResearchVerification?,
+    busy: Boolean,
+    onRefresh: () -> Unit,
+    onOpen: (String) -> Unit,
+    onVerify: (String) -> Unit,
+    onClose: () -> Unit,
+) {
+    AppSectionCard(title = "Generated papers") {
+        Text(
+            "Every research run writes a signed chain on the agent (idea, hypothesis, " +
+                "experiment plan, results, analysis, paper). This reads that chain back; " +
+                "nothing here is copied to a managed platform.",
+            style = MaterialTheme.concordance.bodyDense,
+            color = TextSecondary,
+            lineHeight = 16.sp
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Button(
+                onClick = onRefresh,
+                enabled = !busy,
+                colors = ButtonDefaults.buttonColors(containerColor = SlateCard, contentColor = TextPrimary)
+            ) {
+                if (busy) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        strokeWidth = 2.dp,
+                        color = TextPrimary
+                    )
+                    Spacer(Modifier.width(6.dp))
+                }
+                Text("Refresh papers", style = MaterialTheme.concordance.buttonSmall)
+            }
+            if (runs.isNotEmpty()) {
+                Badge(text = "${runs.size} chain(s)", color = NeonEmerald)
+            }
+        }
+
+        if (runs.isEmpty()) {
+            Text(
+                "No paper chains listed yet. Run the research loop once, then refresh. " +
+                    "The list is a directory read on the agent, so refreshing is free.",
+                style = MaterialTheme.concordance.bodyDense,
+                color = TextSecondary,
+                lineHeight = 16.sp
+            )
+        }
+
+        runs.take(8).forEach { run ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(SlateCardElevated, RoundedCornerShape(8.dp))
+                    .border(1.dp, SlateCardBorder, RoundedCornerShape(8.dp))
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    run.query.ifBlank { run.runId },
+                    style = MaterialTheme.concordance.bodyDense,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 16.sp
+                )
+                Text(
+                    "${run.createdAt.ifBlank { "unknown date" }} · ${run.artifacts} files · " +
+                        "critic ${run.criticVerdict.ifBlank { "unknown" }}",
+                    style = MaterialTheme.concordance.monoId,
+                    color = TextSecondary
+                )
+                if (run.dir.isNotBlank()) {
+                    Text("Written to ${run.dir}", style = MaterialTheme.concordance.monoId, color = TextSecondary)
+                }
+                TextButton(onClick = { onOpen(run.runId) }, enabled = !busy) {
+                    Text("Open paper.md", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
+                }
+            }
+        }
+
+        paper?.let { detail ->
+            HorizontalDivider(color = SlateCardBorder)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Paper ${detail.runId}",
+                    style = MaterialTheme.concordance.monoId,
+                    color = ElectricCyan,
+                    fontWeight = FontWeight.Bold
+                )
+                TextButton(onClick = onClose) { Text("Close", style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
+            }
+            if (detail.files.isNotEmpty()) {
+                Text("Files: ${detail.files.keys.sorted().joinToString(", ")}", style = MaterialTheme.concordance.monoId, color = TextSecondary)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { onVerify(detail.runId) }) {
+                    Text("Verify hashes & receipt", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
+                }
+                verification?.let { v ->
+                    Badge(
+                        text = if (v.ok) "chain verified" else "verification failed",
+                        color = if (v.ok) NeonEmerald else VividCoral
+                    )
+                    if (!v.ok && v.mismatched.isNotEmpty()) {
+                        Text(v.mismatched.joinToString("; "), style = MaterialTheme.concordance.monoId, color = VividCoral)
+                    }
+                }
+            }
+            if (detail.paper.isBlank()) {
+                Text(
+                    "This chain has no paper.md. The other files are still readable on the agent.",
+                    style = MaterialTheme.concordance.bodyDense,
+                    color = WarningAmber
+                )
+            } else {
+                Text(
+                    detail.paper,
+                    style = MaterialTheme.concordance.monoId,
+                    color = TextPrimary,
+                    lineHeight = 16.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MidnightDeep, RoundedCornerShape(6.dp))
+                        .padding(10.dp)
+                )
+            }
         }
     }
 }

@@ -461,6 +461,57 @@ class AgentClientTest {
         assertEquals("/api/research/loop", server.takeRequest().path)
     }
 
+    @Test
+    fun `paper runs list the server-side directory and artifact count`() = runBlocking {
+        enqueue(
+            200,
+            """
+            [{"run_id":"20261025T040000Z-egfr-ab12cd","query":"EGFR resistance",
+              "created_at":"2026-10-25T04:00:00+00:00","critic_verdict":"pass",
+              "artifacts":7,"dir":"/data/research/20261025T040000Z-egfr-ab12cd"}]
+            """.trimIndent()
+        )
+        val runs = (client.researchRuns(config()) as AgentOutcome.Ok).value
+        assertEquals(1, runs.size)
+        assertEquals("EGFR resistance", runs[0].query)
+        assertEquals(7, runs[0].artifacts)
+        assertEquals("/data/research/20261025T040000Z-egfr-ab12cd", runs[0].dir)
+        assertEquals("/api/research/runs?limit=25", server.takeRequest().path)
+    }
+
+    @Test
+    fun `a paper run carries paper dot markdown and its chain files`() = runBlocking {
+        enqueue(
+            200,
+            """
+            {"run_id":"run-1","files":{"paper.md":"# Research protocol\n\nDraft.",
+              "idea.md":"# Idea","results.json":"{}"},
+             "manifest":{"run_id":"run-1","artifacts":[{"name":"paper.md"}]}}
+            """.trimIndent()
+        )
+        val detail = (client.researchRun(config(), "run-1") as AgentOutcome.Ok).value
+        assertEquals("run-1", detail.runId)
+        assertTrue(detail.paper.startsWith("# Research protocol"))
+        assertEquals(setOf("paper.md", "idea.md", "results.json"), detail.files.keys)
+        assertTrue(detail.manifestJson.contains("\"run_id\":\"run-1\""))
+        assertEquals("/api/research/runs/run-1", server.takeRequest().path)
+    }
+
+    @Test
+    fun `paper verification exposes a failed receipt instead of throwing`() = runBlocking {
+        enqueue(
+            200,
+            """{"ok":false,"mismatched":["paper.md: hash mismatch"],
+               "receipt_ok":false,"receipt_reason":"signature mismatch"}""".trimIndent()
+        )
+        val result = (client.verifyResearchRun(config(), "run-1") as AgentOutcome.Ok).value
+        assertFalse(result.ok)
+        assertEquals(listOf("paper.md: hash mismatch"), result.mismatched)
+        assertFalse(result.receiptOk)
+        assertEquals("signature mismatch", result.receiptReason)
+        assertEquals("/api/research/runs/run-1/verify", server.takeRequest().path)
+    }
+
     private companion object {
         val EXPLAIN_PAYLOAD = """
         {"mode":"plain","headline":"Moderate signal",
