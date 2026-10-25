@@ -3,6 +3,7 @@
 import com.example.concordance.integration.api.Provenance
 import com.example.concordance.integration.api.ProvenanceRecorder
 import com.example.concordance.integration.rotation.LicenseClass
+import com.example.concordance.telemetry.EcosystemTelemetry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -13,6 +14,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 /**
@@ -280,6 +282,61 @@ class AgentClient(
                 bestGrade = grade?.optString("grade")?.takeIf { it.isNotBlank() },
                 executed = best?.optJSONArray("executed")?.length() ?: 0,
                 journal = root.optString("journal"),
+            )
+        }
+    }
+
+    /** The paper chains the agent has written, newest first. */
+    suspend fun researchRuns(config: AgentConfig, limit: Int = 25): AgentOutcome<List<AgentResearchRun>> =
+        parseBody(
+            call(config, "GET", "/api/research/runs?limit=${limit.coerceIn(1, 200)}", null, "research-runs"),
+            "research-runs",
+        ) { text ->
+            val array = JSONArray(text)
+            (0 until array.length()).map { i ->
+                val o = array.optJSONObject(i) ?: JSONObject()
+                AgentResearchRun(
+                    runId = o.optString("run_id"),
+                    query = o.optString("query"),
+                    createdAt = o.optString("created_at"),
+                    criticVerdict = o.optString("critic_verdict"),
+                    artifacts = o.optInt("artifacts", 0),
+                    dir = o.optString("dir"),
+                )
+            }
+        }
+
+    /** Read one paper chain: every chain file, including `paper.md`. */
+    suspend fun researchRun(config: AgentConfig, runId: String): AgentOutcome<AgentResearchRunDetail> {
+        val safe = URLEncoder.encode(runId, "UTF-8")
+        return parseBody(call(config, "GET", "/api/research/runs/$safe", null, "research-run:$runId"), "research-run") { text ->
+            val root = JSONObject(text)
+            val files = mutableMapOf<String, String>()
+            root.optJSONObject("files")?.let { obj ->
+                obj.keys().forEach { key -> files[key] = obj.optString(key) }
+            }
+            AgentResearchRunDetail(
+                runId = root.optString("run_id", runId),
+                files = files,
+                manifestJson = root.optJSONObject("manifest")?.toString().orEmpty(),
+            )
+        }
+    }
+
+    /** Re-hash the paper chain and verify its signed receipt. */
+    suspend fun verifyResearchRun(config: AgentConfig, runId: String): AgentOutcome<AgentResearchVerification> {
+        val safe = URLEncoder.encode(runId, "UTF-8")
+        return parseBody(call(config, "GET", "/api/research/runs/$safe/verify", null, "research-verify:$runId"), "research-verify") { text ->
+            val root = JSONObject(text)
+            val mismatched = mutableListOf<String>()
+            root.optJSONArray("mismatched")?.let { array ->
+                for (i in 0 until array.length()) mismatched.add(array.optString(i))
+            }
+            AgentResearchVerification(
+                ok = root.optBoolean("ok", false),
+                mismatched = mismatched,
+                receiptOk = root.optBoolean("receipt_ok", false),
+                receiptReason = root.optString("receipt_reason"),
             )
         }
     }
@@ -613,6 +670,21 @@ class AgentClient(
                 "Cannot reach the agent at ${config.normalizedBaseUrl} " +
                     "(${e.javaClass.simpleName}). Is it running?"
             }
+            // The failure is a fact worth recording, but it must not change
+            // the result the clinician sees: record on a daemon thread first.
+            EcosystemTelemetry.record(
+                kind = "agent.call",
+                subjectKind = "agent-endpoint",
+                subjectId = label,
+                status = "error",
+                severity = "error",
+                durationMs = System.currentTimeMillis() - start,
+                props = mapOf(
+                    "method" to method,
+                    "path" to path,
+                    "reason" to e.javaClass.simpleName
+                )
+            )
             return AgentOutcome.Failed(reason)
         }
 
@@ -630,7 +702,7 @@ class AgentClient(
             )
         )
 
-        return when {
+        val outcome = when {
             status in 200..299 -> AgentOutcome.Ok(text, status)
             status == 401 -> AgentOutcome.Failed("The agent rejected the credentials (401). Check the API key.", status)
             status == 403 -> AgentOutcome.Failed("This key lacks the required role (403).", status)
@@ -642,6 +714,27 @@ class AgentClient(
             status in 500..599 -> AgentOutcome.Failed(detailOr(text, "The agent failed ($status)."), status)
             else -> AgentOutcome.Failed(detailOr(text, "Unexpected response ($status)."), status)
         }
+
+        // One event per agent call. The body never enters the envelope: only
+        // the endpoint label, method, status and elapsed time do.
+        EcosystemTelemetry.record(
+            kind = "agent.call",
+            subjectKind = "agent-endpoint",
+            subjectId = label,
+            status = when (outcome) {
+                is AgentOutcome.Ok -> "ok"
+                is AgentOutcome.Refused -> "denied"
+                is AgentOutcome.Failed -> "error"
+            },
+            severity = if (outcome is AgentOutcome.Failed) "warn" else "info",
+            durationMs = System.currentTimeMillis() - start,
+            props = mapOf(
+                "method" to method,
+                "path" to path,
+                "http_status" to status
+            )
+        )
+        return outcome
     }
 
     private fun detailOr(body: String, fallback: String): String =

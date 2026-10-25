@@ -250,3 +250,38 @@ data class AgentLoopResult(
     val executed: Int,
     val journal: String
 )
+
+/**
+ * One paper chain written by a research run (`GET /api/research/runs`).
+ *
+ * `dir` is the server-side path the agent wrote to. It is shown to the operator
+ * because "where did the paper go?" must have an answer even when the phone
+ * only receives the rendered markdown.
+ */
+data class AgentResearchRun(
+    val runId: String,
+    val query: String,
+    val createdAt: String,
+    val criticVerdict: String,
+    val artifacts: Int,
+    val dir: String
+)
+
+/** The readable files of one paper chain plus its signed manifest. */
+data class AgentResearchRunDetail(
+    val runId: String,
+    val files: Map<String, String>,
+    val manifestJson: String
+) {
+    val paper: String get() = files["paper.md"].orEmpty()
+    val paperOutline: String get() = files["paper_outline.md"].orEmpty()
+    val analysis: String get() = files["analysis.md"].orEmpty()
+}
+
+/** Integrity answer from `GET /api/research/runs/{id}/verify`. */
+data class AgentResearchVerification(
+    val ok: Boolean,
+    val mismatched: List<String>,
+    val receiptOk: Boolean,
+    val receiptReason: String
+)

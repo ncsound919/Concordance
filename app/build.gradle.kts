@@ -25,6 +25,18 @@ android {
     ndk { abiFilters += listOf("arm64-v8a") }
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+    // Sieve telemetry ingest. Empty by default: a build must not pretend to have
+    // a sink. Override with -PsieveTelemetryUrl=... or SIEVE_URL. Point this at
+    // the rate-limited edge ingest, never at a host holding a read-capable key.
+    val sieveTelemetryUrl = (project.findProperty("sieveTelemetryUrl") as String?)
+      ?: System.getenv("SIEVE_URL")
+      ?: ""
+    buildConfigField(
+      "String",
+      "SIEVE_TELEMETRY_URL",
+      "\"${sieveTelemetryUrl.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+    )
   }
 
   // Native runtimes must be extracted from the APK: Android only grants execute permission
