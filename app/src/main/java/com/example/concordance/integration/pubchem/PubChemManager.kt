@@ -2,11 +2,17 @@ package com.example.concordance.integration.pubchem
 
 import com.example.concordance.integration.rotation.ApiRotationManager
 import com.example.concordance.integration.rotation.ProviderCategory
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.json.JSONObject
+import java.net.URLEncoder
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 data class PubChemCompound(
     val cid: Long,
@@ -116,15 +122,81 @@ object PubChemManager {
         }
     }
 
-    suspend fun queryPubChemPugRest(compoundName: String): PubChemCompound? {
-        val provider = ApiRotationManager.getNextProvider(ProviderCategory.BIOCHEM_COMPOUNDS)
-        _isSearching.value = true
-        val start = System.currentTimeMillis()
-        delay(400) // PubChem PUG REST simulation
+    private val http = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(15, TimeUnit.SECONDS)
+        .build()
 
-        val found = searchCompounds(compoundName).firstOrNull() ?: _compounds.value.first()
-        ApiRotationManager.recordSuccess(provider.id, System.currentTimeMillis() - start)
-        _isSearching.value = false
-        return found
+    /**
+     * Real PUG-REST lookup. Curated fields (target, mechanism, BBB note) are kept
+     * when the CID is already in the bench; compounds that are new to the app are
+     * added to the list with only the fields PubChem actually returns.
+     */
+    suspend fun queryPubChemPugRest(compoundName: String): PubChemCompound? = withContext(Dispatchers.IO) {
+        val query = compoundName.trim()
+        if (query.isEmpty()) return@withContext null
+
+        val provider = ApiRotationManager.getNextProvider(ProviderCategory.BIOCHEM_COMPOUNDS)
+        val start = System.currentTimeMillis()
+        _isSearching.value = true
+        try {
+            val encoded = URLEncoder.encode(query, "UTF-8")
+            val request = Request.Builder()
+                .url(
+                    "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/" +
+                        "$encoded/property/MolecularFormula,MolecularWeight,IUPACName/JSON"
+                )
+                .header("User-Agent", "Concordance/1.0.1 (research tool; contact: ncsound919)")
+                .build()
+
+            http.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val body = response.body?.string() ?: return@withContext null
+                val properties = JSONObject(body)
+                    .getJSONObject("PropertyTable")
+                    .getJSONArray("Properties")
+                    .getJSONObject(0)
+
+                val cid = properties.optLong("CID")
+                if (cid <= 0L) return@withContext null
+                val formula = properties.optString("MolecularFormula")
+                val weight = properties.optDouble("MolecularWeight", 0.0)
+                val iupac = properties.optString("IUPACName")
+                val curated = _compounds.value.firstOrNull { it.cid == cid }
+
+                val compound = if (curated != null) {
+                    curated.copy(
+                        molecularFormula = formula.ifBlank { curated.molecularFormula },
+                        molecularWeight = if (weight > 0.0) weight else curated.molecularWeight,
+                        iupacName = iupac.ifBlank { curated.iupacName }
+                    )
+                } else {
+                    PubChemCompound(
+                        cid = cid,
+                        name = query,
+                        synonyms = emptyList(),
+                        molecularFormula = formula,
+                        molecularWeight = weight,
+                        iupacName = iupac,
+                        targetGene = "",
+                        drugClass = "PubChem record",
+                        mechanism = "",
+                        bbbPermeability = "Not characterised in this app",
+                        associatedMutations = emptyList(),
+                        pubchemUrl = "https://pubchem.ncbi.nlm.nih.gov/compound/$cid"
+                    )
+                }
+
+                if (curated == null) {
+                    _compounds.value = listOf(compound) + _compounds.value
+                }
+                ApiRotationManager.recordSuccess(provider.id, System.currentTimeMillis() - start)
+                return@withContext compound
+            }
+        } catch (_: Exception) {
+            return@withContext null
+        } finally {
+            _isSearching.value = false
+        }
     }
 }

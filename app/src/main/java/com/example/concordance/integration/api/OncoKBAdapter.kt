@@ -48,7 +48,12 @@ object OncoKBAdapter : IntegrationAdapter {
      * license is acknowledged, regardless of token.
      */
     suspend fun fetchLevels(keys: KeyStore, licenses: LicenseStore): List<NormalizedRecord> {
-        if (IntegrationGate.evaluate(descriptor, keys, licenses) !is GateResult.Allowed) return emptyList()
+        // The levels endpoint is public, so it needs the licence acknowledged
+        // but not a key. `IntegrationGate` asks for a key because the
+        // descriptor is a TOKEN provider, so the key check is made here rather
+        // than by the shared gate.
+        val gate = IntegrationGate.evaluate(descriptor, keys, licenses)
+        if (gate !is GateResult.Allowed && gate !is GateResult.NeedsKey) return emptyList()
         val resp = HttpJsonClient.getJson(
             providerId = descriptor.id,
             url = "$BASE/levels",

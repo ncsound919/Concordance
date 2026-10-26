@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import com.example.NavigationDestination
 import com.example.ui.theme.ClinicalTeal
 import com.example.ui.theme.ElectricCyan
+import com.example.ui.theme.LocalSkin
 import com.example.ui.theme.MidnightDeep
 import com.example.ui.theme.SlateCard
 import com.example.ui.theme.SlateCardBorder
@@ -67,7 +69,9 @@ import com.example.ui.theme.SlateCardElevated
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.ThemeMode
+import com.example.ui.theme.blueprintGrid
 import com.example.ui.theme.concordance
+import com.example.ui.theme.rememberBrandBrush
 
 /**
  * The app shell: top bar, bottom navigation (phones) or navigation rail
@@ -85,6 +89,7 @@ fun ConcordanceScaffold(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     onCycleTheme: () -> Unit = {},
+    onOpenSkinPicker: () -> Unit = {},
     onInfo: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable () -> Unit,
@@ -94,6 +99,10 @@ fun ConcordanceScaffold(
     // bar, so the height matters as much as the width.
     val configuration = LocalConfiguration.current
     val useRail = configuration.screenWidthDp >= 600 && configuration.screenHeightDp >= 480
+    val skin = LocalSkin
+    // Layered skins tint the selected destination; the website's flat
+    // treatment uses a plain raised surface instead.
+    val indicatorColor = if (skin.layered) ElectricCyan.copy(alpha = 0.14f) else SlateCardElevated
 
     val themeIcon: ImageVector = when (themeMode) {
         ThemeMode.SYSTEM -> Icons.Default.BrightnessAuto
@@ -142,14 +151,21 @@ fun ConcordanceScaffold(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(ElectricCyan.copy(alpha = 0.2f))
-                                .border(1.dp, ElectricCyan, RoundedCornerShape(6.dp))
+                                .then(
+                                    if (skin.layered) {
+                                        Modifier.background(rememberBrandBrush())
+                                    } else {
+                                        Modifier
+                                            .background(ElectricCyan.copy(alpha = 0.12f))
+                                            .border(1.dp, ElectricCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                                    }
+                                )
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 text = "v0.1",
                                 style = MaterialTheme.concordance.chip,
-                                color = ElectricCyan,
+                                color = if (skin.layered) MidnightDeep else ElectricCyan,
                             )
                         }
                         Column {
@@ -174,6 +190,13 @@ fun ConcordanceScaffold(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onOpenSkinPicker) {
+                        Icon(
+                            imageVector = Icons.Default.Palette,
+                            contentDescription = "Change the app's appearance",
+                            tint = ClinicalTeal,
+                        )
+                    }
                     IconButton(onClick = onCycleTheme) {
                         Icon(themeIcon, contentDescription = themeLabel, tint = ClinicalTeal)
                     }
@@ -233,7 +256,7 @@ fun ConcordanceScaffold(
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = ElectricCyan,
                                 selectedTextColor = ElectricCyan,
-                                indicatorColor = SlateCardElevated,
+                                indicatorColor = indicatorColor,
                             ),
                         )
                     }
@@ -286,7 +309,7 @@ fun ConcordanceScaffold(
                                 colors = NavigationRailItemDefaults.colors(
                                     selectedIconColor = ElectricCyan,
                                     selectedTextColor = ElectricCyan,
-                                    indicatorColor = SlateCardElevated,
+                                    indicatorColor = indicatorColor,
                                 ),
                             )
                         }
@@ -314,7 +337,7 @@ fun ConcordanceScaffold(
                                 colors = NavigationRailItemDefaults.colors(
                                     selectedIconColor = ElectricCyan,
                                     selectedTextColor = ElectricCyan,
-                                    indicatorColor = SlateCardElevated,
+                                    indicatorColor = indicatorColor,
                                 ),
                             )
                         }
@@ -328,7 +351,14 @@ fun ConcordanceScaffold(
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .weight(1f),
+                    .weight(1f)
+                    .then(
+                        if (skin.blueprintBackdrop) {
+                            Modifier.blueprintGrid(ElectricCyan.copy(alpha = 0.12f))
+                        } else {
+                            Modifier
+                        }
+                    ),
             ) {
                 content()
             }

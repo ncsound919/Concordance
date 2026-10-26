@@ -34,7 +34,11 @@ import com.example.concordance.integration.knowledge.IndraContradictions
 import com.example.concordance.integration.knowledge.IndraKnowledge
 import com.example.concordance.integration.knowledge.IndraResult
 import com.example.concordance.integration.community.CommunityPublisher
+import com.example.concordance.integration.supabase.PostgRestClient
 import com.example.concordance.integration.supabase.SupabaseAuth
+import com.example.concordance.integration.supabase.SupabaseSyncManager
+import com.example.concordance.integration.supabase.SyncConflict
+import com.example.concordance.integration.supabase.SyncConflictBus
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import com.example.concordance.integration.api.CohortStudy
 import com.example.concordance.integration.api.CuratedVariantEvidence
@@ -1444,6 +1448,8 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
             val res = com.example.concordance.integration.pubchem.PubChemManager.queryPubChemPugRest(name)
             if (res != null) {
                 _uiNotice.emit("PubChem: Retrieved ${res.name} (CID: ${res.cid}, Formula: ${res.molecularFormula})")
+            } else {
+                _uiNotice.emit("PubChem returned no record for '$name'. Check the spelling or try a CID.")
             }
         }
     }
@@ -1691,6 +1697,30 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _communityPublishing = MutableStateFlow(false)
     val communityPublishing: StateFlow<Boolean> = _communityPublishing.asStateFlow()
+
+    // ---- Sync conflicts (phone vs server divergence) ----
+    private val supabaseSyncManager by lazy {
+        SupabaseSyncManager(
+            supabaseAuth,
+            PostgRestClient(supabaseAuth),
+            ConcordanceDatabase.getDatabase(getApplication())
+        )
+    }
+    val syncConflicts = SyncConflictBus.conflicts
+
+    fun clearSyncConflicts() = SyncConflictBus.clear()
+
+    /**
+     * Record the operator's choice and apply it to the local/server records.
+     * The bus drives the UI banner; the manager does the data mutation on the
+     * worker's own dispatcher.
+     */
+    fun resolveSyncConflict(conflict: SyncConflict, resolution: String) {
+        SyncConflictBus.resolve(conflict, resolution)
+        viewModelScope.launch {
+            supabaseSyncManager.resolveConflict(conflict.entityType, conflict.entityId, resolution)
+        }
+    }
 
     /**
      * Bumped after [importConfigFromJson] so settings screens re-read the keystore

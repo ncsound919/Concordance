@@ -307,13 +307,6 @@ fun AsyncJobQueueTab(
                         Text("Check & Recover Stuck", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                     }
 
-                    OutlinedButton(
-                        onClick = { viewModel.simulateStuckTask() },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Simulate Stuck (>5m)", style = MaterialTheme.concordance.buttonSmall)
-                    }
                 }
 
                 if (stuckLogs.isNotEmpty()) {

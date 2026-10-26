@@ -473,7 +473,7 @@ fun IntegrationsScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = "NCBI PUBCHEM PUG-REST BIOCHEMISTRY ENGINE",
+                                text = "NCBI PUBCHEM · CURATED BENCH + PUG-REST LOOKUP",
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
@@ -506,10 +506,28 @@ fun IntegrationsScreen(
 
                     if (filteredCompounds.isEmpty()) {
                         item {
-                            EmptyState(
-                                title = "No compounds found",
-                                message = "Search a gene, mutation or compound name to query PubChem.",
-                            )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                EmptyState(
+                                    title = "No compound in the curated bench",
+                                    message = "Look it up live in PubChem, or search an ESR1 compound, gene or mutation above.",
+                                )
+                                if (searchQuery.isNotBlank()) {
+                                    Button(
+                                        onClick = { viewModel.queryPubChem(searchQuery) },
+                                        colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(14.dp))
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            "Look up \"${searchQuery.take(32)}\" on PubChem",
+                                            style = MaterialTheme.concordance.buttonSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -665,32 +683,11 @@ fun IntegrationsScreen(
                                 color = TextSecondary
                             )
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Button(
-                                    onClick = { viewModel.runKagglePermutationTest() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(Icons.Default.Terminal, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("10k Permutation Test", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
-                                }
-
-                                Button(
-                                    onClick = { viewModel.runKaggleBootstrapCI() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = ClinicalTeal, contentColor = MidnightDeep),
-                                    shape = RoundedCornerShape(8.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Icon(Icons.Default.Memory, contentDescription = null, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("1k Bootstrap CI", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold)
-                                }
-                            }
+                            Text(
+                                text = "Kernel submission is not enabled in this build: no Kaggle credentials are wired, so the app submits nothing. Run the permutation and bootstrap checks locally instead.",
+                                style = MaterialTheme.concordance.bodyDense,
+                                color = WarningAmber
+                            )
                         }
                     }
 

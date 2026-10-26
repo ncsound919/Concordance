@@ -109,6 +109,20 @@ object ApiRotationManager {
             avgLatencyMs = 195
         ),
         ApiProvider(
+            id = "unpaywall_api",
+            name = "Unpaywall (OA locations)",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.unpaywall.org/v2",
+            avgLatencyMs = 170
+        ),
+        ApiProvider(
+            id = "biorxiv_api",
+            name = "bioRxiv / medRxiv Preprints",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.biorxiv.org",
+            avgLatencyMs = 230
+        ),
+        ApiProvider(
             id = "openalex_api",
             name = "OpenAlex Global Research Index",
             category = ProviderCategory.LITERATURE,
@@ -116,11 +130,53 @@ object ApiRotationManager {
             avgLatencyMs = 220
         ),
         ApiProvider(
+            id = "pubpeer_api",
+            name = "PubPeer Post-Publication Review",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://pubpeer.com/api/v1",
+            avgLatencyMs = 210
+        ),
+        ApiProvider(
+            id = "osf_api",
+            name = "Open Science Framework (OSF)",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.osf.io/v2",
+            avgLatencyMs = 230
+        ),
+        ApiProvider(
+            id = "figshare_api",
+            name = "Figshare",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.figshare.com/v2",
+            avgLatencyMs = 235
+        ),
+        ApiProvider(
+            id = "zotero_api",
+            name = "Zotero Web API",
+            category = ProviderCategory.LITERATURE,
+            baseUrl = "https://api.zotero.org",
+            avgLatencyMs = 225
+        ),
+        ApiProvider(
             id = "pubchem_pug",
             name = "NCBI PubChem PUG-REST API",
             category = ProviderCategory.BIOCHEM_COMPOUNDS,
             baseUrl = "https://pubchem.ncbi.nlm.nih.gov/rest/pug",
             avgLatencyMs = 260
+        ),
+        ApiProvider(
+            id = "chembl_api",
+            name = "ChEMBL Drug Targets (EBI)",
+            category = ProviderCategory.BIOCHEM_COMPOUNDS,
+            baseUrl = "https://www.ebi.ac.uk/chembl/api/data",
+            avgLatencyMs = 240
+        ),
+        ApiProvider(
+            id = "uniprot_api",
+            name = "UniProt Knowledge Base",
+            category = ProviderCategory.BIOCHEM_COMPOUNDS,
+            baseUrl = "https://rest.uniprot.org",
+            avgLatencyMs = 245
         ),
         ApiProvider(
             id = "clinical_trials",
@@ -142,6 +198,20 @@ object ApiRotationManager {
             category = ProviderCategory.VARIANT_EVIDENCE,
             baseUrl = "https://www.cbioportal.org/api",
             avgLatencyMs = 265
+        ),
+        ApiProvider(
+            id = "gnomad_api",
+            name = "gnomAD Variant Frequencies (GraphQL)",
+            category = ProviderCategory.VARIANT_EVIDENCE,
+            baseUrl = "https://gnomad.broadinstitute.org/api",
+            avgLatencyMs = 310
+        ),
+        ApiProvider(
+            id = "gdc_api",
+            name = "NCI Genomic Data Commons REST API",
+            category = ProviderCategory.VARIANT_EVIDENCE,
+            baseUrl = "https://api.gdc.cancer.gov",
+            avgLatencyMs = 280
         ),
         ApiProvider(
             id = "oncokb_api",

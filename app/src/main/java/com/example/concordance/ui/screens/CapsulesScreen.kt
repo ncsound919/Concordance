@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.example.concordance.integration.api.Provenance
 import com.example.concordance.integration.aws.AwsCloudManager
 import com.example.concordance.integration.cloudflare.CloudflareR2Manager
+import com.example.concordance.integration.supabase.SyncConflictBus
 import com.example.concordance.model.Capsule
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.concordance.ui.components.EmptyState
@@ -48,6 +49,8 @@ fun CapsulesScreen(
     val capsuleProvenance by viewModel.capsuleProvenance.collectAsState()
     val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsState()
     val communityPublishing by viewModel.communityPublishing.collectAsState()
+    val syncConflicts by viewModel.syncConflicts.collectAsState()
+    var showConflictDialog by remember { mutableStateOf(false) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var jsonToVerify by remember { mutableStateOf("") }
@@ -72,6 +75,62 @@ fun CapsulesScreen(
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(14.dp))
+
+        // Sync conflicts surfaced by the WorkManager sync. A conflict is not a
+        // failure to retry: it needs a human decision, so it gets its own card
+        // rather than a transient snackbar.
+        if (syncConflicts.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(WarningAmber.copy(alpha = 0.12f))
+                    .border(1.dp, WarningAmber, RoundedCornerShape(10.dp))
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "SYNC CONFLICTS (${syncConflicts.size})",
+                    style = MaterialTheme.concordance.overline,
+                    fontWeight = FontWeight.Bold,
+                    color = WarningAmber
+                )
+                syncConflicts.take(3).forEach { c ->
+                    Text(
+                        text = "${c.entityType} ${c.entityId}: ${c.reason}",
+                        style = MaterialTheme.concordance.caption,
+                        color = TextSecondary
+                    )
+                }
+                TextButton(onClick = { viewModel.clearSyncConflicts() }) {
+                    Text("Dismiss", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                }
+                TextButton(onClick = { showConflictDialog = true }) {
+                    Text("Resolve...", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                }
+            }
+        }
+
+        if (showConflictDialog && syncConflicts.isNotEmpty()) {
+            AlertDialog(
+                onDismissRequest = { showConflictDialog = false },
+                title = { Text("Resolve sync conflicts", style = MaterialTheme.concordance.cardTitle) },
+                text = {
+                    ConflictResolutionScreen(
+                        conflicts = syncConflicts,
+                        onResolve = { conflict, resolution ->
+                            viewModel.resolveSyncConflict(conflict, resolution)
+                            showConflictDialog = false
+                        }
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showConflictDialog = false }) {
+                        Text("Close", style = MaterialTheme.concordance.buttonSmall)
+                    }
+                }
+            )
+        }
 
         // Title and Header
         Text(

@@ -18,9 +18,7 @@ class SupabaseSyncWorker(
             if (auth.session == null) return Result.success() // guest mode
             val rest = PostgRestClient(auth)
             val mgr = SupabaseSyncManager(auth, rest, db)
-            mgr.onConflict = { c ->
-                // Routing handled by caller; here we just log via telemetry-free path.
-            }
+            mgr.onConflict = { c -> SyncConflictBus.report(c) }
             val pulled = mgr.pullAll()
             if (pulled.isFailure) return Result.retry()
             val pushed = mgr.pushAll()
