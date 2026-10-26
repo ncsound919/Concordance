@@ -131,6 +131,14 @@ fun CapsulesScreen(
                 }
             )
         }
+        // Seed the 15 oncology research questions as claim anchors (deep-research-report.md)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { viewModel.seedResearchQuestions() }) {
+                Text("Seed 15 Research Questions", style = MaterialTheme.concordance.buttonSmall, color = ElectricCyan)
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
         // Title and Header
         Text(
             text = "CITABLE ARTIFACT REGISTRY",
