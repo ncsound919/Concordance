@@ -31,7 +31,8 @@ object IntegrationRegistry {
         FigshareAdapter,
         ZoteroAdapter,
         UnpaywallAdapter,
-        GnomadAdapter
+        GnomadAdapter,
+        KaggleComputeAdapter
     )
 
     fun descriptor(id: String): AdapterDescriptor? =

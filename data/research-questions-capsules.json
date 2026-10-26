@@ -1,0 +1,132 @@
+[
+  {
+    "capsuleId": "rq-breast-01",
+    "question": "Can we identify robust biomarkers predicting (neo)adjuvant therapy response in early-stage breast cancer (e.g. TNBC)?",
+    "anchorLabel": "TNBC biomarker prediction (Breast-1)",
+    "verdict": "Hypothesis testable: combined genomic (TMB, mutations) + immune markers (TIL, PD-L1) can stratify responders vs non-responders in neoadjuvant chemo±immunotherapy.",
+    "citableArgument": "Multicenter cohort (≥500) with pre-/post-treatment biopsies. Endpoints: pCR, EFS (3–5y). Cross-validation + independent validation; TRIPOD-compliant reporting.",
+    "plainLanguageVerdict": "This study asks whether we can predict which TNBC patients will respond to neoadjuvant therapy by combining genomic and immune markers.",
+    "rNull": 0.5,
+    "rSignificance": 0.05,
+    "observedOr": 2.1,
+    "dataSources": ["TCGA-BRCA", "METABRIC", "I-SPY2", "KEYNOTE", "ImmPort"],
+    "subExperiments": [
+      {"id": "rq-b1a", "title": "Feature engineering: TMB + immune markers", "computeTarget": "kaggle-pipeline-001", "status": "ready"},
+      {"id": "rq-b1b", "title": "Multivariable predictive modeling (TRIPOD)", "computeTarget": "kaggle-pipeline-002", "status": "planned"},
+      {"id": "rq-b1c", "title": "Cross-validation + independent validation", "computeTarget": "kaggle-pipeline-003", "status": "planned"}
+    ],
+    "milestones": [
+      {"label": "Data wrangling", "weeks": 2},
+      {"label": "Implement signature models", "weeks": 4},
+      {"label": "Validate on independent sets", "weeks": 3},
+      {"label": "Document pipeline", "weeks": 1}
+    ],
+    "ethicalNotes": "IRB approval required; HIPAA/GDPR for genomic/clinical data; return-of-results policy for incidental germline findings.",
+    "kaggleNotebookUrl": "https://kaggle.com/code/concordance/tnbc-biomarker-prediction-v1"
+  },
+  {
+    "capsuleId": "rq-breast-02",
+    "question": "How can novel HER2 subtyping refine targeted therapy in HER2+ breast cancer?",
+    "anchorLabel": "HER2 subtyping (Breast-2)",
+    "verdict": "Integrating genomic signatures with quantitative imaging should improve therapy response prediction beyond standard IHC/FISH classification.",
+    "citableArgument": "Retrospective analysis (n~600) comparing new classifier vs standard for PFS on HER2-targeted therapy. Prospective arm: small trial stratified by subtype.",
+    "plainLanguageVerdict": "A new HER2 subtyping method could help doctors choose the right targeted therapy more precisely.",
+    "dataSources": ["METABRIC", "TCGA-ERBB2-amp", "NeoSphere", "TCIA imaging"]
+  },
+  {
+    "capsuleId": "rq-breast-03",
+    "question": "What mechanisms (genetic or microenvironmental) drive endocrine therapy resistance in ER+ breast cancer?",
+    "anchorLabel": "Endocrine resistance mechanisms (Breast-3)",
+    "verdict": "Serial liquid + tumor biopsies will reveal ESR1/pathway mutations and TME shifts correlating with aromatase inhibitor failure.",
+    "dataSources": ["TCGA-ER+", "GEO resistant models", "MSK-IMPACT ER+"]
+  },
+  {
+    "capsuleId": "rq-breast-04",
+    "question": "Can circulating tumor DNA (ctDNA) reliably predict metastatic recurrence earlier than imaging?",
+    "anchorLabel": "ctDNA MRD detection (Breast-4)",
+    "verdict": "Ultra-deep targeted sequencing of cfDNA at 6-month intervals should detect minimal residual disease before radiographic relapse.",
+    "dataSources": ["GENIE cfDNA", "prospective trial biobanks"]
+  },
+  {
+    "capsuleId": "rq-genomics-05",
+    "question": "How can multi-omic tumor profiles improve prediction of immunotherapy response across cancers?",
+    "anchorLabel": "Multi-omic immunotherapy prediction (Tumor-Genomics-5)",
+    "verdict": "Combined multi-omic signature (neoantigen load + immune gene expression) outperforms single markers (PD-L1, TMB) for checkpoint inhibitor benefit.",
+    "dataSources": ["TCGA pan-cancer", "IMvigor210", "CheckMate"]
+  },
+  {
+    "capsuleId": "rq-genomics-06",
+    "question": "Which gene dependencies uncovered by CRISPR screens are synthetic lethal with common oncogenic mutations?",
+    "anchorLabel": "CRISPR synthetic lethality (Tumor-Genomics-6)",
+    "verdict": "Meta-analysis of DepMap + mutation profiles will reveal novel synthetic-lethal targets (e.g., KRAS/PIK3CA contexts).",
+    "subExperiments": [{"id":"rq-g6a","title":"DepMap CRISPR meta-analysis","computeTarget":"kaggle-pipeline-depmap","status":"ready"}],
+    "dataSources": ["DepMap Avana", "CCLE", "Project DRIVE"]
+  },
+  {
+    "capsuleId": "rq-genomics-07",
+    "question": "What are the evolutionary trajectories of tumor subclones from primary to metastasis, and can they predict drug resistance?",
+    "anchorLabel": "Clonal evolution resistance (Tumor-Genomics-7)",
+    "verdict": "Low-frequency subclonal mutations in primary tumors expand in metastases and predict resistance; longitudinal WES tracks phylogeny.",
+    "dataSources": ["MSK-Met500", "TCGA metastatic follow-up"]
+  },
+  {
+    "capsuleId": "rq-genomics-08",
+    "question": "How can spatial multi-omics tumor atlases be used to predict cancer progression?",
+    "anchorLabel": "Spatial atlas prediction (Tumor-Genomics-8)",
+    "verdict": "HTAN spatial transcriptomics + imaging features (≥2000 samples) can model progression and response.",
+    "subExperiments": [{"id":"rq-g8a","title":"HTAN dataset processing","computeTarget":"kaggle-pipeline-htan","status":"ready"}],
+    "dataSources": ["HTAN", "TCIA", "IvyGAP"]
+  },
+  {
+    "capsuleId": "rq-genomics-09",
+    "question": "Does functional precision medicine (ex vivo drug testing on patient-derived models) improve treatment selection for resistant cancers?",
+    "anchorLabel": "Functional precision medicine (Tumor-Genomics-9)",
+    "verdict": "PDO/xenograft drug sensitivity profiles correlate with clinical response better than genomics alone for refractory metastatic cancer.",
+    "dataSources": ["PDXNet", "NCI biorepositories"]
+  },
+  {
+    "capsuleId": "rq-metastasis-10",
+    "question": "Which molecular signals in primary tumors predict organ-specific metastasis (e.g. bone vs lung)?",
+    "anchorLabel": "Organ tropism prediction (Metastasis-10)",
+    "verdict": "CXCR4/CXCL12 axis and related chemokine expression in primary tumors predicts site of first metastasis.",
+    "dataSources": ["METABRIC", "SEER registry", "TCGA primary/met"]
+  },
+  {
+    "capsuleId": "rq-metastasis-11",
+    "question": "How do tumor-derived exosomes prime pre-metastatic niches, and can we interrupt this process?",
+    "anchorLabel": "Exosome niche interruption (Metastasis-11)",
+    "verdict": "Integrin α_vβ_6 and specific miRNA cargo in exosomes are necessary for niche formation; inhibition reduces metastasis in vivo.",
+    "dataSources": ["EV-TRACK", "xenograft models", "plasma exosome profiling"]
+  },
+  {
+    "capsuleId": "rq-metastasis-12",
+    "question": "How does the immune microenvironment differ between primary tumors and their metastases, and how can this guide therapy?",
+    "anchorLabel": "Immune TME primary vs metastasis (Metastasis-12)",
+    "verdict": "Metastatic lesions show reduced T-cell infiltration and increased myeloid suppressors; reversing these improves immunotherapy response.",
+    "subExperiments": [{"id":"rq-m12a","title":"Single-cell RNA-seq paired primary/metastasis","computeTarget":"kaggle-pipeline-tme","status":"planned"}],
+    "dataSources": ["IMMORAD", "TISCH", "clinical paired biopsy banks"]
+  },
+  {
+    "capsuleId": "rq-neuro-13",
+    "question": "What strategies can overcome resistance in high-grade gliomas (e.g. glioblastoma)?",
+    "anchorLabel": "GBM resistance strategies (Neuro-13)",
+    "verdict": "Combined targeted inhibitors (EGFR + PARP) and metabolic modulators sensitize GBM cells in preclinical screens and small Phase I trials.",
+    "subExperiments": [{"id":"rq-n13a","title":"Preclinical high-throughput drug screen (10 lines)","computeTarget":"kaggle-pipeline-gbm","status":"ready"}],
+    "dataSources": ["TCGA-GBM", "ATCC cell lines", "IvyGAP"]
+  },
+  {
+    "capsuleId": "rq-neuro-14",
+    "question": "Can liquid biopsy of cerebrospinal fluid (CSF) ctDNA provide early biomarkers in pediatric brain tumors?",
+    "anchorLabel": "CSF ctDNA pediatric brain (Neuro-14)",
+    "verdict": "Ultra-deep targeted NGS of CSF cfDNA detects tumor-specific mutations months before radiographic progression in pediatric gliomas/medulloblastomas.",
+    "dataSources": ["CBTN", "NIH CCDI"]
+  },
+  {
+    "capsuleId": "rq-neuro-15",
+    "question": "How well can AI-based radiomics predict molecular subtypes or outcomes in brain tumors from MRI?",
+    "anchorLabel": "AI radiomics brain tumor MRI (Neuro-15)",
+    "verdict": "Deep-learning on multiparametric MRI achieves ≥85% accuracy for IDH-mutant vs wildtype classification and predicts survival.",
+    "subExperiments": [{"id":"rq-n15a","title":"CNN training on BraTS-2021","computeTarget":"kaggle-pipeline-radiomics","status":"ready"}],
+    "dataSources": ["BraTS", "TCIA MRI", "TCGA-GBM clinical"]
+  }
+]
