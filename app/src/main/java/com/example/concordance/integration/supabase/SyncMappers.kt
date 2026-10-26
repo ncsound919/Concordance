@@ -28,7 +28,7 @@ object SyncMappers {
         put("challenge_count", c.challengeCount)
         put("model_revision_id", c.modelRevisionId)
         put("owner_type", "user")
-        put("visibility", if (c.isCustom) "private" else "public")
+        put("visibility", "private")
         // The record's own classification travels with it; the boundary refuses
         // anything that is not aggregate rather than relabelling it here.
         put("data_class", c.dataClass)

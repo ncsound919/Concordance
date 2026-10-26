@@ -14,7 +14,7 @@ object CapsuleEngine {
      * digest. Verification still accepts v1 capsules so already-published artifacts keep working.
      */
     private const val CAPSULE_VERSION = "2"
-    private const val SOFTWARE_VERSION = "0.1.0"
+    private val SOFTWARE_VERSION = com.example.BuildConfig.VERSION_NAME
 
     private val ASSUMPTIONS = listOf(
         "Perfect assay specificity; depletion can only arise from reduced sensitivity in brain samples.",

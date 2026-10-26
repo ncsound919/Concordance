@@ -52,6 +52,13 @@ fun CapsulesScreen(
     val syncConflicts by viewModel.syncConflicts.collectAsState()
     var showConflictDialog by remember { mutableStateOf(false) }
 
+    // Auto-seed research questions on first composition
+    LaunchedEffect(Unit) {
+        viewModel.seedResearchQuestions()
+        viewModel.seedCrossDomainExperiments()
+        viewModel.seedSubExperiments()
+    }
+
     var selectedTab by remember { mutableIntStateOf(0) }
     var jsonToVerify by remember { mutableStateOf("") }
     var expandedCapsuleId by remember { mutableStateOf<String?>(null) }
@@ -131,18 +138,12 @@ fun CapsulesScreen(
                 }
             )
         }
-        // Seed the 15 oncology research questions as claim anchors (deep-research-report.md)
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = { viewModel.seedResearchQuestions() }) {
-                Text("Seed 15 Research Questions", style = MaterialTheme.concordance.buttonSmall, color = ElectricCyan)
-            }
-            TextButton(onClick = { viewModel.seedCrossDomainExperiments() }) {
-                Text("Seed 10 Cross-Domain Experiments", style = MaterialTheme.concordance.buttonSmall, color = ClinicalTeal)
-            }
-            TextButton(onClick = { viewModel.seedSubExperiments() }) {
-                Text("Load 25 Sub-Experiments", style = MaterialTheme.concordance.buttonSmall, color = TextSecondary)
-            }
-        }
+        // Seed buttons moved to Research tab (More → Research)
+        Text(
+            text = "Research experiments: open More → Research to load and run experiments.",
+            style = MaterialTheme.concordance.caption,
+            color = TextSecondary
+        )
         Spacer(modifier = Modifier.height(4.dp))
 
         // Title and Header

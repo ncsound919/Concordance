@@ -1085,7 +1085,7 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
                         id = o.getString("id"),
                         label = o.getString("label"),
                         source = o.optString("source", ""),
-                        evidenceGrade = EvidenceGrade.AGGREGATE,
+                        evidenceGrade = EvidenceGrade.SYNTHETIC,
                         brainEvents = o.optInt("brainEvents", 0),
                         brainTotal = o.optInt("brainTotal", 0),
                         otherEvents = o.optInt("otherEvents", 0),
@@ -1093,9 +1093,9 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
                         notes = o.optString("notes", ""),
                         isCustom = false,
                         dateAdded = o.optString("dateAdded", "2026-10-26"),
-                        modelRevisionId = o.optString("modelRevisionId", null)
+                        modelRevisionId = o.optString("modelRevisionId").ifBlank { null }
                     )
-                    repository.saveClaim(ClaimEntity.fromAnchor(anchor))
+                    repository.addClaim(anchor)
                 }
                 _uiNotice.emit("Seeded ${arr.length()} research-question anchors into the claim ledger.")
             } catch (e: Exception) {
@@ -1115,7 +1115,7 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
                         id = o.getString("id"),
                         label = o.getString("label"),
                         source = o.optString("source", ""),
-                        evidenceGrade = EvidenceGrade.AGGREGATE,
+                        evidenceGrade = EvidenceGrade.SYNTHETIC,
                         brainEvents = o.optInt("brainEvents", 0),
                         brainTotal = o.optInt("brainTotal", 0),
                         otherEvents = o.optInt("otherEvents", 0),
@@ -1123,9 +1123,9 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
                         notes = o.optString("notes", ""),
                         isCustom = false,
                         dateAdded = o.optString("dateAdded", "2026-10-26"),
-                        modelRevisionId = o.optString("modelRevisionId", null)
+                        modelRevisionId = o.optString("modelRevisionId").ifBlank { null }
                     )
-                    repository.saveClaim(ClaimEntity.fromAnchor(anchor))
+                    repository.addClaim(anchor)
                 }
                 _uiNotice.emit("Seeded ${arr.length()} cross-domain experiment anchors into the claim ledger.")
             } catch (e: Exception) {
@@ -1853,6 +1853,13 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     fun setCommunityBaseUrl(url: String) {
         val clean = url.trim().trimEnd('/')
         if (clean.isBlank()) return
+        val uri = runCatching { android.net.Uri.parse(clean) }.getOrNull()
+        val host = uri?.host?.lowercase()
+        val isLoopback = host == "localhost" || host == "127.0.0.1" || host == "10.0.2.2" || host == "::1"
+        if (uri?.scheme?.lowercase() == "http" && !isLoopback) {
+            viewModelScope.launch { _uiNotice.emit("Community URL must use HTTPS outside the device.") }
+            return
+        }
         agentSettings.setCommunityBaseUrl(clean)
         _communityBaseUrl.value = clean
         agentNotice("Community URL saved.")

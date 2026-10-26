@@ -111,7 +111,7 @@ object HttpJsonClient {
         authToken: String? = null,
         extraHeaders: Map<String, String>? = null
     ): HttpJsonResult? {
-        val cacheKey = "$providerId|$url|${jsonBody ?: ""}"
+        val cacheKey = "$providerId|${redactSecrets(url)}|${jsonBody ?: ""}"
         // Only keyless GET responses participate in the cache, on both the read
         // and write paths — token-authenticated and POST responses must never be
         // served from, or stored to, a shared keyless cache.
@@ -123,7 +123,7 @@ object HttpJsonClient {
             if (cached != null) {
                 val provenance = Provenance(
                     providerId = providerId,
-                    endpoint = url,
+                    endpoint = redactSecrets(url),
                     query = queryLabel,
                     httpStatus = 200,
                     retrievedUtc = ProvenanceRecorder.nowUtc(),
@@ -173,7 +173,7 @@ object HttpJsonClient {
 
         val provenance = Provenance(
             providerId = providerId,
-            endpoint = url,
+            endpoint = redactSecrets(url),
             query = queryLabel,
             httpStatus = status,
             retrievedUtc = ProvenanceRecorder.nowUtc(),
@@ -193,5 +193,21 @@ object HttpJsonClient {
             com.example.concordance.telemetry.TelemetryManager.recordApiCall(providerId, false, elapsed)
             null
         }
+    }
+
+    /** Redact secret-bearing query parameters before persisting provenance/cache keys. */
+    private fun redactSecrets(url: String): String = try {
+        val uri = android.net.Uri.parse(url)
+        val redactedQuery = uri.query?.split("&")?.joinToString("&") { param ->
+            val key = param.substringBefore("=")
+            if (key.lowercase() in setOf("api_key", "apikey", "key", "token", "access_token", "secret", "password")) {
+                "$key=[REDACTED]"
+            } else {
+                param
+            }
+        }
+        uri.buildUpon().query(redactedQuery).toString()
+    } catch (e: Exception) {
+        url
     }
 }

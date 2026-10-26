@@ -30,6 +30,7 @@ import com.example.concordance.ui.screens.AgentScreen
 import com.example.concordance.ui.screens.CapsulesScreen
 import com.example.concordance.ui.screens.IntegrationsScreen
 import com.example.concordance.ui.screens.PairedDataScreen
+import com.example.concordance.ui.screens.ResearchScreen
 import com.example.concordance.integration.supabase.SupabaseSession
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import com.example.concordance.ui.screens.AuthScreen
@@ -61,13 +62,14 @@ enum class NavigationDestination(
     CAPSULES("capsules", "Capsules", Icons.Default.Verified),
     PAIRED_POWER("paired_power", "Paired", Icons.Default.Analytics),
     INTEGRATIONS("integrations", "Integrations", Icons.Default.Hub),
-    ACCOUNT("account", "Account", Icons.Default.AccountCircle);
+    ACCOUNT("account", "Account", Icons.Default.AccountCircle),
+    RESEARCH("research", "Research", Icons.Default.Science);
 
     companion object {
         val primary: List<NavigationDestination> = listOf(
             ADJUDICATE, AGENT, REGISTRY, CAPSULES, PAIRED_POWER
         )
-        val secondary: List<NavigationDestination> = listOf(INTEGRATIONS, ACCOUNT)
+        val secondary: List<NavigationDestination> = listOf(INTEGRATIONS, ACCOUNT, RESEARCH)
     }
 }
 
@@ -180,6 +182,9 @@ fun ConcordanceApp(
                     onNavigateToAdjudication = { navState.select(NavigationDestination.ADJUDICATE) }
                 )
             }
+            NavigationDestination.RESEARCH -> {
+                ResearchScreen(viewModel = viewModel)
+            }
             NavigationDestination.ACCOUNT -> {
                 if (supabaseSession == null) {
                     AuthScreen(
@@ -204,7 +209,8 @@ fun ConcordanceApp(
                         )
                         com.example.concordance.ui.components.SupabaseStatusCard(
                             onSyncNow = {
-                                com.example.concordance.integration.supabase.SupabaseSyncWorker.runNow(context)
+                                com.example.concordance.integration.supabase.SupabaseSyncWorker.setEnabled(context, true)
+                        com.example.concordance.integration.supabase.SupabaseSyncWorker.runNow(context)
                             }
                         )
                         Button(onClick = {
@@ -237,7 +243,8 @@ fun ConcordanceApp(
             confirmButton = {
                 Button(onClick = {
                     showMigrationDialog = false
-                    com.example.concordance.integration.supabase.SupabaseSyncWorker.runNow(context)
+                    com.example.concordance.integration.supabase.SupabaseSyncWorker.setEnabled(context, true)
+                        com.example.concordance.integration.supabase.SupabaseSyncWorker.runNow(context)
                 }) { Text("Upload") }
             },
             dismissButton = {

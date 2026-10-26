@@ -12,6 +12,7 @@ class SupabaseSyncWorker(
 
     override suspend fun doWork(): Result {
         return try {
+            if (!isEnabled(applicationContext)) return Result.success() // sync not explicitly enabled
             val db = ConcordanceDatabase.getDatabase(applicationContext)
             val store = createSupabaseSessionStore(applicationContext)
             val auth = SupabaseAuth(store)
@@ -31,6 +32,17 @@ class SupabaseSyncWorker(
 
     companion object {
         const val UNIQUE_NAME = "concordance_supabase_sync"
+        private const val PREFS = "concordance_sync"
+        private const val KEY_ENABLED = "sync_enabled"
+
+        fun isEnabled(context: Context): Boolean =
+            context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getBoolean(KEY_ENABLED, false)
+
+        fun setEnabled(context: Context, enabled: Boolean) {
+            context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .edit().putBoolean(KEY_ENABLED, enabled).apply()
+        }
 
         fun schedule(context: Context) {
             val constraints = androidx.work.Constraints.Builder()

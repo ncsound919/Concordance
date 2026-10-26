@@ -20,8 +20,8 @@ fun AuthScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember { createSupabaseSessionStore(context) }
     val auth = remember { SupabaseAuth(store) }
-    var email by remember { mutableStateOf("citizen@concordance.dev") }
-    var password by remember { mutableStateOf("demo1234") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var isSignUp by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }

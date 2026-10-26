@@ -4,7 +4,6 @@ import com.example.concordance.integration.byok.KeyStore
 import com.example.concordance.integration.byok.LicenseStore
 import com.example.concordance.integration.rotation.LicenseClass
 import com.example.concordance.integration.rotation.ProviderCategory
-import com.example.concordance.integration.rotation.RateLimitSpec
 
 /**
  * Kaggle Compute Adapter — wraps the Kaggle kernel API for running
@@ -13,17 +12,17 @@ import com.example.concordance.integration.rotation.RateLimitSpec
  */
 object KaggleComputeAdapter : IntegrationAdapter {
     override val descriptor: AdapterDescriptor = AdapterDescriptor(
-        id = "kaggle_compute",
-        name = "Kaggle Compute (bounty execution)",
+        id = "kaggle_api",
+        displayName = "Kaggle Compute (bounty execution)",
         category = ProviderCategory.DATASET_COMPUTE,
         authType = AuthType.API_KEY,
-        capabilities = setOf(Capability.SEARCH, Capability.COMPUTE),
+        licenseClass = LicenseClass.ACADEMIC_ONLY,
         rateLimit = RateLimitSpec(
-            requestsPerMinute = 6,
-            burstSize = 3,
-            backoffMs = 1000
+            requestsPerSecond = 0.1,
+            burst = 3
         ),
-        licenseClass = LicenseClass.BYOK
+        capabilities = setOf(Capability.SEARCH, Capability.COMPUTE),
+        docsUrl = "https://www.kaggle.com/docs/api"
     )
 
     /** Submit a notebook kernel run for a bounty experiment. Returns the kernel URL. */
