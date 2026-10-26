@@ -139,6 +139,9 @@ fun CapsulesScreen(
             TextButton(onClick = { viewModel.seedCrossDomainExperiments() }) {
                 Text("Seed 10 Cross-Domain Experiments", style = MaterialTheme.concordance.buttonSmall, color = ClinicalTeal)
             }
+            TextButton(onClick = { viewModel.seedSubExperiments() }) {
+                Text("Load 25 Sub-Experiments", style = MaterialTheme.concordance.buttonSmall, color = TextSecondary)
+            }
         }
         Spacer(modifier = Modifier.height(4.dp))
 

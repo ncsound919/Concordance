@@ -1134,6 +1134,24 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun seedSubExperiments() {
+        viewModelScope.launch {
+            try {
+                val json = getApplication<Application>().assets.open("sub-experiments.json").bufferedReader().readText()
+                val arr = org.json.JSONArray(json)
+                var readyCount = 0
+                var plannedCount = 0
+                for (i in 0 until arr.length()) {
+                    val o = arr.getJSONObject(i)
+                    if (o.optString("status") == "ready") readyCount++ else plannedCount++
+                }
+                _uiNotice.emit("Loaded ${arr.length()} sub-experiments: $readyCount ready, $plannedCount planned. Launch from Kaggle Compute tab.")
+            } catch (e: Exception) {
+                _uiNotice.emit("Could not load sub-experiments: ${e.message}")
+            }
+        }
+    }
+
     fun runKagglePermutationTest() {
         val anchor = _selectedAnchor.value ?: return
         viewModelScope.launch {
