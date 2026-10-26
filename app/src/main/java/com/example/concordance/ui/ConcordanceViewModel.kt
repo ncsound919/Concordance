@@ -1359,6 +1359,8 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
             val res = com.example.concordance.integration.pubchem.PubChemManager.queryPubChemPugRest(name)
             if (res != null) {
                 _uiNotice.emit("PubChem: Retrieved ${res.name} (CID: ${res.cid}, Formula: ${res.molecularFormula})")
+            } else {
+                _uiNotice.emit("PubChem returned no record for '$name'. Check the spelling or try a CID.")
             }
         }
     }
@@ -1431,13 +1433,6 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
             } else {
                 _uiNotice.emit("Stuck-Task Recovery: All worker tasks are active within healthy 5m SLA limits.")
             }
-        }
-    }
-
-    fun simulateStuckTask() {
-        val stuck = JobQueueManager.simulateStuckTaskForTesting()
-        viewModelScope.launch {
-            _uiNotice.emit("Simulated task '${stuck.taskUuid.take(16)}' stuck for 6m. Tap 'Run Stuck-Task Recovery' to verify auto-reset.")
         }
     }
 

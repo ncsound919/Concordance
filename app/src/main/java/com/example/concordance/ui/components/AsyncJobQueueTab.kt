@@ -33,7 +33,6 @@ fun AsyncJobQueueTab(
     val jobs by viewModel.activeQueueJobs.collectAsState()
     val workerNodes by viewModel.workerNodes.collectAsState()
     val stuckLogs by viewModel.stuckRecoveryLogs.collectAsState()
-
     var selectedDataClass by remember { mutableStateOf(JobDataClass.IMAGING_VLM_FIGURE_EXTRACTION) }
     var selectedRouting by remember { mutableStateOf(JobDataClass.IMAGING_VLM_FIGURE_EXTRACTION.defaultWorker) }
     var customParams by remember { mutableStateOf("") }
@@ -276,13 +275,6 @@ fun AsyncJobQueueTab(
                         Text("Check & Recover Stuck", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                     }
 
-                    OutlinedButton(
-                        onClick = { viewModel.simulateStuckTask() },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Simulate Stuck (>5m)", style = MaterialTheme.concordance.buttonSmall)
-                    }
                 }
 
                 if (stuckLogs.isNotEmpty()) {

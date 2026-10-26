@@ -656,6 +656,12 @@ fun IntegrationsScreen(
                                 color = TextSecondary
                             )
 
+                            Text(
+                                text = "Kernel submission is not enabled in this build: no Kaggle credentials are wired, so the app submits nothing. Run the permutation and bootstrap checks locally instead.",
+                                style = MaterialTheme.concordance.bodyDense,
+                                color = WarningAmber
+                            )
+
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)

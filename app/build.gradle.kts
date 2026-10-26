@@ -1,6 +1,7 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.api.tasks.testing.Test
+import java.io.File
 
 plugins {
   alias(libs.plugins.android.application)
@@ -230,4 +231,44 @@ dependencies {
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
   coreLibraryDesugaring(libs.desugar.jdk.libs)
+}
+
+/**
+ * Fail in seconds when the upload key is missing, instead of minutes into a
+ * release build. The signing config reads the same three inputs, so this task
+ * checks exactly what the build will use and reports every missing piece at
+ * once rather than stopping at the first.
+ *
+ * The values are Providers, not captured strings: the configuration cache
+ * forbids a task action from touching the Project, and it must not freeze an
+ * environment that CI sets per job.
+ */
+val releaseKeystorePath = providers.environmentVariable("KEYSTORE_PATH").orElse("${rootDir}/my-upload-key.jks")
+val releaseStorePassword = providers.environmentVariable("STORE_PASSWORD")
+val releaseKeyPassword = providers.environmentVariable("KEY_PASSWORD")
+
+tasks.register("verifyReleaseSigning") {
+  group = "verification"
+  description = "Fails fast when the upload keystore or its passwords are missing."
+  val keystore = releaseKeystorePath
+  val storePassword = releaseStorePassword
+  val keyPassword = releaseKeyPassword
+  doLast {
+    val path = keystore.get()
+    val missing = buildList {
+      if (!File(path).isFile) add("keystore file not found: $path")
+      if (storePassword.orNull.isNullOrBlank()) add("STORE_PASSWORD is unset")
+      if (keyPassword.orNull.isNullOrBlank()) add("KEY_PASSWORD is unset")
+    }
+    if (missing.isNotEmpty()) {
+      throw GradleException(
+        "Release signing is not configured:\n  " + missing.joinToString("\n  ") +
+          "\nSee the release workflow or set KEYSTORE_PATH, STORE_PASSWORD and KEY_PASSWORD."
+      )
+    }
+  }
+}
+
+tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }.configureEach {
+  dependsOn("verifyReleaseSigning")
 }
