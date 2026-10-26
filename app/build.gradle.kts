@@ -21,8 +21,8 @@ android {
     applicationId = "com.aistudio.concordance.rkzv"
     minSdk = 24
     targetSdk = 36
-    versionCode = 2
-    versionName = "1.0.0"
+    versionCode = 3
+    versionName = "1.0.1"
 
     // The embedded llama.cpp and sherpa-onnx runtimes are arm64-only.
     ndk { abiFilters += listOf("arm64-v8a") }

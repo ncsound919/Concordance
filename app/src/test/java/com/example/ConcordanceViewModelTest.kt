@@ -118,8 +118,9 @@ class ConcordanceViewModelTest {
 
     @Test
     fun communityBaseUrl() {
-        vm.setCommunityBaseUrl("http://example.com/")
-        assertEquals("http://example.com", vm.communityBaseUrl.value)
+        // Cleartext is only accepted for loopback hosts; a public website must be HTTPS.
+        vm.setCommunityBaseUrl("https://example.com/")
+        assertEquals("https://example.com", vm.communityBaseUrl.value)
     }
 
     @Test

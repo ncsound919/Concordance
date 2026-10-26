@@ -26,6 +26,19 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # The release build signs with the upload key. A tag must never produce
+      # a debug-signed APK: Android would reject it as an update to an
+      # installed release build.
+      - name: Decode upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 is not set. Add the release keystore as a repository secret."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
       # Gates: a tag is only allowed to produce an artifact if the unit tests
       # and Android Lint are green.
       - name: Unit tests (Robolectric + MockWebServer)
@@ -34,31 +47,26 @@ jobs:
       - name: Lint
         run: ./gradlew :app:lintDebug --stacktrace
 
-      - name: Build debug APK
-        run: ./gradlew :app:assembleDebug --stacktrace
+      - name: Build signed release APK
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease --stacktrace
 
-      - name: Compute sha256
-        id: sha
+      - name: Package release artifacts
         run: |
-          cd app/build/outputs/apk/debug
-          sha256sum app-debug.apk > app-debug.apk.sha256
-          echo "sha256=$(sha256sum app-debug.apk | awk '{print $1}')" >> $GITHUB_OUTPUT
+          VERSION="${GITHUB_REF_NAME#v}"
+          OUT="app/build/outputs/apk/release"
+          cp "$OUT/app-release.apk" "Concordance-v${VERSION}.apk"
+          sha256sum "Concordance-v${VERSION}.apk" | tee "Concordance-v${VERSION}.apk.sha256"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)"
+          "$APKSIGNER" verify --print-certs "Concordance-v${VERSION}.apk"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/debug/app-debug.apk.sha256
-          body: |
-            Concordance ${{ github.ref_name }}
-
-            SHA-256: ${{ steps.sha.outputs.sha256 }}
-            See RELEASE_NOTES.md for details.
-
-      - name: Upload release metadata to Supabase (optional)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          echo "Wire this step to upsert app_releases via the Supabase REST API."
+            Concordance-v*.apk
+            Concordance-v*.apk.sha256
+          body_path: RELEASE_NOTES.md

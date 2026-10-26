@@ -1,57 +1,59 @@
-# Concordance v1.0.0 — Release Notes
+# Concordance v1.0.1 — Release Notes
 
-## Installed systems
-- **Timestral** (Mistral time-series foundation models): agent `/api/forecast` + trends
-  forecasting; app on-device sparkline forecasting client (baseline fallback when
-  weights absent).
-- **trim-1** (context pruner): agent `/api/context/prune`; app client; model-facing
-  context only, adjudication inputs untouched.
-- **HyperFrames** (HeyGen): website deterministic MP4 explainer pipeline.
+1.0.1 folds the OSS integration work into the app and fixes the release
+pipeline itself.
 
-## Interconnections
-- Timestral wired into the trends engine (`/api/trends` now carries forecasts).
-- trim-1 exposed as an agent endpoint and a client; usable by model-facing prompts.
-- HyperFrames media assets served from the public assets bucket convention.
+## Install
 
-## App features
-- Agent tab: connect, dictate, adjudicate, correct, and **referee** (a deterministic
-  adjudication of a claim against a prediction table, returning the verdict together
-  with its `report_sha256` / `decision_sha256` / `input_sha256` digests and its
-  provenance).
+Download `Concordance-v1.0.1.apk`, verify its SHA-256 and signing
+fingerprint, then install. Android will ask you to allow installs from this
+source.
 
-## Tests
-- App: **556 unit tests, 0 failures** (10 live-network smoke tests skipped without
-  credentials), `:app:lintDebug` **0 errors**.
-- App release build: `:app:assembleRelease` succeeds with R8 minification, resource
-  shrinking and `lintVitalRelease` green.
-- Referee: **89 TypeScript tests** and **48 Python tests**, all passing;
-  `next build` and `tsc --noEmit` clean.
-- Website: **198 tests**, production build succeeds.
+**Upgrading from v1.0.0:** the 1.0.0 artifact was built by the old release
+workflow and signed with the Android debug key. 1.0.1 is signed with the
+Concordance upload key, so Android will refuse to install it over 1.0.0.
+Uninstall the 1.0.0 preview first; your local data is not migrated by the
+uninstall, so export anything you need before removing it.
 
-## Artifacts
-- Android debug APK: `app/build/outputs/apk/debug/app-debug.apk` (v1.0.0, code 2).
-- Android release APK: produced by `:app:assembleRelease`, signed with the keystore at
-  `KEYSTORE_PATH` (no release keystore is committed to the repository).
-- Website: Next.js production build (`.next`), deployable via OpenNext to Cloudflare.
+## Added
 
-## Repos
-- App (open source): `concordance-oss` (Apache-2.0), tag `v1.0.0`.
-- Website (private): `concordance-website`.
-- Referee: `Referee-main`.
+- Integration adapters for bioRxiv, ChEMBL, NCBI E-utilities, Figshare, GDC,
+  gnomAD, OSF, PubPeer, Semantic Scholar and UniProt, plus an updated OncoKB
+  adapter. Keys rotate across providers instead of failing on the first 401.
+- Supabase sync conflict handling: conflicts are recorded and surfaced with a
+  resolve action instead of silently overwriting the newer row.
+- Paper chains from the agent can be listed and opened from the phone.
+- A Sieve telemetry lane, enabled by build property rather than hard-coded.
+- Crash capture: a bounded JSON line and a telemetry event are written before
+  the process dies.
 
-## GitHub release link
-- https://github.com/ncsound919/Concordance/releases/tag/v1.0.0
+## Changed
 
-## Release checklist
-- [x] Unit tests, lint and build green on all three repos.
-- [x] Every API route authenticated; both services fail closed without a secret.
-- [x] CI runs the real test suites on every pull request (no `|| true`).
-- [x] Release build verified with R8 and `lintVitalRelease`.
-- [ ] Apply `supabase/migrations/0021`–`0023` to the database **before** deploying the
-      website, and set `CONCORDANCE_SETTINGS_SECRET` (32+ bytes). Without it,
-      `PUT /api/settings` answers `503` rather than storing credentials in plaintext.
-- [ ] Set `INTERNAL_API_KEY` (or `REFEREE_INTERNAL_KEY` / `REFEREE_API_KEY`) on the
-      referee deployment. Without it the service answers `503` on every route.
-- [ ] **Rotate the GitHub personal access token** that was embedded in this
-      repository's `origin` URL. It has been removed from `.git/config`; the remote
-      now reads the token from the `GITHUB_TOKEN` environment variable.
+- Skin and branding system with a picker; contrast fixes for the new palettes.
+- PubChem is now an honest two-part surface: the curated ESR1 bench plus a real
+  PUG-REST lookup for anything not in it. Unknown names no longer return the
+  first compound in the list.
+- The Kaggle panel states that kernel submission is disabled in this build
+  instead of creating jobs that immediately fail.
+
+## Removed
+
+- The "Simulate Stuck (>5m)" button from the production async-queue screen.
+- The simulated PUG-REST delay that reported a fabricated success.
+
+## Fixed
+
+- GitHub tag releases now build a signed release APK with the upload key,
+  publish its SHA-256, and print the signing certificate. The old workflow
+  uploaded a debug-signed APK, which could not be installed as an update.
+- Release signing and versioning are checked before the build spends minutes
+  compiling.
+- Search queries no longer produce a result that claims to come from PubChem
+  when it came from the local bench.
+
+## Verification
+
+- 736 unit tests, 0 failures (10 live-network smoke tests skipped without
+  credentials); `:app:lintDebug` clean.
+- Built and signed with the Concordance upload key
+  (`4E:60:32:...:6F:0F` SHA-256); verify the APK before installing.
