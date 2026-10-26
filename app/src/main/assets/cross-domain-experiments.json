@@ -1,0 +1,163 @@
+[
+  {
+    "capsuleId": "xd-01",
+    "question": "Cross-domain: Can tumor-derived exosome proteomics predict organ-specific metastasis tropism via a multi-modal ML model trained on spatial transcriptomics?",
+    "anchorLabel": "Exosome proteomics × spatial transcriptomics → tropism (XD-01)",
+    "verdict": "Exosomal integrin/proteome profiles combined with HTAN spatial immune-stroma features predict which organ a tumor will metastasize to, enabling pre-metastatic niche interception.",
+    "citableArgument": "Merge exosome protein mass-spec (EV-TRACK) with HTAN spatial transcriptomics (21 sites) and clinical metastasis annotation (SEER). Train a multi-modal classifier with cross-validation.",
+    "plainLanguageVerdict": "By combining what tumors release in exosomes with where cells sit in the tissue, we can predict which organ the cancer will spread to next.",
+    "dataSources": ["EV-TRACK", "HTAN", "SEER", "METABRIC"],
+    "subExperiments": [
+      {"id":"xd-01a","title":"Exosome protein feature extraction (mass spec → embeddings)","computeTarget":"kaggle-pipeline-exo-proteome","status":"ready"},
+      {"id":"xd-01b","title":"Spatial feature extraction from HTAN (immune neighborhoods)","computeTarget":"kaggle-pipeline-spatial","status":"planned"},
+      {"id":"xd-01c","title":"Multi-modal fusion classifier + organ-tropism prediction","computeTarget":"kaggle-pipeline-fusion","status":"planned"},
+      {"id":"xd-01d","title":"Pre-metastatic niche interception candidate screening","computeTarget":"kaggle-pipeline-pmn","status":"planned"}
+    ],
+    "milestones":[{"label":"Data harmonization","weeks":2},{"label":"Multi-modal model training","weeks":4},{"label":"Validation on held-out cohort","weeks":3},{"label":"Clinical translation report","weeks":1}],
+    "ethicalNotes":"De-identified exosome/proteome data; HTAN data-use policies; FDA guidance on biomarker development."
+  },
+  {
+    "capsuleId": "xd-02",
+    "question": "Cross-domain: Does a CRISPR base-editing perturbation screen in paired primary/metastatic isogenic lines reveal synthetic-lethal vulnerabilities that are invisible in single-site screens?",
+    "anchorLabel": "CRISPR base editing × paired primary/metastasis (XD-02)",
+    "verdict": "Base-editing perturbation screens in matched primary-metastasis cell pairs identify site-specific vulnerabilities (e.g., metastasis-specific dependencies on chromatin remodelers) not visible in single-site screens.",
+    "citableArgument": "Generate matched primary/metastatic cell lines from patient-derived xenografts. Run genome-wide base-editor screens (Nature Biotech 2026 approach) in both. Compare dependency scores.",
+    "dataSources": ["PDXNet", "DepMap", "CCLE", "isogenic cell line collections"],
+    "subExperiments": [
+      {"id":"xd-02a","title":"Generate matched primary/metastatic PDX lines","computeTarget":"lab-validation","status":"planned"},
+      {"id":"xd-02b","title":"Base-editor screen in primary line","computeTarget":"kaggle-pipeline-crispr-base","status":"ready"},
+      {"id":"xd-02c","title":"Base-editor screen in metastatic line","computeTarget":"kaggle-pipeline-crispr-base","status":"planned"},
+      {"id":"xd-02d","title":"Differential vulnerability analysis + synthetic-lethal nomination","computeTarget":"kaggle-pipeline-diff-vuln","status":"planned"}
+    ],
+    "milestones":[{"label":"Cell line establishment","weeks":6},{"label":"Base-editor screen execution","weeks":8},{"label":"Comparative analysis","weeks":3},{"label":"Target nomination report","weeks":2}],
+    "ethicalNotes":"PDX work requires IACUC; CRISPR safety review; patient tissue consent."
+  },
+  {
+    "capsuleId": "xd-03",
+    "question": "Cross-domain: Can single-cell Perturb-seq of tumor-infiltrating T cells identify which genetic perturbations reverse exhaustion and synergize with checkpoint blockade?",
+    "anchorLabel": "Perturb-seq × T-cell exhaustion × checkpoint blockade (XD-03)",
+    "verdict": "Perturb-seq in tumor-infiltrating T cells reveals genetic edits (e.g., TOX, NR4A family knockdowns) that reverse exhaustion and synergize with anti-PD-1 therapy.",
+    "citableArgument": "Use Perturb-CITE-seq (Broad 2025) in syngeneic tumor models to map perturbation → T-cell state. Identify edits that improve checkpoint blockade response.",
+    "dataSources": ["Broad Perturb-CITE-seq", "syngeneic tumor models", "single-cell atlas (TISCH)"],
+    "subExperiments": [
+      {"id":"xd-03a","title":"Perturb-CITE-seq library design (T-cell exhaustion genes)","computeTarget":"kaggle-pipeline-perturb-design","status":"ready"},
+      {"id":"xd-03b","title":"In vivo screen in syngeneic tumor model","computeTarget":"lab-validation","status":"planned"},
+      {"id":"xd-03c","title":"Single-cell state analysis + exhaustion reversal scoring","computeTarget":"kaggle-pipeline-sc-analysis","status":"planned"},
+      {"id":"xd-03d","title":"Combination with anti-PD-1 validation","computeTarget":"lab-validation","status":"planned"}
+    ],
+    "milestones":[{"label":"Library design & cloning","weeks":4},{"label":"In vivo screen","weeks":8},{"label":"Single-cell analysis","weeks":4},{"label":"Combination validation","weeks":4}],
+    "ethicalNotes":"IACUC for syngeneic models; FDA IND for any clinical translation."
+  },
+  {
+    "capsuleId": "xd-04",
+    "question": "Cross-domain: Can a deep-learning model on pre-treatment MRI + liquid biopsy (ctDNA + exosomes) predict which glioblastoma patients will respond to EGFR+PARP combination therapy?",
+    "anchorLabel": "MRI + ctDNA + exosome → GBM combo response (XD-04)",
+    "verdict": "Multi-modal fusion (MRI radiomics + CSF ctDNA + exosome proteome) predicts GBM response to EGFR+PARP combo better than any single modality.",
+    "citableArgument": "Combine BraTS MRI, CSF ctDNA (ultra-deep NGS), and exosome protein panels. Train multi-modal classifier. Validate on Phase I cohort.",
+    "dataSources": ["BraTS", "CBTN", "TCGA-GBM", "exosome proteome panels"],
+    "subExperiments": [
+      {"id":"xd-04a","title":"MRI radiomic feature extraction (BraTS)","computeTarget":"kaggle-pipeline-radiomics-gbm","status":"ready"},
+      {"id":"xd-04b","title":"ctDNA mutation calling from CSF (ultra-deep NGS)","computeTarget":"kaggle-pipeline-ctdna","status":"planned"},
+      {"id":"xd-04c","title":"Exosome proteome normalization","computeTarget":"kaggle-pipeline-exo-proteome","status":"planned"},
+      {"id":"xd-04d","title":"Multi-modal fusion + response prediction","computeTarget":"kaggle-pipeline-mm-fusion","status":"planned"}
+    ],
+    "milestones":[{"label":"Data collection & harmonization","weeks":4},{"label":"Single-modality models","weeks":3},{"label":"Multi-modal fusion","weeks":4},{"label":"Phase I validation","weeks":6}],
+    "ethicalNotes":"Pediatric/adult GBM consent; FDA IND; IRB for CSF collection."
+  },
+  {
+    "capsuleId": "xd-05",
+    "question": "Cross-domain: Can spatial multi-omics of paired primary/metastatic lesions reveal immune-exclusion mechanisms that predict checkpoint-inhibitor failure in metastatic disease?",
+    "anchorLabel": "Spatial omics × paired primary/met × checkpoint failure (XD-05)",
+    "verdict": "Spatial transcriptomics + multiplex IHC of paired primary/metastatic lesions reveals immune-exclusion neighborhoods that predict checkpoint-inhibitor failure.",
+    "citableArgument": "HTAN spatial data + paired biopsy banks. Compare immune neighborhoods (T-cell exclusion, myeloid suppression) between primary and metastatic. Correlate with checkpoint response.",
+    "dataSources": ["HTAN", "TISCH", "IMMORAD", "paired biopsy banks"],
+    "subExperiments": [
+      {"id":"xd-05a","title":"Spatial transcriptomics preprocessing (HTAN)","computeTarget":"kaggle-pipeline-spatial","status":"ready"},
+      {"id":"xd-05b","title":"Immune neighborhood quantification","computeTarget":"kaggle-pipeline-immune-nbhd","status":"planned"},
+      {"id":"xd-05c","title":"Primary vs metastasis differential analysis","computeTarget":"kaggle-pipeline-paired-diff","status":"planned"},
+      {"id":"xd-05d","title":"Checkpoint response prediction model","computeTarget":"kaggle-pipeline-checkpoint","status":"planned"}
+    ],
+    "milestones":[{"label":"Spatial data curation","weeks":3},{"label":"Neighborhood analysis","weeks":4},{"label":"Differential analysis","weeks":3},{"label":"Prediction model + report","weeks":3}],
+    "ethicalNotes":"Paired biopsy consent; de-identification of spatial metadata."
+  },
+  {
+    "capsuleId": "xd-06",
+    "question": "Cross-domain: Can an exosome-based liquid biopsy signature distinguish tumor recurrence from radiation necrosis in post-treatment glioma, replacing invasive re-biopsy?",
+    "anchorLabel": "Exosome liquid biopsy × recurrence vs necrosis (XD-06)",
+    "verdict": "Exosomal miRNA/protein signatures in plasma distinguish tumor recurrence from radiation necrosis with AUC≥0.85, potentially replacing invasive re-biopsy.",
+    "citableArgument": "Collect plasma exosomes from post-treatment glioma patients with confirmed recurrence vs necrosis (pathology). Train classifier on exosomal miRNA + protein panel.",
+    "dataSources": ["TCIA", "plasma exosome cohorts", "pathology-confirmed recurrence/necrosis"],
+    "subExperiments": [
+      {"id":"xd-06a","title":"Exosomal miRNA panel extraction","computeTarget":"kaggle-pipeline-exo-mirna","status":"ready"},
+      {"id":"xd-06b","title":"Exosomal protein panel normalization","computeTarget":"kaggle-pipeline-exo-proteome","status":"planned"},
+      {"id":"xd-06c","title":"Recurrence vs necrosis classifier","computeTarget":"kaggle-pipeline-recurrence","status":"planned"},
+      {"id":"xd-06d","title":"Cross-site validation (multi-institution)","computeTarget":"kaggle-pipeline-cross-site","status":"planned"}
+    ],
+    "milestones":[{"label":"Cohort assembly","weeks":4},{"label":"Biomarker panel development","weeks":4},{"label":"Classifier training","weeks":3},{"label":"Multi-site validation","weeks":4}],
+    "ethicalNotes":"IRB for plasma collection; HIPAA; FDA device review if clinical use."
+  },
+  {
+    "capsuleId": "xd-07",
+    "question": "Cross-domain: Can a federated learning model across 5 hospitals predict pediatric brain tumor molecular subtypes from MRI without sharing patient data?",
+    "anchorLabel": "Federated learning × pediatric brain MRI × molecular subtype (XD-07)",
+    "verdict": "Federated learning across 5 institutions achieves ≥85% accuracy for IDH/medulloblastoma subtype classification from MRI without centralizing patient data.",
+    "citableArgument": "Deploy federated MRI radiomics model across 5 hospitals. Each site trains locally, shares model weights. Aggregate via FedAvg. Validate on held-out institutional data.",
+    "dataSources": ["BraTS pediatric subset", "institutional MRI cohorts", "TCGA-GBM"],
+    "subExperiments": [
+      {"id":"xd-07a","title":"Federated learning framework setup (FedAvg)","computeTarget":"kaggle-pipeline-fedlearn","status":"ready"},
+      {"id":"xd-07b","title":"Local radiomic feature extraction per site","computeTarget":"kaggle-pipeline-radiomics","status":"planned"},
+      {"id":"xd-07c","title":"Federated model training (5 sites)","computeTarget":"kaggle-pipeline-fed-train","status":"planned"},
+      {"id":"xd-07d","title":"Privacy audit + fairness analysis","computeTarget":"kaggle-pipeline-fairness","status":"planned"}
+    ],
+    "milestones":[{"label":"Federated infra setup","weeks":3},{"label":"Local training pipelines","weeks":4},{"label":"Federated aggregation","weeks":3},{"label":"Privacy + fairness audit","weeks":2}],
+    "ethicalNotes":"HIPAA/GDPR compliance; federated learning ethics review; parental consent for pediatric MRI."
+  },
+  {
+    "capsuleId": "xd-08",
+    "question": "Cross-domain: Can tumor mutation burden (TMB) + microbiome composition predict immunotherapy response better than TMB alone in lung cancer?",
+    "anchorLabel": "TMB × microbiome × immunotherapy response (XD-08)",
+    "verdict": "Gut microbiome diversity + TMB combined signature predicts checkpoint inhibitor response with higher AUC than TMB alone in NSCLC.",
+    "citableArgument": "Merge TCGA-LUAD mutation data with microbiome 16S/metagenomic profiles. Train combined model. Validate on CheckMate cohort.",
+    "dataSources": ["TCGA-LUAD", "CheckMate", "microbiome cohorts (SRA)"],
+    "subExperiments": [
+      {"id":"xd-08a","title":"TMB calculation standardization (TCGA)","computeTarget":"kaggle-pipeline-tmb","status":"ready"},
+      {"id":"xd-08b","title":"Microbiome feature extraction (16S/metagenomics)","computeTarget":"kaggle-pipeline-microbiome","status":"planned"},
+      {"id":"xd-08c","title":"Combined TMB+microbiome classifier","computeTarget":"kaggle-pipeline-combined","status":"planned"},
+      {"id":"xd-08d","title":"External validation (CheckMate)","computeTarget":"kaggle-pipeline-ext-val","status":"planned"}
+    ],
+    "milestones":[{"label":"Data harmonization","weeks":3},{"label":"Feature engineering","weeks":3},{"label":"Model training","weeks":3},{"label":"External validation","weeks":3}],
+    "ethicalNotes":"Microbiome data privacy; consent for stool collection; FDA guidance."
+  },
+  {
+    "capsuleId": "xd-09",
+    "question": "Cross-domain: Can a CRISPR screen in patient-derived organoids identify drug-resistance mutations that are invisible in 2D cell line screens?",
+    "anchorLabel": "CRISPR in PDOs × drug resistance × 3D vs 2D (XD-09)",
+    "verdict": "3D organoid CRISPR screens reveal drug-resistance mutations (e.g., in ECM-interaction genes) that 2D screens miss, improving target nomination.",
+    "citableArgument": "Run matched CRISPR screens in 2D cell lines and 3D patient-derived organoids. Compare resistance mutation profiles. Nominate 3D-specific targets.",
+    "dataSources": ["PDXNet organoid biobanks", "DepMap 2D screens", "drug sensitivity panels"],
+    "subExperiments": [
+      {"id":"xd-09a","title":"PDO establishment from resistant tumors","computeTarget":"lab-validation","status":"planned"},
+      {"id":"xd-09b","title":"CRISPR screen in 2D cell lines","computeTarget":"kaggle-pipeline-crispr-2d","status":"ready"},
+      {"id":"xd-09c","title":"CRISPR screen in 3D PDOs","computeTarget":"kaggle-pipeline-crispr-3d","status":"planned"},
+      {"id":"xd-09d","title":"3D-specific resistance mutation analysis","computeTarget":"kaggle-pipeline-3d-resist","status":"planned"}
+    ],
+    "milestones":[{"label":"PDO establishment","weeks":6},{"label":"2D screen","weeks":4},{"label":"3D screen","weeks":6},{"label":"Comparative analysis","weeks":3}],
+    "ethicalNotes":"Patient tissue consent; IACUC for any in vivo follow-up."
+  },
+  {
+    "capsuleId": "xd-10",
+    "question": "Cross-domain: Can a digital twin simulation (combining MRI, genomics, and drug PK/PD) predict optimal treatment sequencing for metastatic breast cancer?",
+    "anchorLabel": "Digital twin × MRI + genomics + PK/PD → treatment sequencing (XD-10)",
+    "verdict": "A digital twin integrating MRI tumor dynamics, genomic evolution, and drug PK/PD predicts optimal treatment sequencing for metastatic breast cancer, improving PFS.",
+    "citableArgument": "Build patient-specific digital twin using PhysiCell. Integrate MRI tumor volume, genomic clonal evolution, and drug PK/PD parameters. Simulate treatment sequences. Validate on historical patient data.",
+    "dataSources": ["TCGA-BRCA", "BraTS", "PK/PD drug databases", "PhysiCell"],
+    "subExperiments": [
+      {"id":"xd-10a","title":"Tumor growth model calibration (PhysiCell)","computeTarget":"kaggle-pipeline-physicell","status":"ready"},
+      {"id":"xd-10b","title":"Genomic evolution module (clonal dynamics)","computeTarget":"kaggle-pipeline-clonal","status":"planned"},
+      {"id":"xd-10c","title":"Drug PK/PD integration","computeTarget":"kaggle-pipeline-pkpd","status":"planned"},
+      {"id":"xd-10d","title":"Treatment sequence optimization + validation","computeTarget":"kaggle-pipeline-optimize","status":"planned"}
+    ],
+    "milestones":[{"label":"Model framework setup","weeks":4},{"label":"Genomic evolution module","weeks":4},{"label":"PK/PD integration","weeks":3},{"label":"Optimization + validation","weeks":4}],
+    "ethicalNotes":"FDA guidance on digital health; patient data privacy; clinical validation required."
+  }
+]

@@ -1104,6 +1104,36 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    fun seedCrossDomainExperiments() {
+        viewModelScope.launch {
+            try {
+                val json = getApplication<Application>().assets.open("cross-domain-claims.json").bufferedReader().readText()
+                val arr = org.json.JSONArray(json)
+                for (i in 0 until arr.length()) {
+                    val o = arr.getJSONObject(i)
+                    val anchor = Anchor(
+                        id = o.getString("id"),
+                        label = o.getString("label"),
+                        source = o.optString("source", ""),
+                        evidenceGrade = EvidenceGrade.AGGREGATE,
+                        brainEvents = o.optInt("brainEvents", 0),
+                        brainTotal = o.optInt("brainTotal", 0),
+                        otherEvents = o.optInt("otherEvents", 0),
+                        otherTotal = o.optInt("otherTotal", 0),
+                        notes = o.optString("notes", ""),
+                        isCustom = false,
+                        dateAdded = o.optString("dateAdded", "2026-10-26"),
+                        modelRevisionId = o.optString("modelRevisionId", null)
+                    )
+                    repository.saveClaim(ClaimEntity.fromAnchor(anchor))
+                }
+                _uiNotice.emit("Seeded ${arr.length()} cross-domain experiment anchors into the claim ledger.")
+            } catch (e: Exception) {
+                _uiNotice.emit("Could not seed cross-domain experiments: ${e.message}")
+            }
+        }
+    }
+
     fun runKagglePermutationTest() {
         val anchor = _selectedAnchor.value ?: return
         viewModelScope.launch {
