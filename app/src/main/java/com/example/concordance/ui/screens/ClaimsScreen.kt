@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.example.concordance.model.Anchor
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.concordance.ui.components.EmptyState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ClaimsScreen(
@@ -19,7 +20,7 @@ fun ClaimsScreen(
     onOpenClaim: (Anchor) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val claims by viewModel.claims.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
     val filtered = remember(claims, query) {
         if (query.isBlank()) claims else claims.filter {

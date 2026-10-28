@@ -59,12 +59,15 @@ internal class CorpusDatabase(context: Context) :
      * user granted, so a schema change starts over instead of carrying a half-migrated index.
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TRIGGER IF EXISTS ${CHUNKS}_ai")
-        db.execSQL("DROP TRIGGER IF EXISTS ${CHUNKS}_bd")
-        db.execSQL("DROP TABLE IF EXISTS $FTS")
-        db.execSQL("DROP TABLE IF EXISTS $CHUNKS")
-        db.execSQL("DROP TABLE IF EXISTS $FILES")
-        db.execSQL("DROP TABLE IF EXISTS $SCAN")
+        // SQL identifiers cannot be bind parameters. The table names here are the same
+        // compile-time constants used by the ContentValues/delete/update calls below; the
+        // DDL/DML literals keep every statement free of interpolation (audit SEC-008).
+        db.execSQL("DROP TRIGGER IF EXISTS corpus_chunks_ai")
+        db.execSQL("DROP TRIGGER IF EXISTS corpus_chunks_bd")
+        db.execSQL("DROP TABLE IF EXISTS corpus_fts")
+        db.execSQL("DROP TABLE IF EXISTS corpus_chunks")
+        db.execSQL("DROP TABLE IF EXISTS corpus_files")
+        db.execSQL("DROP TABLE IF EXISTS corpus_scan")
         createSchema(db)
     }
 
@@ -90,7 +93,7 @@ internal class CorpusDatabase(context: Context) :
                 ")"
         )
         // Deleting or replacing one file's chunks goes through this index, not a table scan.
-        db.execSQL("CREATE INDEX IF NOT EXISTS ${CHUNKS}_uri ON $CHUNKS (uri)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS corpus_chunks_uri ON corpus_chunks (uri)")
         db.execSQL(
             "CREATE VIRTUAL TABLE IF NOT EXISTS $FTS USING fts4(" +
                 "body, content='$CHUNKS', tokenize=unicode61" +
@@ -115,7 +118,7 @@ internal class CorpusDatabase(context: Context) :
                 "swept_supported INTEGER NOT NULL DEFAULT 0" +
                 ")"
         )
-        db.execSQL("INSERT OR IGNORE INTO $SCAN (id, cursor) VALUES (1, NULL)")
+        db.execSQL("INSERT OR IGNORE INTO corpus_scan (id, cursor) VALUES (1, NULL)")
     }
 
     /** Totals. Two counts over the corpus, read once per pass and once at startup. */
@@ -135,7 +138,7 @@ internal class CorpusDatabase(context: Context) :
                 textless = c.getInt(2)
             }
         }
-        db.rawQuery("SELECT COUNT(*) FROM $CHUNKS", null).use { c ->
+        db.rawQuery("SELECT COUNT(*) FROM corpus_chunks", null).use { c ->
             if (c.moveToFirst()) chunks = c.getInt(0)
         }
         return Counts(files = files, chunks = chunks, pdfs = pdfs, textless = textless)
@@ -227,7 +230,7 @@ internal class CorpusDatabase(context: Context) :
 
     /** Where the last pass stopped, as a relative path, so the next one can resume there. */
     fun cursor(): String? =
-        readableDatabase.rawQuery("SELECT cursor FROM $SCAN WHERE id = 1", null).use { c ->
+        readableDatabase.rawQuery("SELECT cursor FROM corpus_scan WHERE id = 1", null).use { c ->
             if (c.moveToFirst() && !c.isNull(0)) c.getString(0) else null
         }
 
@@ -240,7 +243,7 @@ internal class CorpusDatabase(context: Context) :
 
     /** Supported files found during the last complete walk of the folder, or 0 if unknown. */
     fun sweptSupported(): Int =
-        readableDatabase.rawQuery("SELECT swept_supported FROM $SCAN WHERE id = 1", null).use { c ->
+        readableDatabase.rawQuery("SELECT swept_supported FROM corpus_scan WHERE id = 1", null).use { c ->
             if (c.moveToFirst()) c.getInt(0) else 0
         }
 
@@ -257,7 +260,7 @@ internal class CorpusDatabase(context: Context) :
             db.delete(CHUNKS, null, null)
             db.delete(FILES, null, null)
             db.delete(SCAN, null, null)
-            db.execSQL("INSERT INTO $SCAN (id, cursor, swept_supported) VALUES (1, NULL, 0)")
+            db.execSQL("INSERT INTO corpus_scan (id, cursor, swept_supported) VALUES (1, NULL, 0)")
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()

@@ -36,6 +36,7 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SkeletonCard
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun CapsulesScreen(
@@ -43,13 +44,13 @@ fun CapsulesScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val capsules by viewModel.savedCapsules.collectAsState()
-    val loadingCapsules by viewModel.isLoadingCapsules.collectAsState()
-    val verificationResult by viewModel.verificationResult.collectAsState()
-    val capsuleProvenance by viewModel.capsuleProvenance.collectAsState()
-    val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsState()
-    val communityPublishing by viewModel.communityPublishing.collectAsState()
-    val syncConflicts by viewModel.syncConflicts.collectAsState()
+    val capsules by viewModel.savedCapsules.collectAsStateWithLifecycle()
+    val loadingCapsules by viewModel.isLoadingCapsules.collectAsStateWithLifecycle()
+    val verificationResult by viewModel.verificationResult.collectAsStateWithLifecycle()
+    val capsuleProvenance by viewModel.capsuleProvenance.collectAsStateWithLifecycle()
+    val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsStateWithLifecycle()
+    val communityPublishing by viewModel.communityPublishing.collectAsStateWithLifecycle()
+    val syncConflicts by viewModel.syncConflicts.collectAsStateWithLifecycle()
     var showConflictDialog by remember { mutableStateOf(false) }
 
     // Auto-seed research questions on first composition
@@ -161,10 +162,10 @@ fun CapsulesScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Cloud sync status row
-        val s3Status by AwsCloudManager.syncStatus.collectAsState()
-        val r2Status by CloudflareR2Manager.syncStatus.collectAsState()
-        val s3Synced by AwsCloudManager.syncedObjects.collectAsState()
-        val r2Synced by CloudflareR2Manager.syncedObjects.collectAsState()
+        val s3Status by AwsCloudManager.syncStatus.collectAsStateWithLifecycle()
+        val r2Status by CloudflareR2Manager.syncStatus.collectAsStateWithLifecycle()
+        val s3Synced by AwsCloudManager.syncedObjects.collectAsStateWithLifecycle()
+        val r2Synced by CloudflareR2Manager.syncedObjects.collectAsStateWithLifecycle()
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = "S3: ${s3Status.label} (${s3Synced.size})",

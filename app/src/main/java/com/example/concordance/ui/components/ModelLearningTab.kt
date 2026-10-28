@@ -23,6 +23,7 @@ import com.example.concordance.learning.ModelRevision
 import com.example.concordance.learning.ParameterSearch
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * Self-learning tab (Phase 1): runs a bounded dry-run round, shows candidate
@@ -34,26 +35,26 @@ fun ModelLearningTab(
     viewModel: ConcordanceViewModel,
     modifier: Modifier = Modifier
 ) {
-    val isRunning by viewModel.isRunningLearningRound.collectAsState()
-    val report by viewModel.learningReport.collectAsState()
-    val candidates by viewModel.learningCandidates.collectAsState()
-    val summary by viewModel.trainingSummary.collectAsState()
-    val current by viewModel.currentModelRevision.collectAsState()
-    val revisions by viewModel.modelRevisions.collectAsState()
-    val diff by viewModel.revisionDiff.collectAsState()
-    val audit by viewModel.learningAudit.collectAsState()
-    val health by viewModel.learningHealth.collectAsState()
-    val autoRoundThreshold by viewModel.autoRoundThreshold.collectAsState()
-    val stabilityThreshold by viewModel.stabilityThreshold.collectAsState()
-    val challenges by viewModel.allChallenges.collectAsState()
-    val lastAutoCount by viewModel.lastAutoRoundChallengeCount.collectAsState()
-    val telemetrySuggestions by viewModel.telemetrySuggestions.collectAsState()
+    val isRunning by viewModel.isRunningLearningRound.collectAsStateWithLifecycle()
+    val report by viewModel.learningReport.collectAsStateWithLifecycle()
+    val candidates by viewModel.learningCandidates.collectAsStateWithLifecycle()
+    val summary by viewModel.trainingSummary.collectAsStateWithLifecycle()
+    val current by viewModel.currentModelRevision.collectAsStateWithLifecycle()
+    val revisions by viewModel.modelRevisions.collectAsStateWithLifecycle()
+    val diff by viewModel.revisionDiff.collectAsStateWithLifecycle()
+    val audit by viewModel.learningAudit.collectAsStateWithLifecycle()
+    val health by viewModel.learningHealth.collectAsStateWithLifecycle()
+    val autoRoundThreshold by viewModel.autoRoundThreshold.collectAsStateWithLifecycle()
+    val stabilityThreshold by viewModel.stabilityThreshold.collectAsStateWithLifecycle()
+    val challenges by viewModel.allChallenges.collectAsStateWithLifecycle()
+    val lastAutoCount by viewModel.lastAutoRoundChallengeCount.collectAsStateWithLifecycle()
+    val telemetrySuggestions by viewModel.telemetrySuggestions.collectAsStateWithLifecycle()
 
     var approver by remember { mutableStateOf("") }
     var pendingCandidate by remember { mutableStateOf<ParameterSearch.CandidateScore?>(null) }
     var pendingRevert by remember { mutableStateOf<ModelRevision?>(null) }
     var importText by remember { mutableStateOf("") }
-    val archiveExport by viewModel.revisionArchiveExport.collectAsState()
+    val archiveExport by viewModel.revisionArchiveExport.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),

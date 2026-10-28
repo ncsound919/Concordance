@@ -28,3 +28,8 @@ debug.keystore
 app/src/main/jniLibs/arm64-v8a/libllama-common.so
 app/src/main/jniLibs/arm64-v8a/libllama-server-impl.so
 app/src/main/jniLibs/arm64-v8a/libllama.so
+
+# signing + local secrets (audit SEC-011)
+*.jks
+*.keystore
+keystore.properties

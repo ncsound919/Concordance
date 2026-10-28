@@ -27,6 +27,7 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SkeletonCard
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun RegistryScreen(
@@ -34,9 +35,9 @@ fun RegistryScreen(
     onSelectAndAdjudicate: (Anchor) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val claims by viewModel.claims.collectAsState()
-    val loadingClaims by viewModel.isLoadingClaims.collectAsState()
-    val communityPublishing by viewModel.communityPublishing.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
+    val loadingClaims by viewModel.isLoadingClaims.collectAsStateWithLifecycle()
+    val communityPublishing by viewModel.communityPublishing.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var challengeTarget by remember { mutableStateOf<Anchor?>(null) }
 

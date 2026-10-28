@@ -25,6 +25,7 @@ import com.example.concordance.integration.api.CuratedVariantEvidence
 import com.example.concordance.integration.api.SomaticMutation
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * Curated variant evidence (CIViC) and public cohorts (cBioPortal). Both
@@ -37,10 +38,10 @@ fun CuratedEvidenceTab(
     onCopyText: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val evidence by viewModel.curatedEvidence.collectAsState()
-    val cohorts by viewModel.cohortStudies.collectAsState()
-    val mutations by viewModel.somaticMutations.collectAsState()
-    val isSearching by viewModel.isSearchingCurated.collectAsState()
+    val evidence by viewModel.curatedEvidence.collectAsStateWithLifecycle()
+    val cohorts by viewModel.cohortStudies.collectAsStateWithLifecycle()
+    val mutations by viewModel.somaticMutations.collectAsStateWithLifecycle()
+    val isSearching by viewModel.isSearchingCurated.collectAsStateWithLifecycle()
 
     var query by remember { mutableStateOf("ESR1") }
     var mutationStudy by remember { mutableStateOf("brca_tcga") }

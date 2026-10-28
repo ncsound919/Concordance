@@ -79,6 +79,42 @@ class SherpaKokoroSynthesizer private constructor(
         }
     }
 
+    /**
+     * Synthesize [text] to a mono 16-bit WAV without playing it.
+     *
+     * Used by [KokoroTtsServer] so the operator chat can receive audio over the
+     * loopback. Returns null when Kokoro is not installed, the text is blank, or
+     * the engine fails; the caller reports the reason rather than an empty file.
+     */
+    suspend fun synthesizeWav(text: String, speakerOverride: Int? = null): ByteArray? =
+        withContext(Dispatchers.Default) {
+            if (!isAvailable() || text.isBlank()) return@withContext null
+            mutex.withLock {
+                try {
+                    val tts = engine ?: createEngine().also {
+                        engine = it
+                        Log.i(TAG, "engine ready: sampleRate=${it.sampleRate()} speakers=${it.numSpeakers()}")
+                    }
+                    val started = System.currentTimeMillis()
+                    val audio = tts.generate(text, speakerOverride ?: speakerId, 1.0f)
+                    val samples = audio.samples
+                    if (samples.isEmpty()) return@withLock null
+                    Log.i(
+                        TAG,
+                        "wav ${samples.size} samples @ ${audio.sampleRate} Hz in " +
+                            "${System.currentTimeMillis() - started} ms (speaker=${speakerOverride ?: speakerId})"
+                    )
+                    Pcm.toWavBytes(samples, audio.sampleRate)
+                } catch (t: Throwable) {
+                    Log.e(TAG, "Kokoro WAV synthesis failed", t)
+                    null
+                }
+            }
+        }
+
+    /** Advertised sample rate before/after the engine loads. Kokoro is 24 kHz. */
+    fun currentSampleRate(): Int = engine?.sampleRate() ?: 24_000
+
     private fun createEngine(): OfflineTts {
         val kokoro = OfflineTtsKokoroModelConfig(
             model = File(directory, "model.onnx").absolutePath,

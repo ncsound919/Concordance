@@ -58,7 +58,7 @@ object AutonomyModeManager {
                 batteryOk = o.optBoolean("batteryOk", true),
                 online = o.optBoolean("online", true)
             )
-        } catch (_: Exception) { }
+        } catch (_: Exception) { /* optional persisted field: defaults apply when it is absent */ }
     }
 
     private fun persist() {

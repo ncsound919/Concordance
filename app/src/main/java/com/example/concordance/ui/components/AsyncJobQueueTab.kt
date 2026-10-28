@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.example.concordance.integration.queue.*
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun AsyncJobQueueTab(
@@ -30,9 +31,9 @@ fun AsyncJobQueueTab(
     onCopyText: (String, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val jobs by viewModel.activeQueueJobs.collectAsState()
-    val workerNodes by viewModel.workerNodes.collectAsState()
-    val stuckLogs by viewModel.stuckRecoveryLogs.collectAsState()
+    val jobs by viewModel.activeQueueJobs.collectAsStateWithLifecycle()
+    val workerNodes by viewModel.workerNodes.collectAsStateWithLifecycle()
+    val stuckLogs by viewModel.stuckRecoveryLogs.collectAsStateWithLifecycle()
     // Everything on this tab that was seeded for illustration, not reported by a real worker.
     val sampleJobs = jobs.filter { it.isSample }
     val sampleWorkers = workerNodes.filter { it.isSample }

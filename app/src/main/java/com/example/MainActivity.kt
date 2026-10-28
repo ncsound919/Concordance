@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -32,6 +33,7 @@ import com.example.concordance.ui.screens.IntegrationsScreen
 import com.example.concordance.ui.screens.PairedDataScreen
 import com.example.concordance.ui.screens.ResearchScreen
 import com.example.concordance.integration.supabase.SupabaseSession
+import com.example.concordance.links.ConcordanceLinks
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import com.example.concordance.ui.screens.AuthScreen
 import com.example.concordance.ui.navigation.ConcordanceScaffold
@@ -43,6 +45,7 @@ import com.example.ui.theme.createSkinPreferenceStore
 import com.example.ui.theme.createThemePreferenceStore
 import com.example.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * Primary destinations shown in the navigation bar/rail.
@@ -76,8 +79,12 @@ enum class NavigationDestination(
 class MainActivity : ComponentActivity() {
     private val viewModel: ConcordanceViewModel by viewModels()
 
+    /** Anchor carried by an incoming App Link, consumed once the claims load. */
+    private var pendingAnchorId by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleDeepLink(intent)
         enableEdgeToEdge()
         com.example.concordance.integration.supabase.SupabaseSyncWorker.schedule(applicationContext)
         setContent {
@@ -97,6 +104,8 @@ class MainActivity : ComponentActivity() {
                 com.example.concordance.ui.components.NotificationPermissionGate()
                 ConcordanceApp(
                     viewModel = viewModel,
+                    deepLinkAnchorId = pendingAnchorId,
+                    onDeepLinkHandled = { pendingAnchorId = null },
                     themeMode = themeMode,
                     skin = skin,
                     onCycleTheme = {
@@ -115,12 +124,26 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLink(intent)
+    }
+
+    /** Only ACTION_VIEW links are read, and only the validated anchor id is kept. */
+    private fun handleDeepLink(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_VIEW) return
+        pendingAnchorId = ConcordanceLinks.anchorId(intent.data)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConcordanceApp(
     viewModel: ConcordanceViewModel,
+    deepLinkAnchorId: String? = null,
+    onDeepLinkHandled: () -> Unit = {},
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     skin: Skin = Skin.CLINICAL,
     onCycleTheme: () -> Unit = {},
@@ -134,6 +157,17 @@ fun ConcordanceApp(
     val context = androidx.compose.ui.platform.LocalContext.current
     val sessionStore = remember { createSupabaseSessionStore(context) }
     var supabaseSession by remember { mutableStateOf(sessionStore.load()) }
+    val claimsForDeepLink by viewModel.claims.collectAsStateWithLifecycle()
+
+    // A link from Sieve/Recourse names an anchor. Select it once the claims are
+    // available (a cold start may still be loading) and open adjudication.
+    LaunchedEffect(deepLinkAnchorId, claimsForDeepLink) {
+        val id = deepLinkAnchorId ?: return@LaunchedEffect
+        val anchor = claimsForDeepLink.firstOrNull { it.id == id } ?: return@LaunchedEffect
+        viewModel.selectAnchor(anchor)
+        navState.select(NavigationDestination.ADJUDICATE)
+        onDeepLinkHandled()
+    }
 
     LaunchedEffect(viewModel.uiNotice) {
         viewModel.uiNotice.collectLatest { message ->

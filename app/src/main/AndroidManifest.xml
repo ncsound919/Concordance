@@ -36,11 +36,37 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.MyApplication">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Verified App Link: anchor handoffs from Sieve, Recourse and the
+                 hub. Android only delivers these after checking
+                 /.well-known/assetlinks.json for this package and signing key. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="concordance-web.tap4500.workers.dev"
+                    android:pathPrefix="/concordance" />
+            </intent-filter>
+
+            <!-- Non-sensitive custom scheme for the browser fallback only. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="concordance" />
             </intent-filter>
         </activity>
 
@@ -81,6 +107,17 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Keeps the on-device language model server alive while the app is in use" />
+        </service>
+
+        <!-- Loopback Kokoro voice for the operator chat. Binds 127.0.0.1:8770 only;
+             the model, voices and phonemizer are the ones already installed for the app. -->
+        <service
+            android:name="com.example.concordance.voice.KokoroTtsServer"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Loopback Kokoro text-to-speech for the operator chat" />
         </service>
 
         <!-- On-device model downloads. dataSync keeps a multi-GB transfer alive while the

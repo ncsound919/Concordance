@@ -39,6 +39,7 @@ import com.example.concordance.local.ModelDownloadStatus
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
 import java.io.File
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * BYOK (bring-your-own-key) settings: license acknowledgments and API keys
@@ -52,7 +53,7 @@ fun ByokSettingsTab(
     val keyStore = viewModel.keyStore
     val licenseStore = viewModel.licenseStore
     // Re-read the keystore whenever a config file has been imported.
-    val configRevision by viewModel.configRevision.collectAsState()
+    val configRevision by viewModel.configRevision.collectAsStateWithLifecycle()
 
     var oncoKey by remember(configRevision) { mutableStateOf(keyStore.getKey("oncokb_api").orEmpty()) }
     var academicAck by remember(configRevision) { mutableStateOf(licenseStore.isAcknowledged(LicenseClass.ACADEMIC_ONLY)) }
@@ -72,7 +73,7 @@ fun ByokSettingsTab(
     var modelName by remember(configRevision) { mutableStateOf(viewModel.agentConfig.value.modelName.orEmpty()) }
 
     val oncoGate = IntegrationGate.evaluate(OncoKBAdapter.descriptor, keyStore, licenseStore)
-    val isSearching by viewModel.isSearchingCurated.collectAsState()
+    val isSearching by viewModel.isSearchingCurated.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     val importLauncher = rememberLauncherForActivityResult(
@@ -127,8 +128,8 @@ fun ByokSettingsTab(
 
         // On-device models: weights live outside the APK in the app's external files dir.
         item {
-            val llmStatus by viewModel.localLlmStatus.collectAsState()
-            val downloadStatus by viewModel.modelDownloadStatus.collectAsState()
+            val llmStatus by viewModel.localLlmStatus.collectAsStateWithLifecycle()
+            val downloadStatus by viewModel.modelDownloadStatus.collectAsStateWithLifecycle()
             val models = remember(configRevision) { viewModel.installedLocalModels() }
             var selected by remember(models) { mutableStateOf(models.firstOrNull()) }
             val kokoroReady = remember(configRevision) { viewModel.localKokoroReady() }

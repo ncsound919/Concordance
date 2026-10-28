@@ -485,7 +485,7 @@ object StatisticalEngine {
                         patientsNonCns = req.patientsNonCns
                     )
                 )
-            } catch (_: Exception) {}
+            } catch (_: Exception) {/* optional field: defaults apply when it is absent */ }
         }
         return out
     }

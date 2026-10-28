@@ -24,6 +24,7 @@ import com.example.concordance.engine.PairedAnalyzer
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun PairedDataScreen(
@@ -32,14 +33,14 @@ fun PairedDataScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val pairedCsv by viewModel.pairedCsvText.collectAsState()
-    val pairedResult by viewModel.pairedResult.collectAsState()
-    val pairedErrors by viewModel.pairedErrors.collectAsState()
+    val pairedCsv by viewModel.pairedCsvText.collectAsStateWithLifecycle()
+    val pairedResult by viewModel.pairedResult.collectAsStateWithLifecycle()
+    val pairedErrors by viewModel.pairedErrors.collectAsStateWithLifecycle()
 
-    val powerTargetR by viewModel.powerTargetR.collectAsState()
-    val powerDesired by viewModel.powerDesired.collectAsState()
-    val powerReq by viewModel.powerRequirement.collectAsState()
-    val powerSweep by viewModel.powerSweep.collectAsState()
+    val powerTargetR by viewModel.powerTargetR.collectAsStateWithLifecycle()
+    val powerDesired by viewModel.powerDesired.collectAsStateWithLifecycle()
+    val powerReq by viewModel.powerRequirement.collectAsStateWithLifecycle()
+    val powerSweep by viewModel.powerSweep.collectAsStateWithLifecycle()
 
     var showCsvEditor by remember { mutableStateOf(false) }
 

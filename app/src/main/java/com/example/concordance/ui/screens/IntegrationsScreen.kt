@@ -51,6 +51,7 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.ModelLearningTab
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun IntegrationsScreen(
@@ -62,18 +63,18 @@ fun IntegrationsScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
 
     // API Rotation State
-    val apiProviders by viewModel.apiProviders.collectAsState()
-    val rotationStrategy by viewModel.rotationStrategy.collectAsState()
+    val apiProviders by viewModel.apiProviders.collectAsStateWithLifecycle()
+    val rotationStrategy by viewModel.rotationStrategy.collectAsStateWithLifecycle()
 
     // Kaggle State
-    val kaggleDatasets by viewModel.kaggleDatasets.collectAsState()
-    val kaggleJobs by viewModel.kaggleJobs.collectAsState()
+    val kaggleDatasets by viewModel.kaggleDatasets.collectAsStateWithLifecycle()
+    val kaggleJobs by viewModel.kaggleJobs.collectAsStateWithLifecycle()
 
     // AWS State
-    val awsStatus by viewModel.awsSyncStatus.collectAsState()
-    val awsRegion by viewModel.awsRegion.collectAsState()
-    val awsBucket by viewModel.awsBucketName.collectAsState()
-    val awsEndpoint by viewModel.awsEndpoint.collectAsState()
+    val awsStatus by viewModel.awsSyncStatus.collectAsStateWithLifecycle()
+    val awsRegion by viewModel.awsRegion.collectAsStateWithLifecycle()
+    val awsBucket by viewModel.awsBucketName.collectAsStateWithLifecycle()
+    val awsEndpoint by viewModel.awsEndpoint.collectAsStateWithLifecycle()
     var awsFormOpen by remember { mutableStateOf(false) }
     var awsAccessKey by remember { mutableStateOf("") }
     var awsSecretKey by remember { mutableStateOf("") }
@@ -81,33 +82,33 @@ fun IntegrationsScreen(
     var awsRegionInput by remember(awsRegion) { mutableStateOf(awsRegion) }
     var awsBucketInput by remember(awsBucket) { mutableStateOf(awsBucket) }
     var awsEndpointInput by remember(awsEndpoint) { mutableStateOf(awsEndpoint ?: "") }
-    val syncedObjects by viewModel.syncedS3Objects.collectAsState()
-    val savedCapsules by viewModel.savedCapsules.collectAsState()
+    val syncedObjects by viewModel.syncedS3Objects.collectAsStateWithLifecycle()
+    val savedCapsules by viewModel.savedCapsules.collectAsStateWithLifecycle()
 
     // Science Paper State
-    val sciencePapers by viewModel.sciencePapers.collectAsState()
-    val paperEngine by viewModel.paperAnalysisEngine.collectAsState()
-    val isAnalyzing by viewModel.isAnalyzingPaper.collectAsState()
-    val latestAnalysis by viewModel.latestPaperAnalysis.collectAsState()
-    val isLoadingMorePapers by viewModel.isLoadingMorePapers.collectAsState()
+    val sciencePapers by viewModel.sciencePapers.collectAsStateWithLifecycle()
+    val paperEngine by viewModel.paperAnalysisEngine.collectAsStateWithLifecycle()
+    val isAnalyzing by viewModel.isAnalyzingPaper.collectAsStateWithLifecycle()
+    val latestAnalysis by viewModel.latestPaperAnalysis.collectAsStateWithLifecycle()
+    val isLoadingMorePapers by viewModel.isLoadingMorePapers.collectAsStateWithLifecycle()
 
     // INDRA prior knowledge (public literature via the agent)
-    val indraKnowledge by viewModel.indraKnowledge.collectAsState()
-    val indraContradictions by viewModel.indraContradictions.collectAsState()
-    val indraLoading by viewModel.indraLoading.collectAsState()
-    val indraError by viewModel.indraError.collectAsState()
+    val indraKnowledge by viewModel.indraKnowledge.collectAsStateWithLifecycle()
+    val indraContradictions by viewModel.indraContradictions.collectAsStateWithLifecycle()
+    val indraLoading by viewModel.indraLoading.collectAsStateWithLifecycle()
+    val indraError by viewModel.indraError.collectAsStateWithLifecycle()
     var indraSubject by remember { mutableStateOf("") }
     var indraObject by remember { mutableStateOf("") }
 
     // PubChem State
-    val pubChemCompounds by viewModel.pubChemCompounds.collectAsState()
+    val pubChemCompounds by viewModel.pubChemCompounds.collectAsStateWithLifecycle()
 
     // Clinical Trials State
-    val clinicalTrials by viewModel.clinicalTrials.collectAsState()
-    val isLoadingMoreTrials by viewModel.isLoadingMoreTrials.collectAsState()
+    val clinicalTrials by viewModel.clinicalTrials.collectAsStateWithLifecycle()
+    val isLoadingMoreTrials by viewModel.isLoadingMoreTrials.collectAsStateWithLifecycle()
 
     // Live API provenance log
-    val provenanceRecords by viewModel.provenanceRecords.collectAsState()
+    val provenanceRecords by viewModel.provenanceRecords.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
     var toastMessage by remember { mutableStateOf<String?>(null) }

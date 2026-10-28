@@ -53,8 +53,15 @@ class NavigationStateTest {
 
     @Test
     fun primaryNavigationIsCappedAtFive() {
+        // The bottom bar renders at most five destinations; everything else
+        // must live in the More sheet.
         assertEquals(5, NavigationDestination.primary.size)
-        assertEquals(2, NavigationDestination.secondary.size)
+        assertEquals(3, NavigationDestination.secondary.size)
+        // Nothing may be reachable from neither list.
+        assertEquals(
+            NavigationDestination.entries.toSet(),
+            (NavigationDestination.primary + NavigationDestination.secondary).toSet(),
+        )
     }
 
     @Test

@@ -1,42 +1,17 @@
 # Changelog
 
-All notable changes to the Concordance Android app. The website's `/changelog`
-reads the same notes from `app_releases.changelog_md`.
+All entries below describe changes that were actually run, not planned work.
+Earlier history was not recorded; this file starts at the first verified baseline.
 
-## 1.0.1 — 2026-10-26
+## 2026-10-28 — full unit suite green; navigation test corrected
 
-Version 1.0.1 folds the OSS integration work into the app and removes the last
-surfaces that pretended to do work they could not.
+- Fixed `NavigationStateTest.primaryNavigationIsCappedAtFive`. It asserted two
+  secondary destinations, but `NavigationDestination` has three (Integrations,
+  Account, Research). The test also now asserts that primary + secondary covers
+  every enum entry, so a destination cannot become unreachable without failing.
+- `sh gradlew :app:testDebugUnitTest`: 388 tests, 0 failures.
+- No production navigation behaviour was changed; the bottom bar still renders
+  the five primary destinations and the More sheet holds the rest.
 
-### Added
-
-- Integration adapters for bioRxiv, ChEMBL, NCBI E-utilities, Figshare, GDC,
-  gnomAD, OSF, PubPeer, Semantic Scholar and UniProt, plus an updated OncoKB
-  adapter. Keys rotate across providers instead of failing on the first 401.
-- Supabase sync conflict handling: conflicts are recorded and surfaced with a
-  resolve action instead of silently overwriting the newer row.
-- Paper chains from the agent can be listed and opened from the phone.
-- A Sieve telemetry lane, enabled by build property rather than hard-coded.
-- Crash capture: a bounded JSON line and a telemetry event are written before
-  the process dies.
-
-### Changed
-
-- Skin and branding system with a picker; contrast fixes for the new palettes.
-- PubChem is now an honest two-part surface: the curated ESR1 bench plus a real
-  PUG-REST lookup for anything not in it. Unknown names no longer return the
-  first compound in the list.
-- The Kaggle panel states that kernel submission is disabled in this build
-  instead of creating jobs that immediately fail.
-
-### Removed
-
-- The "Simulate Stuck (>5m)" button from the production async-queue screen.
-- The simulated PUG-REST delay that reported a fabricated success.
-
-### Fixed
-
-- Release signing and versioning are checked before the build spends minutes
-  compiling.
-- Search queries no longer produce a result that claims to come from PubChem
-  when it came from the local bench.
+Not covered by this entry: no APK was built or installed, and the release
+signing certificate is still a placeholder. See `docs/DEPLOY-READINESS.md`.

@@ -55,6 +55,7 @@ import com.example.concordance.ui.components.LiveWorkCard
 import com.example.concordance.ui.components.LocalCorpusCard
 import com.example.ui.theme.*
 import java.io.File
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 /**
  * Client for the self-hosted adjudication agent.
@@ -68,32 +69,32 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) {
-    val config by viewModel.agentConfig.collectAsState()
-    val status by viewModel.agentStatus.collectAsState()
-    val busy by viewModel.agentBusy.collectAsState()
-    val anchors by viewModel.agentAnchors.collectAsState()
-    val job by viewModel.agentJob.collectAsState()
-    val easyView by viewModel.agentEasyView.collectAsState()
-    val correction by viewModel.agentCorrection.collectAsState()
-    val correctionEasy by viewModel.agentCorrectionEasy.collectAsState()
-    val refereeReport by viewModel.agentRefereeReport.collectAsState()
-    val refereeExperiments by viewModel.agentRefereeExperiments.collectAsState()
-    val upload by viewModel.agentUpload.collectAsState()
-    val transcript by viewModel.agentTranscript.collectAsState()
-    val researchResult by viewModel.agentResearchResult.collectAsState()
-    val paperRuns by viewModel.agentPaperRuns.collectAsState()
-    val paper by viewModel.agentPaper.collectAsState()
-    val paperVerification by viewModel.agentPaperVerification.collectAsState()
-    val papersBusy by viewModel.agentPapersBusy.collectAsState()
-    val papersError by viewModel.agentPapersError.collectAsState()
-    val pendingDecisions by viewModel.pendingDecisions.collectAsState()
+    val config by viewModel.agentConfig.collectAsStateWithLifecycle()
+    val status by viewModel.agentStatus.collectAsStateWithLifecycle()
+    val busy by viewModel.agentBusy.collectAsStateWithLifecycle()
+    val anchors by viewModel.agentAnchors.collectAsStateWithLifecycle()
+    val job by viewModel.agentJob.collectAsStateWithLifecycle()
+    val easyView by viewModel.agentEasyView.collectAsStateWithLifecycle()
+    val correction by viewModel.agentCorrection.collectAsStateWithLifecycle()
+    val correctionEasy by viewModel.agentCorrectionEasy.collectAsStateWithLifecycle()
+    val refereeReport by viewModel.agentRefereeReport.collectAsStateWithLifecycle()
+    val refereeExperiments by viewModel.agentRefereeExperiments.collectAsStateWithLifecycle()
+    val upload by viewModel.agentUpload.collectAsStateWithLifecycle()
+    val transcript by viewModel.agentTranscript.collectAsStateWithLifecycle()
+    val researchResult by viewModel.agentResearchResult.collectAsStateWithLifecycle()
+    val paperRuns by viewModel.agentPaperRuns.collectAsStateWithLifecycle()
+    val paper by viewModel.agentPaper.collectAsStateWithLifecycle()
+    val paperVerification by viewModel.agentPaperVerification.collectAsStateWithLifecycle()
+    val papersBusy by viewModel.agentPapersBusy.collectAsStateWithLifecycle()
+    val papersError by viewModel.agentPapersError.collectAsStateWithLifecycle()
+    val pendingDecisions by viewModel.pendingDecisions.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) { viewModel.loadPendingDecisions() }
     // Show the chains the agent already wrote instead of an empty card the
     // operator has to guess about. The read is a directory listing, not a run.
     LaunchedEffect(Unit) { viewModel.loadAgentPaperRuns() }
-    val ack by viewModel.agentUploadAck.collectAsState()
-    val easyMode by viewModel.easyMode.collectAsState()
-    val communityBaseUrl by viewModel.communityBaseUrl.collectAsState()
+    val ack by viewModel.agentUploadAck.collectAsStateWithLifecycle()
+    val easyMode by viewModel.easyMode.collectAsStateWithLifecycle()
+    val communityBaseUrl by viewModel.communityBaseUrl.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     var url by remember { mutableStateOf(config.baseUrl) }
@@ -130,7 +131,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             onSaveCommunityUrl = { viewModel.setCommunityBaseUrl(communityUrl) }
         )
 
-        val researchSeed by viewModel.researchSeed.collectAsState()
+        val researchSeed by viewModel.researchSeed.collectAsStateWithLifecycle()
 
         DictationCard(
             transcript = transcript,
@@ -151,8 +152,8 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
 
         researchResult?.let { ResearchResultCard(it, onFeedback = { claimId, rating -> viewModel.submitFeedback(claimId, rating) }, onSpeak = { text -> viewModel.speakText(text) }) }
 
-        val fleetRoster by viewModel.agentFleet.collectAsState()
-        val loopResult by viewModel.agentLoop.collectAsState()
+        val fleetRoster by viewModel.agentFleet.collectAsStateWithLifecycle()
+        val loopResult by viewModel.agentLoop.collectAsStateWithLifecycle()
         EcosystemCard(
             roster = fleetRoster,
             loop = loopResult,
@@ -180,8 +181,8 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             )
         }
 
-        val autonomyState by AutonomyModeManager.state.collectAsState()
-        val activityEntries by AutonomyActivity.entries.collectAsState()
+        val autonomyState by AutonomyModeManager.state.collectAsStateWithLifecycle()
+        val activityEntries by AutonomyActivity.entries.collectAsStateWithLifecycle()
         LaunchedEffect(Unit) {
             AutonomyModeManager.init(context)
             AutonomyActivity.init(context)
@@ -210,7 +211,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             onClearLog = { AutonomyActivity.clear() },
         )
 
-        val corpusStatus by LocalCorpus.status.collectAsState()
+        val corpusStatus by LocalCorpus.status.collectAsStateWithLifecycle()
         val folderPicker = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocumentTree()
         ) { uri -> if (uri != null) viewModel.setCorpusFolder(uri) }

@@ -38,6 +38,7 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SensitivityCurveChart
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun AdjudicationScreen(
@@ -46,12 +47,12 @@ fun AdjudicationScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val claims by viewModel.claims.collectAsState()
-    val selectedAnchor by viewModel.selectedAnchor.collectAsState()
-    val adj by viewModel.adjudicationResult.collectAsState()
-    val sn by viewModel.sn.collectAsState()
-    val rLow by viewModel.rLow.collectAsState()
-    val rHigh by viewModel.rHigh.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
+    val selectedAnchor by viewModel.selectedAnchor.collectAsStateWithLifecycle()
+    val adj by viewModel.adjudicationResult.collectAsStateWithLifecycle()
+    val sn by viewModel.sn.collectAsStateWithLifecycle()
+    val rLow by viewModel.rLow.collectAsStateWithLifecycle()
+    val rHigh by viewModel.rHigh.collectAsStateWithLifecycle()
 
     var showPresetMenu by remember { mutableStateOf(false) }
     var copiedNotice by remember { mutableStateOf<String?>(null) }

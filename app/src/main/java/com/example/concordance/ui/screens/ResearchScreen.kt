@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,15 +15,16 @@ import androidx.compose.ui.unit.dp
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.concordance.ui.components.AppSectionCard
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ResearchScreen(
     viewModel: ConcordanceViewModel,
     modifier: Modifier = Modifier
 ) {
-    val uiNotice by viewModel.uiNotice.collectAsState(initial = "")
-    val isRunning by viewModel.isRunningLearningRound.collectAsState()
-    val deepReport by viewModel.deepResearchReport.collectAsState()
+    val uiNotice by viewModel.uiNotice.collectAsStateWithLifecycle(initialValue = "")
+    val isRunning by viewModel.isRunningLearningRound.collectAsStateWithLifecycle()
+    val deepReport by viewModel.deepResearchReport.collectAsStateWithLifecycle()
     var loaded by mutableStateOf(false)
 
     Column(
