@@ -75,6 +75,23 @@ CLI notes learned the hard way:
 - The run JSON maps `tuple[int, int]` to `numericResult.value = passed` and
   `confidenceInterval = total`. Read the conversations if you want the actual answers.
 
+## `concordance-fixture-run` (engineering fixture, not a benchmark)
+
+This is **not** a scientific claim. It runs the paired analysis on the bundled synthetic cohort
+and exists to prove the pipeline end to end:
+
+- the dataset pin reproduces on a different machine (the regenerated CSV hashes to
+  `8ae88eb84cbaf61d1f407e4e4a6ad27b5cc599e5d6ec878565426e6b4422d4e2`),
+- a real 2×2 analysis runs on Kaggle (OR 10.40, Fisher p 5.97e-14, CI 5.54–19.54),
+- the artifact is downloadable and re-verifiable (Python 3.13.15, NumPy 2.1.3, SciPy 1.16.3).
+
+The verdict is `supported` by the arithmetic. The adjudicator on the phone refuses to mint a
+claim from it anyway (`SYNTHETIC_DATA`), because a fixture proves the plumbing, not a
+finding. That refusal is the behaviour the whole design is built around.
+
+Measured run 2026-10-29, account `tap919`, CPU only, ~30 s. Source: `concordance-fixture-run.py`,
+result: `results/2026-10-29-fixture-run.json`.
+
 ## Guardrails for any benchmark added here
 
 1. **Synthetic or fully public inputs only.** No patient data, no PHI, ever.

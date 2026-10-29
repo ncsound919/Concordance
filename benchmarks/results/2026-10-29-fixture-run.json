@@ -1,0 +1,28 @@
+{
+  "benchmark": "concordance-fixture-run",
+  "taskVersion": 1,
+  "runDate": "2026-10-29",
+  "account": "tap919",
+  "runtime": "CPU, ~30 seconds",
+  "pinVerified": true,
+  "results": {
+    "spec_id": "rp-esr1-cns-001",
+    "data_class": "synthetic",
+    "evidence_tier": "synthetic",
+    "counts": {
+      "brain": { "discordant": 40, "concordant": 30, "total": 70 },
+      "non_cns": { "discordant": 25, "concordant": 195, "total": 220 }
+    },
+    "odds_ratio": 10.4,
+    "fisher_p": 5.965714043996164e-14,
+    "ci_95": [5.5365, 19.5358],
+    "verdict": "supported",
+    "reason": "synthetic fixture: exercises the pipeline only; no scientific claim"
+  },
+  "sessionInfo": {
+    "python": "3.13.15",
+    "numpy": "2.1.3",
+    "scipy": "1.16.3"
+  },
+  "note": "The verdict is 'supported' by the arithmetic, but the adjudicator refuses to mint a claim because the dataset is SYNTHETIC (SYNTHETIC_DATA). That refusal is the correct behaviour for a fixture and is the guard the pipeline is built around."
+}
