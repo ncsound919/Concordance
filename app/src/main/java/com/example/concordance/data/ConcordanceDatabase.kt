@@ -6,10 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.concordance.data.ClaimEntity
+import com.example.concordance.evidence.DatasetRecordEntity
+import com.example.concordance.evidence.EvidenceDao
+import com.example.concordance.evidence.HypothesisEntity
+import com.example.concordance.evidence.KgEdgeEntity
+import com.example.concordance.evidence.LineageEdgeEntity
+import com.example.concordance.evidence.SourceArtifactEntity
 
 @Database(
-    entities = [ClaimEntity::class, CapsuleEntity::class, ChallengeEntity::class, ProvenanceEntity::class, CachedResponseEntity::class, ModelRevisionEntity::class, LearningAuditEntity::class, SyncCursorEntity::class],
-    version = 7,
+    entities = [ClaimEntity::class, CapsuleEntity::class, ChallengeEntity::class, ProvenanceEntity::class, CachedResponseEntity::class, ModelRevisionEntity::class, LearningAuditEntity::class, SyncCursorEntity::class, SourceArtifactEntity::class, LineageEdgeEntity::class, DatasetRecordEntity::class, KgEdgeEntity::class, HypothesisEntity::class],
+    version = 8,
     exportSchema = false
 )
 abstract class ConcordanceDatabase : RoomDatabase() {
@@ -21,6 +28,7 @@ abstract class ConcordanceDatabase : RoomDatabase() {
     abstract fun modelRevisionDao(): ModelRevisionDao
     abstract fun learningAuditDao(): LearningAuditDao
     abstract fun syncCursorDao(): SyncCursorDao
+    abstract fun evidenceDao(): EvidenceDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -138,6 +146,87 @@ abstract class ConcordanceDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS source_artifacts (" +
+                        "artifactId TEXT NOT NULL PRIMARY KEY, " +
+                        "type TEXT NOT NULL, " +
+                        "originUri TEXT NOT NULL, " +
+                        "contentHash TEXT NOT NULL, " +
+                        "mimeType TEXT NOT NULL, " +
+                        "sizeBytes INTEGER NOT NULL, " +
+                        "ingestedAtUtc TEXT NOT NULL, " +
+                        "ingestionRunId TEXT" +
+                        ")"
+                )
+                database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_artifact_hash ON source_artifacts(contentHash)")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS lineage_edges (" +
+                        "pk INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "derivedKind TEXT NOT NULL, " +
+                        "derivedId TEXT NOT NULL, " +
+                        "artifactId TEXT NOT NULL, " +
+                        "transform TEXT NOT NULL, " +
+                        "transformVersion TEXT NOT NULL, " +
+                        "createdAtUtc TEXT NOT NULL" +
+                        ")"
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS idx_lineage_derived ON lineage_edges(derivedId)")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS datasets (" +
+                        "datasetId TEXT NOT NULL PRIMARY KEY, " +
+                        "source TEXT NOT NULL, " +
+                        "studyId TEXT NOT NULL, " +
+                        "cancerType TEXT NOT NULL, " +
+                        "assayType TEXT NOT NULL, " +
+                        "sampleCount INTEGER NOT NULL, " +
+                        "checksum TEXT NOT NULL, " +
+                        "license TEXT NOT NULL, " +
+                        "access TEXT NOT NULL, " +
+                        "dataClass TEXT NOT NULL" +
+                        ")"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS kg_edges (" +
+                        "edgeId TEXT NOT NULL PRIMARY KEY, " +
+                        "subjectKind TEXT NOT NULL, " +
+                        "subjectId TEXT NOT NULL, " +
+                        "subjectLabel TEXT NOT NULL, " +
+                        "predicate TEXT NOT NULL, " +
+                        "objectKind TEXT NOT NULL, " +
+                        "objectId TEXT NOT NULL, " +
+                        "objectLabel TEXT NOT NULL, " +
+                        "evidenceJson TEXT NOT NULL, " +
+                        "score REAL NOT NULL, " +
+                        "createdBy TEXT NOT NULL, " +
+                        "createdAtUtc TEXT NOT NULL" +
+                        ")"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS hypotheses (" +
+                        "hypothesisId TEXT NOT NULL PRIMARY KEY, " +
+                        "cancerType TEXT NOT NULL, " +
+                        "biomarkerSymbol TEXT NOT NULL, " +
+                        "biomarkerType TEXT NOT NULL, " +
+                        "candidateDrug TEXT NOT NULL, " +
+                        "drugRxnorm TEXT NOT NULL, " +
+                        "rationale TEXT NOT NULL, " +
+                        "supportingEdgeIdsJson TEXT NOT NULL, " +
+                        "pubmedIdsJson TEXT NOT NULL, " +
+                        "datasetIdsJson TEXT NOT NULL, " +
+                        "wetlabIdsJson TEXT NOT NULL, " +
+                        "rankScore REAL NOT NULL, " +
+                        "modelVersion TEXT NOT NULL, " +
+                        "generatedAtUtc TEXT NOT NULL, " +
+                        "reviewStatus TEXT NOT NULL, " +
+                        "reviewer TEXT, " +
+                        "reviewedAtUtc TEXT" +
+                        ")"
+                )
+            }
+        }
+
         @Volatile
         private var INSTANCE: ConcordanceDatabase? = null
 
@@ -147,7 +236,7 @@ abstract class ConcordanceDatabase : RoomDatabase() {
                     context.applicationContext,
                     ConcordanceDatabase::class.java,
                     "concordance_database"
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7).build()
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).build()
                 INSTANCE = instance
                 instance
             }
