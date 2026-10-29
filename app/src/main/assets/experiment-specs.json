@@ -1,0 +1,211 @@
+[
+  {
+    "id": "rp-esr1-cns-001",
+    "version": 1,
+    "class": "REPLICATION",
+    "title": "Replicate ESR1 Y537S/D538G ctDNA/tissue discordance in CNS vs non-CNS",
+    "hypothesis": "Plasma ctDNA under-detects ESR1 variants in CNS metastases relative to tissue, and the shortfall is larger in CNS than in non-CNS disease.",
+    "direction": "discordance_higher_in_cns",
+    "design": "paired_diagnostic_accuracy",
+    "unit": "patient",
+    "contrast": "CNS vs non-CNS",
+    "outcome": "tissue positive and plasma negative",
+    "confirmatory": true,
+    "datasets": [
+      {
+        "ref": "cbioportal/esr1-plasma-tissue-paired",
+        "version": "",
+        "sha256": "",
+        "license": "CC-BY-4.0",
+        "access": "PUBLIC",
+        "dataClass": "AGGREGATE"
+      }
+    ],
+    "method": {
+      "pipeline": "concordance.paired",
+      "version": "0.3.0",
+      "imageDigest": "",
+      "params": { "correction": "delta_method", "ci": "0.95" },
+      "seed": 20261028
+    },
+    "decisionRule": {
+      "metric": "retention_ratio_r",
+      "comparison": "ci_below",
+      "threshold": 0.4,
+      "alpha": 0.05,
+      "powerTarget": 0.8,
+      "multiplicity": "none"
+    },
+    "expectedArtifacts": ["results.json", "session_info.json"],
+    "budgetUsd": 0.0,
+    "budgetCpuMinutes": 15,
+    "budgetGpuMinutes": 0,
+    "ethics": "Public, de-identified aggregate counts only."
+  },
+  {
+    "id": "rb-esr1-cns-002",
+    "version": 1,
+    "class": "ROBUSTNESS",
+    "title": "Multiverse sensitivity of the ESR1 CNS discordance verdict",
+    "hypothesis": "The replication verdict is stable across assay platform, ctDNA fraction threshold, and limit-of-detection assumptions.",
+    "direction": "verdict_stable",
+    "design": "specification_curve",
+    "unit": "analysis_variant",
+    "contrast": "analysis choices",
+    "outcome": "verdict stability share",
+    "confirmatory": true,
+    "datasets": [
+      {
+        "ref": "cbioportal/esr1-plasma-tissue-paired",
+        "version": "",
+        "sha256": "",
+        "license": "CC-BY-4.0",
+        "access": "PUBLIC",
+        "dataClass": "AGGREGATE"
+      }
+    ],
+    "method": {
+      "pipeline": "concordance.multiverse",
+      "version": "0.3.0",
+      "imageDigest": "",
+      "params": { "variants": "platform,ctdna_fraction,limit_of_detection", "max_variants": "48" },
+      "seed": 20261028
+    },
+    "decisionRule": {
+      "metric": "stable_share",
+      "comparison": "geq",
+      "threshold": 0.8,
+      "alpha": 0.05,
+      "powerTarget": 0.8,
+      "multiplicity": "holm"
+    },
+    "expectedArtifacts": ["spec_curve.csv", "results.json", "session_info.json"],
+    "budgetUsd": 0.0,
+    "budgetCpuMinutes": 45,
+    "budgetGpuMinutes": 0,
+    "ethics": "Public, de-identified aggregate counts only."
+  },
+  {
+    "id": "nc-null-esr1-001",
+    "version": 1,
+    "class": "NEGATIVE_CONTROL",
+    "title": "Null calibration: the pipeline must find no effect on permuted labels",
+    "hypothesis": "With site labels permuted, the corrected interval crosses 1.0 at approximately the nominal rate.",
+    "direction": "no_effect_under_null",
+    "design": "permutation_null",
+    "unit": "permutation",
+    "contrast": "permuted site labels",
+    "outcome": "share of permutations crossing null",
+    "confirmatory": false,
+    "datasets": [
+      {
+        "ref": "cbioportal/esr1-plasma-tissue-paired",
+        "version": "",
+        "sha256": "",
+        "license": "CC-BY-4.0",
+        "access": "PUBLIC",
+        "dataClass": "AGGREGATE"
+      }
+    ],
+    "method": {
+      "pipeline": "concordance.null",
+      "version": "0.3.0",
+      "imageDigest": "",
+      "params": { "permutations": "1000", "alpha": "0.05" },
+      "seed": 20261028
+    },
+    "decisionRule": {
+      "metric": "false_positive_rate",
+      "comparison": "leq",
+      "threshold": 0.06,
+      "alpha": 0.05,
+      "powerTarget": 0.8,
+      "multiplicity": "none"
+    },
+    "expectedArtifacts": ["null_distribution.csv", "results.json"],
+    "budgetUsd": 0.0,
+    "budgetCpuMinutes": 20,
+    "budgetGpuMinutes": 0,
+    "ethics": "No human data; permutations of public aggregate counts."
+  },
+  {
+    "id": "xd-02-design",
+    "version": 1,
+    "class": "WETLAB_DESIGN",
+    "title": "CRISPR base-editing screen in paired primary/metastatic PDX lines",
+    "hypothesis": "Site-specific dependencies invisible in single-site screens appear in matched primary/metastatic pairs.",
+    "direction": "metastasis_specific_dependencies",
+    "design": "paired_isogenic_base_editor_screen",
+    "unit": "cell_line_pair",
+    "contrast": "primary vs metastatic",
+    "outcome": "differential dependency score",
+    "confirmatory": false,
+    "datasets": [
+      {
+        "ref": "pdxnet/paired-lines",
+        "version": "",
+        "sha256": "",
+        "license": "IRB + IACUC required",
+        "access": "CONTROLLED",
+        "dataClass": "PHI"
+      }
+    ],
+    "method": {
+      "pipeline": "protocol.only",
+      "version": "1",
+      "imageDigest": "",
+      "params": {},
+      "seed": 0
+    },
+    "decisionRule": null,
+    "expectedArtifacts": ["protocol.md", "power_analysis.json", "ethics_checklist.md"],
+    "budgetUsd": 0.0,
+    "budgetCpuMinutes": 0,
+    "budgetGpuMinutes": 0,
+    "ethics": "IACUC for PDX, patient tissue consent, CRISPR safety review. Design only: this app never schedules bench work."
+  },
+  {
+    "id": "xd-01-program",
+    "version": 1,
+    "class": "DATASET",
+    "title": "Exosome proteomics + HTAN spatial features for organ tropism",
+    "hypothesis": "Exosomal integrin/proteome profiles combined with spatial immune-stroma features predict metastatic organ tropism.",
+    "direction": "tropism_predictable",
+    "design": "multi_modal_cohort_construction",
+    "unit": "patient",
+    "contrast": "brain-tropic vs lung-tropic",
+    "outcome": "classifier discrimination",
+    "confirmatory": false,
+    "datasets": [
+      {
+        "ref": "evtrack/exosome-proteome",
+        "version": "",
+        "sha256": "",
+        "license": "varies by source",
+        "access": "PUBLIC",
+        "dataClass": "AGGREGATE"
+      },
+      {
+        "ref": "htan/spatial-transcriptomics",
+        "version": "",
+        "sha256": "",
+        "license": "HTAN data-use terms",
+        "access": "PUBLIC",
+        "dataClass": "AGGREGATE"
+      }
+    ],
+    "method": {
+      "pipeline": "concordance.cohort",
+      "version": "0.1.0",
+      "imageDigest": "",
+      "params": { "harmonise": "evtrack,htan" },
+      "seed": 20261028
+    },
+    "decisionRule": null,
+    "expectedArtifacts": ["cohort.json", "manifest.json"],
+    "budgetUsd": 0.0,
+    "budgetCpuMinutes": 120,
+    "budgetGpuMinutes": 0,
+    "ethics": "De-identified sources only; HTAN data-use policies apply."
+  }
+]
