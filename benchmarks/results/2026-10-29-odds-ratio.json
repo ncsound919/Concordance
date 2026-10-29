@@ -1,0 +1,36 @@
+{
+  "benchmark": "concordance-odds-ratio-arithmetic",
+  "taskVersion": 1,
+  "runDate": "2026-10-29",
+  "account": "tap919",
+  "cases": 6,
+  "tolerance": 0.02,
+  "costUsd": 0.03,
+  "results": [
+    {
+      "model": "anthropic/claude-sonnet-5@default",
+      "passed": 6,
+      "total": 6,
+      "answers": [2.43, 7.0, 0.35, 1.0, 3.0, 3.58]
+    },
+    {
+      "model": "google/gemini-3-flash-preview",
+      "passed": 6,
+      "total": 6,
+      "answers": [2.43, 7.0, 0.35, 1.0, 3.0, 3.58]
+    },
+    {
+      "model": "google/gemini-3.8-flash",
+      "passed": 6,
+      "total": 6,
+      "answers": [2.43, 7.0, 0.35, 1.0, 3.0, 3.58]
+    },
+    {
+      "model": "openai/gpt-5.4-nano-2026-03-17",
+      "passed": 1,
+      "total": 6,
+      "answers": [4.0, 2.8, 1.14, 1.0, 2.25, 9.0]
+    }
+  ],
+  "note": "Answers are the numbers each model returned for or-01..or-06 in order. Gold values are in benchmarks/verify_gold.py. The Kaggle run JSON reports tuple[int,int] as numericResult.value = passed and confidenceInterval = total, so the raw answers were read from the run conversations rather than trusted from the score field."
+}
