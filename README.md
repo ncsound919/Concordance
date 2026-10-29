@@ -168,9 +168,20 @@ Key test classes:
 | `HardeningTest` | Tasker bridge stays bounded; seeded/simulated jobs are labelled; the loopback model server requires its session key |
 | `PairedCsvTest` | Quoted CSV fields and BOMs do not shift columns; a genuinely short row is still rejected |
 | `DataClassBoundaryTest` | Only `aggregate` claims may sync or publish; the wire payload carries the record's own class |
+| `ExperimentSpecTest` | A confirmatory spec cannot exist without a decision rule; the spec hash is order-independent and changes on any material edit |
+| `ExperimentCompilerTest` | The compiler fails closed: unpinned data, unpinned image, PHI to a remote backend, stale preregistration and over-budget runs are refused, never "best effort" |
+| `RunRecordTest` | The append-only run state machine refuses illegal transitions and every transition chains to the previous hash |
+| `AdjudicatorTest` | Exploratory runs, unverified artifacts, missing metrics and stale plans cannot update a claim; interval rules resolve to supported / contradicted / inconclusive |
+| `ReferenceCapsuleParityTest` | The 2026-10-20 capsule (`5e8d66a42322fc40`) still adjudicates to `SUPPORTED` under its recorded interval, and a stricter threshold makes it `INCONCLUSIVE` |
+| `ExperimentCatalogTest` | The bundled catalog reports `READY` / `DESIGN_ONLY` / `UNSUPPORTED` with a reason; no entry claims to be launchable without a pinned dataset and a decision rule |
+| `RoomEvidenceStoreTest` | The evidence backbone survives a process death: artifacts deduplicate by content hash, edges merge their evidence, lineage is queryable, and hypotheses round-trip their lists through SQLite |
+| `EvidenceGraphTest` | The evidence backbone refuses an edge with no evidence, a hypothesis with no real supporting edge, an unstandardised drug, a self-edge, and any review that skips a state or lacks a named reviewer |
+| `ConnectorTest` | CIViC sensitivity and resistance become different predicates; a cBioPortal cohort with no sample count is refused rather than stored as zero; re-ingesting the same item deduplicates its artifact and merges its edge |
+| `HypothesisComposerTest` | A candidate with no supporting edge is refused; resistance evidence at least as strong as sensitivity refuses it rather than down-ranking it; corroboration raises the rank but a single perfect edge cannot reach certainty; nothing composes as reviewed |
 
-The module currently runs **314 unit tests** across 45 classes, all green, and
-`:app:lintDebug` reports **0 errors** (51 warnings) with JDK 21.
+The module currently runs **456 unit tests** across 61 classes, all green (verified
+2026-10-28, JDK 21), and `:app:lintDebug` reports **0 errors, 89 warnings** — the warnings are
+all dependency/version and unused-resource notices, not code defects.
 
 ### Not covered by these tests
 
