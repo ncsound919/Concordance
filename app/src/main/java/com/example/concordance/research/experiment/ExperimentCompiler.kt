@@ -241,8 +241,12 @@ data class BackendCapability(
 object Backends {
 
     /**
-     * Kaggle: the compute lane. 540 GPU minutes is a deliberate ceiling well under the ~30
-     * GPU-hours/week account quota, so one runaway kernel cannot consume the week.
+     * Kaggle's stock image. It is **not** pinned by digest, so a run here is
+     * [Determinism.STATISTICAL]: the verdict must reproduce across seeds, the bytes need not.
+     * Use [KAGGLE_PINNED] once a custom Docker image digest is supplied.
+     *
+     * 180 GPU minutes per run, not 540: two accounts share ~43.5 h/week and 16.5 h of that was
+     * already spent, so a single runaway kernel must not be able to consume the week.
      */
     val KAGGLE = BackendCapability(
         id = "kaggle",
@@ -256,12 +260,22 @@ object Backends {
         ),
         allowsControlledData = false,
         maxCpuMinutes = 720,
-        maxGpuMinutes = 540,
+        maxGpuMinutes = 180,
         maxUsd = 0.0,
-        pinnedImages = true,
-        determinism = Determinism.BITWISE,
+        pinnedImages = false,
+        determinism = Determinism.STATISTICAL,
         isLocal = false,
         datasetMountPrefix = "/kaggle/input",
+    )
+
+    /**
+     * Kaggle with a pinned Docker image. Only this capability may claim [Determinism.BITWISE],
+     * because only here is the runtime actually fixed.
+     */
+    val KAGGLE_PINNED = KAGGLE.copy(
+        id = "kaggle-pinned",
+        pinnedImages = true,
+        determinism = Determinism.BITWISE,
     )
 
     /**

@@ -13,12 +13,12 @@
     "confirmatory": true,
     "datasets": [
       {
-        "ref": "cbioportal/esr1-plasma-tissue-paired",
-        "version": "",
-        "sha256": "",
-        "license": "CC-BY-4.0",
+        "ref": "fixture/esr1-paired-synthetic",
+        "version": "2026-10-29",
+        "sha256": "8ae88eb84cbaf61d1f407e4e4a6ad27b5cc599e5d6ec878565426e6b4422d4e2",
+        "license": "CC0-1.0 (synthetic fixture)",
         "access": "PUBLIC",
-        "dataClass": "AGGREGATE"
+        "dataClass": "SYNTHETIC"
       }
     ],
     "method": {
@@ -56,12 +56,12 @@
     "confirmatory": true,
     "datasets": [
       {
-        "ref": "cbioportal/esr1-plasma-tissue-paired",
-        "version": "",
-        "sha256": "",
-        "license": "CC-BY-4.0",
+        "ref": "fixture/esr1-paired-synthetic",
+        "version": "2026-10-29",
+        "sha256": "8ae88eb84cbaf61d1f407e4e4a6ad27b5cc599e5d6ec878565426e6b4422d4e2",
+        "license": "CC0-1.0 (synthetic fixture)",
         "access": "PUBLIC",
-        "dataClass": "AGGREGATE"
+        "dataClass": "SYNTHETIC"
       }
     ],
     "method": {
@@ -99,12 +99,12 @@
     "confirmatory": false,
     "datasets": [
       {
-        "ref": "cbioportal/esr1-plasma-tissue-paired",
-        "version": "",
-        "sha256": "",
-        "license": "CC-BY-4.0",
+        "ref": "fixture/esr1-paired-synthetic",
+        "version": "2026-10-29",
+        "sha256": "8ae88eb84cbaf61d1f407e4e4a6ad27b5cc599e5d6ec878565426e6b4422d4e2",
+        "license": "CC0-1.0 (synthetic fixture)",
         "access": "PUBLIC",
-        "dataClass": "AGGREGATE"
+        "dataClass": "SYNTHETIC"
       }
     ],
     "method": {

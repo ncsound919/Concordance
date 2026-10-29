@@ -121,6 +121,8 @@ class ExperimentSpecTest {
         assertFalse(DataClass.UNKNOWN.mayLeaveHost)
         assertTrue(DataClass.AGGREGATE.mayLeaveHost)
         assertTrue(DataClass.DERIVED.mayLeaveHost)
+        // A synthetic fixture is public demo data; it may move, but it cannot become a claim.
+        assertTrue(DataClass.SYNTHETIC.mayLeaveHost)
     }
 
     companion object {

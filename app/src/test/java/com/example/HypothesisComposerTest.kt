@@ -104,7 +104,7 @@ class HypothesisComposerTest {
                 edge(predicate = Predicate.RESISTANT_TO, score = 0.7),
             ),
         )
-        assertEquals("RESISTANCE_CONTRADICTS", refused(result))
+        assertEquals("CONTRADICTING_EVIDENCE", refused(result))
     }
 
     @Test
@@ -116,7 +116,7 @@ class HypothesisComposerTest {
                 edge(predicate = Predicate.RESISTANT_TO, score = 0.95),
             ),
         )
-        assertEquals("RESISTANCE_CONTRADICTS", refused(result))
+        assertEquals("CONTRADICTING_EVIDENCE", refused(result))
     }
 
     @Test
@@ -167,12 +167,42 @@ class HypothesisComposerTest {
     }
 
     @Test
+    fun anAdverseEffectRefusesTheCandidate() {
+        val result = HypothesisComposer.compose(
+            request(),
+            listOf(
+                edge(predicate = Predicate.SENSITIVE_TO, score = 0.9),
+                edge(predicate = Predicate.ADVERSE_EFFECT, score = 0.9),
+            ),
+        )
+        assertEquals("CONTRADICTING_EVIDENCE", refused(result))
+    }
+
+    @Test
     fun anIncompleteRequestIsRefusedBeforeAnythingIsBuilt() {
         val result = HypothesisComposer.compose(
             request().copy(drugRxnorm = ""),
             listOf(edge()),
         )
         assertEquals("INCOMPLETE_REQUEST", refused(result))
+    }
+
+    @Test
+    fun contradictionReducesRank() {
+        val clean = built(HypothesisComposer.compose(request(), listOf(edge(score = 0.9))))
+        val contested = built(
+            HypothesisComposer.compose(
+                request(),
+                listOf(
+                    edge(score = 0.9),
+                    edge(predicate = Predicate.RESISTANT_TO, score = 0.6),
+                ),
+            )
+        )
+        assertTrue(
+            "contested rank ${contested.rankScore} must be below clean rank ${clean.rankScore}",
+            contested.rankScore < clean.rankScore,
+        )
     }
 
     @Test

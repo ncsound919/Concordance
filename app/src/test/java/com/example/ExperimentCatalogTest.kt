@@ -56,6 +56,8 @@ class ExperimentCatalogTest {
         val counted = SpecStatus.values().sumOf { status -> entries.count { it.status == status } }
         assertEquals(entries.size, counted)
         assertEquals(1, entries.count { it.status == SpecStatus.DESIGN_ONLY })
+        // The three ESR1 specs are pinned to the bundled synthetic fixture and are runnable.
+        assertEquals(3, entries.count { it.status == SpecStatus.READY })
         // Unsupported entries must say why, not just fail.
         assertTrue(
             entries.filter { it.status == SpecStatus.UNSUPPORTED }
@@ -72,9 +74,20 @@ class ExperimentCatalogTest {
 
     @Test
     fun anUnpinnedDatasetIsTheReportedReason() {
-        val esr1 = catalog().first { it.id == "rp-esr1-cns-001" }
-        assertEquals(SpecStatus.UNSUPPORTED, esr1.status)
-        assertTrue(esr1.reason, esr1.reason.contains("not pinned"))
+        // Everything else is present, so the pin is the only thing missing.
+        val unpinned = ExperimentSpecTest.spec(
+            datasets = listOf(ExperimentSpecTest.DATASET.copy(version = "", sha256 = ""))
+        )
+        val (status, reason) = ExperimentCatalog.statusFor(unpinned)
+        assertEquals(SpecStatus.UNSUPPORTED, status)
+        assertTrue(reason, reason.contains("not pinned"))
+    }
+
+    @Test
+    fun aSpecWithNoDecisionRuleSaysSoRatherThanBlamingItsData() {
+        val program = catalog().first { it.id == "xd-01-program" }
+        assertEquals(SpecStatus.UNSUPPORTED, program.status)
+        assertTrue(program.reason, program.reason.contains("decision rule"))
     }
 
     @Test
@@ -102,10 +115,11 @@ class ExperimentCatalogTest {
     }
 
     @Test
-    fun aPinnedSpecWithAnUnpinnedImageIsNotReady() {
+    fun aPinnedSpecWithAnUnpinnedImageIsNotReadyOnAPinnedBackend() {
         val base = ExperimentSpecTest.spec()
         val unpinnedImage = base.copy(method = base.method.copy(imageDigest = ""))
-        val (status, reason) = ExperimentCatalog.statusFor(unpinnedImage)
+        // Only a backend that claims bitwise reproducibility needs a pinned image.
+        val (status, reason) = ExperimentCatalog.statusFor(unpinnedImage, Backends.KAGGLE_PINNED)
         assertEquals(SpecStatus.UNSUPPORTED, status)
         assertTrue(reason, reason.contains("image"))
     }

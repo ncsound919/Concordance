@@ -5,6 +5,7 @@ import com.example.concordance.research.experiment.Backends
 import com.example.concordance.research.experiment.ClaimStatus
 import com.example.concordance.research.experiment.ClaimUpdate
 import com.example.concordance.research.experiment.CompileResult
+import com.example.concordance.research.experiment.DataClass
 import com.example.concordance.research.experiment.ExecutedRun
 import com.example.concordance.research.experiment.ExperimentClass
 import com.example.concordance.research.experiment.ExperimentCompiler
@@ -66,8 +67,18 @@ class AdjudicatorTest {
         (update as ClaimUpdate.Refused).code
 
     @Test
-    fun anExploratoryRunCannotUpdateAClaim() {
-        val spec = ExperimentSpecTest.spec(confirmatory = false, decisionRule = null)
+    fun aSyntheticFixtureCannotProduceAClaim() {
+        val spec = ExperimentSpecTest.spec(
+            datasets = listOf(ExperimentSpecTest.DATASET.copy(dataClass = DataClass.SYNTHETIC))
+        )
+        val update = Adjudicator.adjudicate(
+            spec, compile(spec).plan, completed(spec), completedOutcome(), metrics(0.2575, 0.1940, 0.3418)
+        )
+        assertEquals("SYNTHETIC_DATA", refusalCode(update))
+    }
+
+    @Test
+    fun anExploratoryRunCannotUpdateAClaim() {        val spec = ExperimentSpecTest.spec(confirmatory = false, decisionRule = null)
         val update = Adjudicator.adjudicate(spec, compile(spec).plan, completed(spec), completedOutcome())
         assertEquals("EXPLORATORY_RUN", refusalCode(update))
     }

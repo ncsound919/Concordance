@@ -54,6 +54,7 @@ class ConnectorTest {
         significance: String = "Sensitivity/Response",
         therapies: List<String> = listOf("Erlotinib"),
         disease: String = "Non-Small Cell Lung Cancer",
+        evidenceDirection: String = "Supports",
     ) = CuratedVariantEvidence(
         civicEvidenceId = 42,
         civicUrl = "https://civicdb.org/e/42",
@@ -63,7 +64,7 @@ class ConnectorTest {
         molecularProfile = "EGFR AMPLIFICATION",
         evidenceType = "Predictive",
         evidenceLevel = "A",
-        evidenceDirection = "Supports",
+        evidenceDirection = evidenceDirection,
         significance = significance,
         evidenceRating = 5,
         disease = disease,
@@ -153,6 +154,38 @@ class ConnectorTest {
     fun aResistanceItemIsNotASensitivityItem() {
         val result = CivicConnector.fromEvidence(civic(significance = "Resistance"), at)
         assertEquals(Predicate.RESISTANT_TO, result.edges.single().predicate)
+    }
+
+    @Test
+    fun anAdverseResponseIsNotSensitivity() {
+        // The bug that motivated this fix: "Adverse Response" contains "response", so the old
+        // string check mapped it to SENSITIVE_TO. It is toxicity, not support.
+        val result = CivicConnector.fromEvidence(civic(significance = "Adverse Response"), at)
+        assertEquals(Predicate.ADVERSE_EFFECT, result.edges.single().predicate)
+    }
+
+    @Test
+    fun aReducedSensitivityItemIsStillSensitivity() {
+        val result = CivicConnector.fromEvidence(civic(significance = "Reduced Sensitivity"), at)
+        assertEquals(Predicate.SENSITIVE_TO, result.edges.single().predicate)
+    }
+
+    @Test
+    fun anNaItemIsRefused() {
+        val result = CivicConnector.fromEvidence(civic(significance = "N/A"), at)
+        assertTrue(result.edges.isEmpty())
+        assertTrue(result.problems.any { it.code == "CIVIC_NOT_INFORMATIVE" })
+    }
+
+    @Test
+    fun aDoesNotSupportItemIsDemoted() {
+        val supports = CivicConnector.fromEvidence(civic(), at).edges.single()
+        val refutes = CivicConnector.fromEvidence(
+            civic(evidenceDirection = "Does Not Support"),
+            at,
+        ).edges.single()
+        assertEquals(Predicate.SENSITIVE_TO, refutes.predicate)
+        assertTrue("refuted score must be lower", refutes.score < supports.score)
     }
 
     @Test

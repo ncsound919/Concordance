@@ -268,15 +268,22 @@ enum class DataClass(val wireValue: String) {
     PHI("phi"),
 
     /**
+     * Demo data that exercises the pipeline. It may leave the host (it is public and contains no
+     * real patients) but it can never support a scientific claim - see the adjudicator's
+     * `SYNTHETIC_DATA` refusal.
+     */
+    SYNTHETIC("synthetic"),
+
+    /**
      * Unparseable data class. Must never be treated as aggregate: a typo in a source file
      * would otherwise let patient-level data leave the host.
      */
     UNKNOWN("unknown"),
     ;
 
-    /** Only aggregate and derived artifacts may leave the host. PHI and unknown never do. */
+    /** Only aggregate, derived and synthetic artifacts may leave the host. */
     val mayLeaveHost: Boolean
-        get() = this == AGGREGATE || this == DERIVED
+        get() = this == AGGREGATE || this == DERIVED || this == SYNTHETIC
 }
 
 data class DatasetRef(

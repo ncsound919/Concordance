@@ -29,7 +29,10 @@ class ExperimentCompilerTest {
         assertEquals(spec.sha256(), plan.specHash)
         assertEquals(64, plan.planHash.length)
         assertEquals("/kaggle/input/cbioportal_esr1-plasma-tissue-paired/2026-07-01", plan.datasets[0].mountPath)
-        assertEquals(listOf(20261028L), plan.seeds)
+        // The stock Kaggle image is not pinned, so the plan declares STATISTICAL determinism and
+        // carries a seed list rather than a single seed.
+        assertEquals(com.example.concordance.research.experiment.Determinism.STATISTICAL, plan.determinism)
+        assertEquals(listOf(20261028L, 20261029L, 20261030L), plan.seeds)
         assertEquals(listOf("results.json", "session_info.json"), plan.requiredArtifacts)
     }
 
@@ -71,8 +74,20 @@ class ExperimentCompilerTest {
     fun anUnpinnedImageIsRefusedOnAReproducibleBackend() {
         val base = ExperimentSpecTest.spec()
         val spec = base.copy(method = base.method.copy(imageDigest = ""))
-        val result = ExperimentCompiler.compile(spec, Backends.KAGGLE, preregFor(spec.sha256()))
+        val result = ExperimentCompiler.compile(spec, Backends.KAGGLE_PINNED, preregFor(spec.sha256()))
         assertTrue(codes(result).contains("IMAGE_UNPINNED"))
+    }
+
+    @Test
+    fun theStockKaggleImageDoesNotRequireADigestBecauseItIsStatistical() {
+        val base = ExperimentSpecTest.spec()
+        val spec = base.copy(method = base.method.copy(imageDigest = ""))
+        val result = ExperimentCompiler.compile(spec, Backends.KAGGLE, preregFor(spec.sha256()))
+        assertTrue(result.toString(), result is CompileResult.Ready)
+        assertEquals(
+            com.example.concordance.research.experiment.Determinism.STATISTICAL,
+            (result as CompileResult.Ready).plan.determinism,
+        )
     }
 
     @Test

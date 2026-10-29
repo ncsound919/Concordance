@@ -23,6 +23,13 @@ object Adjudicator {
                 "${spec.experimentClass.label} runs do not update claims"
             )
         }
+        // A fixture proves the plumbing works. It must never become a scientific claim.
+        if (spec.datasets.any { it.dataClass == DataClass.SYNTHETIC }) {
+            return ClaimUpdate.Refused(
+                "SYNTHETIC_DATA",
+                "synthetic fixtures exercise the pipeline; they cannot produce a scientific claim"
+            )
+        }
         if (!spec.confirmatory) {
             return ClaimUpdate.Refused(
                 "EXPLORATORY_RUN",
