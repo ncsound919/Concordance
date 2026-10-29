@@ -216,7 +216,7 @@ Ownership rules:
 
 Replaces the agent-dependent phases in `EXPERIMENT_RUNTIME_PLAN.md`.
 
-> **Implementation status (2026-10-28).** The pure layer is built and compiling:
+> **Implementation status (2026-10-28/29).** The pure layer is built and compiling:
 > `ExperimentSpec` (IR + canonical hash + validation), `ExperimentCompiler` (fail-closed
 > `RunPlan`), `RunRecord` (append-only state machine with a hash chain), `Adjudicator`
 > (artifacts → `ClaimUpdate` or refusal), and `ExperimentCatalog` (truthful statuses,
@@ -224,6 +224,13 @@ Replaces the agent-dependent phases in `EXPERIMENT_RUNTIME_PLAN.md`.
 > instead of a hardcoded list. 54 of 56 new tests pass on first run; the two failures were
 > a modelling bug in dataset pinning and are fixed. Not yet built: Kaggle submission, the
 > edge routes in `EDGE_RUN_API.md`, Room persistence, and the Chaquopy lane.
+
+> **Validation (2026-10-29).** The loop is now proven end to end against live Kaggle:
+> three kernels pushed and completed, bitwise determinism confirmed (the host and the
+> kernel agree on the sha256 of a fixed string), the GPU path verified on a Tesla T4, and
+> an AI benchmark run against four models for $0.03. The synthetic fixture run returns a
+> `supported` verdict with OR 10.40 and Fisher p 5.97e-14, and is refused by the
+> adjudicator (`SYNTHETIC_DATA`) — the guardrail working as designed.
 
 **P0 - Honesty and cleanup (2 days)**
 Delete `concordance-web`; remove `/v1/debug/raw`; stop the edge from calling a laptop; mark
@@ -265,6 +272,12 @@ Route `sieve-ingest` events into the same run ids; export the run ledger from D1
 Roughly 6 weeks, with no component outside the phone, the $5 account, and free Kaggle.
 
 ---
+
+> **Persistence (2026-10-29).** Room v8 adds five tables (`source_artifacts`,
+> `lineage_edges`, `datasets`, `kg_edges`, `hypotheses`) with migration `7→8`, a DAO, and
+> `RoomEvidenceStore` implementing `EvidenceStore` with the same dedup/merge/lineage
+> semantics as the in-memory store. The ViewModel ingests CIViC results through
+> `ConnectorIngest` on import, so the graph has a real producer. 5 round-trip tests pass.
 
 ## 6. Risks introduced by the rescope
 

@@ -165,6 +165,7 @@ enum class NodeKind {
 enum class Predicate(val wire: String) {
     SENSITIVE_TO("sensitive_to"),
     RESISTANT_TO("resistant_to"),
+    ADVERSE_EFFECT("adverse_effect"),
     ASSOCIATED_WITH("associated_with"),
     BIOMARKER_FOR("biomarker_for"),
     REPURPOSES("repurposes"),

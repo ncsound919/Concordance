@@ -79,8 +79,10 @@ object HypothesisComposer {
                     )
         }
 
-        val supporting = relevant.filter { it.predicate != Predicate.RESISTANT_TO }
-        val contradicting = relevant.filter { it.predicate == Predicate.RESISTANT_TO }
+        val supporting = relevant.filter { it.predicate != Predicate.RESISTANT_TO && it.predicate != Predicate.ADVERSE_EFFECT }
+        val contradicting = relevant.filter {
+            it.predicate == Predicate.RESISTANT_TO || it.predicate == Predicate.ADVERSE_EFFECT
+        }
 
         if (supporting.isEmpty()) {
             return Result.Refused(
@@ -93,9 +95,9 @@ object HypothesisComposer {
         val bestResistance = contradicting.maxOfOrNull { it.score } ?: 0.0
         if (contradicting.isNotEmpty() && bestResistance >= bestSupport) {
             return Result.Refused(
-                "RESISTANCE_CONTRADICTS",
-                "resistance evidence ($bestResistance) is at least as strong as sensitivity " +
-                    "evidence ($bestSupport) for $gene / ${request.candidateDrug}",
+                "CONTRADICTING_EVIDENCE",
+                "contradicting evidence (resistance or adverse response, $bestResistance) is at least as strong as " +
+                    "sensitivity evidence ($bestSupport) for $gene / ${request.candidateDrug}",
             )
         }
 
@@ -103,14 +105,23 @@ object HypothesisComposer {
         val meanScore = supporting.sumOf { it.score } / supporting.size
         val countFactor = (supporting.size / 4.0).coerceAtMost(1.0)
         val diversity = (evidence.map { it.kind }.distinct().size / 4.0).coerceAtMost(1.0)
-        val rank = (0.60 * meanScore + 0.25 * countFactor + 0.15 * diversity).coerceIn(0.0, 1.0)
+        // Contradicting evidence that was not strong enough to block the hypothesis still
+        // reduces its rank: a candidate with a 0.8 resistance edge is worth less than one with
+        // none. The penalty is proportional to how close the contradiction came to blocking.
+        val contradictionPenalty = if (contradicting.isNotEmpty() && bestSupport > 0.0) {
+            0.15 * (bestResistance / bestSupport).coerceIn(0.0, 1.0)
+        } else {
+            0.0
+        }
+        val rank = (0.60 * meanScore + 0.25 * countFactor + 0.15 * diversity - contradictionPenalty)
+            .coerceIn(0.0, 1.0)
 
         val rationale = buildString {
             append("$gene ${request.biomarkerType} in ${request.cancerType}: ")
             append("${supporting.size} supporting edge(s) for ${request.candidateDrug} ")
             append("(best score ${format(bestSupport)}).")
             if (contradicting.isNotEmpty()) {
-                append(" Weaker resistance evidence was also found ")
+                append(" Weaker contradicting evidence (resistance or adverse response) was also found ")
                 append("(best score ${format(bestResistance)}) and is listed as a caveat.")
             }
         }

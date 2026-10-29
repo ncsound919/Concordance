@@ -193,12 +193,30 @@ object CivicConnector {
         val therapies = evidence.therapies.map { it.trim() }.filter { it.isNotBlank() }
         val disease = evidence.disease.trim()
 
+        val significance = evidence.significance.trim().lowercase(Locale.US)
+        val supports = evidence.evidenceDirection.contains("support", ignoreCase = true) &&
+            !evidence.evidenceDirection.contains("does not", ignoreCase = true)
+
         val predicate = when {
-            evidence.significance.contains("sensitivity", ignoreCase = true) ||
-                evidence.significance.contains("response", ignoreCase = true) -> Predicate.SENSITIVE_TO
-            evidence.significance.contains("resistance", ignoreCase = true) -> Predicate.RESISTANT_TO
+            significance == "n/a" || significance == "na" ->
+                return ConnectorResult(
+                    problems = listOf(
+                        EvidenceProblem(
+                            "CIVIC_NOT_INFORMATIVE",
+                            "CIViC EID${evidence.civicEvidenceId} is N/A; it does not inform clinical interpretation",
+                        )
+                    )
+                )
+            significance.contains("adverse") -> Predicate.ADVERSE_EFFECT
+            significance.contains("resistance") -> Predicate.RESISTANT_TO
+            significance.contains("reduced sensitivity") -> Predicate.SENSITIVE_TO
+            significance.contains("sensitivity") || significance == "response" -> Predicate.SENSITIVE_TO
             else -> Predicate.ASSOCIATED_WITH
         }
+
+        // A "does not support" item is refuted evidence. It must not be able to support a therapy,
+        // so it is demoted to a neutral association with a reduced score rather than dropped.
+        val reducedSensitivity = significance.contains("reduced")
 
         val objectRef = when {
             therapies.isNotEmpty() -> NodeRef(
@@ -249,7 +267,7 @@ object CivicConnector {
             evidence = listOf(EvidenceRef(EvidenceKind.ARTIFACT, artifact.artifactId)),
             // CIViC evidence levels are ordinal letters; this is a coarse, documented mapping and
             // deliberately not a substitute for the level itself.
-            score = scoreFor(evidence.evidenceLevel, evidence.evidenceRating),
+            score = scoreFor(evidence.evidenceLevel, evidence.evidenceRating, predicate, supports, reducedSensitivity),
             createdBy = "civic-connector/1",
             createdAtUtc = atUtc,
         )
@@ -270,8 +288,16 @@ object CivicConnector {
         )
     }
 
-    /** A/B are high-confidence, C is moderate, D/E and unknown are low. Rating nudges upward. */
-    private fun scoreFor(level: String, rating: Int?): Double {
+    /** A/B are high-confidence, C is moderate, D/E and unknown are low. Rating nudges upward.
+     *  Adverse and resistance are already contradicting, so their score stays as reported.
+     *  A "does not support" item is penalised. Reduced sensitivity is lower than sensitivity. */
+    private fun scoreFor(
+        level: String,
+        rating: Int?,
+        predicate: Predicate,
+        supports: Boolean,
+        reducedSensitivity: Boolean,
+    ): Double {
         val base = when (level.trim().uppercase(Locale.US)) {
             "A" -> 0.90
             "B" -> 0.80
@@ -286,7 +312,9 @@ object CivicConnector {
             rating <= 1 -> -0.05
             else -> 0.0
         }
-        return (base + nudge).coerceIn(0.0, 1.0)
+        val reduced = if (reducedSensitivity) -0.15 else 0.0
+        val directionPenalty = if (!supports) -0.30 else 0.0
+        return (base + nudge + reduced + directionPenalty).coerceIn(0.0, 1.0)
     }
 
     private fun slug(value: String): String = value.trim().lowercase(Locale.US)
