@@ -34,6 +34,8 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.WarningAmber
 import com.example.ui.theme.concordance
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * The papers the automation may read, and the folder grant that allows it.
@@ -61,8 +63,7 @@ fun LocalCorpusCard(
             horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceS),
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Folder",
+                Text(text = stringResource(R.string.auto_30baa24967e0),
                     style = MaterialTheme.concordance.overline,
                     color = TextSecondary,
                     fontWeight = FontWeight.Bold
@@ -113,8 +114,7 @@ fun LocalCorpusCard(
                     color = ElectricCyan,
                     modifier = Modifier.alpha(alpha)
                 )
-                Text(
-                    text = "Indexing — PDFs are read page by page, this can take a while.",
+                Text(text = stringResource(R.string.auto_89f30af96fd9),
                     style = MaterialTheme.concordance.caption,
                     color = ElectricCyan
                 )
@@ -161,8 +161,7 @@ fun LocalCorpusCard(
             }
             if (status.hasFolder) {
                 TextButton(onClick = onForget) {
-                    Text(
-                        "Forget",
+                    Text(stringResource(R.string.auto_03d5d8019927),
                         style = MaterialTheme.concordance.caption,
                         color = TextSecondary
                     )
@@ -170,8 +169,7 @@ fun LocalCorpusCard(
             }
         }
 
-        Text(
-            text = "Reading stays on the phone. PDF text extraction runs locally; nothing is uploaded.",
+        Text(text = stringResource(R.string.auto_6637ae64bb51),
             style = MaterialTheme.concordance.caption,
             color = TextMuted,
             modifier = Modifier.padding(top = Dimens.SpaceXXS)

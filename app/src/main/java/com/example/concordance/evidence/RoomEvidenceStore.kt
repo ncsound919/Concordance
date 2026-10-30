@@ -1,5 +1,7 @@
 package com.example.concordance.evidence
 
+import androidx.room.RoomDatabase
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
@@ -10,18 +12,26 @@ import kotlinx.coroutines.runBlocking
  * inside a coroutine scope, and keeping the store synchronous means the in-memory store and the
  * Room store are interchangeable in tests. Internally this blocks an IO thread.
  *
- * Room DAOs are thread-safe, so no external lock is needed; a `synchronized` block is actively
- * wrong here because it forbids the suspend calls it would contain.
+ * Every read-modify-write below runs inside a single Room transaction ([inTransaction]), so two
+ * concurrent imports cannot both observe "absent" and both report `created = true`, and an edge
+ * merge can never overwrite evidence it did not first read. A `synchronized` block would be
+ * actively wrong here because it only serialises one process and forbids the suspend calls.
  */
 class RoomEvidenceStore(
     private val dao: EvidenceDao,
+    private val db: RoomDatabase,
     private val io: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.IO,
 ) : EvidenceStore {
+
+    /** Runs a read-modify-write sequence atomically; readers outside see before or after, never between. */
+    private fun <T> inTransaction(block: suspend () -> T): T = runBlocking(io) {
+        db.withTransaction { block() }
+    }
 
     override fun putArtifact(artifact: SourceArtifact): PutResult<SourceArtifact> {
         val problems = EvidenceRules.validateArtifact(artifact)
         if (problems.isNotEmpty()) return PutResult.Rejected(problems)
-        return runBlocking(io) {
+        return inTransaction {
             val existing = dao.getArtifact(artifact.artifactId)
             if (existing != null) {
                 PutResult.Stored(existing.toDomain(), created = false)
@@ -35,7 +45,7 @@ class RoomEvidenceStore(
     override fun putDataset(dataset: DatasetRecord): PutResult<DatasetRecord> {
         val problems = EvidenceRules.validateDataset(dataset)
         if (problems.isNotEmpty()) return PutResult.Rejected(problems)
-        return runBlocking(io) {
+        return inTransaction {
             val existing = dao.getDataset(dataset.datasetId)
             if (existing != null) {
                 PutResult.Stored(existing.toDomain(), created = false)
@@ -49,12 +59,14 @@ class RoomEvidenceStore(
     override fun putEdge(edge: KgEdge): PutResult<KgEdge> {
         val problems = EvidenceRules.validateEdge(edge)
         if (problems.isNotEmpty()) return PutResult.Rejected(problems)
-        return runBlocking(io) {
+        return inTransaction {
             val existing = dao.getEdge(edge.edgeId)
             if (existing == null) {
                 dao.upsertEdge(KgEdgeEntity.fromDomain(edge))
                 PutResult.Stored(edge, created = true)
             } else {
+                // Merge against the row read in *this* transaction: a concurrent
+                // merge of the same edge cannot be lost.
                 val merged = EvidenceRules.mergeEdges(existing.toDomain(), edge)
                 dao.upsertEdge(KgEdgeEntity.fromDomain(merged))
                 PutResult.Stored(merged, created = false)
@@ -65,7 +77,7 @@ class RoomEvidenceStore(
     override fun putHypothesis(hypothesis: Hypothesis): PutResult<Hypothesis> {
         val problems = EvidenceRules.validateHypothesis(hypothesis, knownEdgeIds())
         if (problems.isNotEmpty()) return PutResult.Rejected(problems)
-        return runBlocking(io) {
+        return inTransaction {
             val existed = dao.getHypothesis(hypothesis.hypothesisId) != null
             dao.upsertHypothesis(HypothesisEntity.fromDomain(hypothesis))
             PutResult.Stored(hypothesis, created = !existed)
@@ -80,10 +92,12 @@ class RoomEvidenceStore(
             if (edge.transformVersion.isBlank()) {
                 add(EvidenceProblem("LINEAGE_VERSION", "transformVersion is empty"))
             }
-            if (edge.createdAtUtc.isBlank()) add(EvidenceProblem("LINEAGE_TIME", "createdAtUtc is empty"))
+            if (edge.createdAtUtc.isBlank()) {
+                add(EvidenceProblem("LINEAGE_TIME", "createdAtUtc is empty"))
+            }
         }
         if (problems.isNotEmpty()) return PutResult.Rejected(problems)
-        return runBlocking(io) {
+        return inTransaction {
             val duplicate = dao.allLineage().any {
                 it.derivedKind == edge.derivedKind.name &&
                     it.derivedId == edge.derivedId &&

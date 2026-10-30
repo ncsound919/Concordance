@@ -9,6 +9,8 @@ import com.example.concordance.integration.supabase.SupabaseAuth
 import com.example.concordance.integration.supabase.SupabaseSyncManager
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun SupabaseStatusCard(
@@ -23,10 +25,10 @@ fun SupabaseStatusCard(
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp)) {
-            Text("Cloud sync (Supabase)", style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.auto_044c2076db4a), style = MaterialTheme.typography.titleSmall)
             Spacer(Modifier.height(4.dp))
             if (session == null) {
-                Text("Not signed in. Data stays on this device.", style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.auto_e239ecba166f), style = MaterialTheme.typography.bodySmall)
             } else {
                 Text("Signed in: ${session.email ?: session.userId}", style = MaterialTheme.typography.bodySmall)
                 Text("Status: $status", style = MaterialTheme.typography.bodySmall)
@@ -38,7 +40,7 @@ fun SupabaseStatusCard(
                             onSyncNow()
                             status = "Done"
                         }
-                    }) { Text("Sync now") }
+                    }) { Text(stringResource(R.string.auto_2b7d938e6787)) }
                 }
             }
         }

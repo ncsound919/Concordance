@@ -46,6 +46,8 @@ import com.example.ui.theme.createThemePreferenceStore
 import com.example.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Primary destinations shown in the navigation bar/rail.
@@ -250,7 +252,7 @@ fun ConcordanceApp(
                         Button(onClick = {
                             sessionStore.clear()
                             supabaseSession = null
-                        }) { Text("Sign out") }
+                        }) { Text(stringResource(R.string.auto_dc1649a16c14)) }
                     }
                 }
             }
@@ -272,17 +274,17 @@ fun ConcordanceApp(
     if (showMigrationDialog) {
         AlertDialog(
             onDismissRequest = { showMigrationDialog = false },
-            title = { Text("Upload local data?") },
-            text = { Text("You have local claims/capsules on this device. Upload them to your account so they sync across devices?") },
+            title = { Text(stringResource(R.string.auto_e0049f6b7742)) },
+            text = { Text(stringResource(R.string.auto_1b778def4753)) },
             confirmButton = {
                 Button(onClick = {
                     showMigrationDialog = false
                     com.example.concordance.integration.supabase.SupabaseSyncWorker.setEnabled(context, true)
                         com.example.concordance.integration.supabase.SupabaseSyncWorker.runNow(context)
-                }) { Text("Upload") }
+                }) { Text(stringResource(R.string.auto_8bdf057f91e7)) }
             },
             dismissButton = {
-                TextButton(onClick = { showMigrationDialog = false }) { Text("Not now") }
+                TextButton(onClick = { showMigrationDialog = false }) { Text(stringResource(R.string.auto_e45714907316)) }
             },
             containerColor = SlateCard
         )
@@ -299,8 +301,7 @@ fun RegulatoryDisclaimerDialog(onDismiss: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = ClinicalTeal)
-                Text(
-                    text = "Regulatory and Scope Declaration",
+                Text(text = stringResource(R.string.auto_2670dfa38254),
                     style = MaterialTheme.concordance.cardTitle,
                     color = TextPrimary
                 )
@@ -308,24 +309,20 @@ fun RegulatoryDisclaimerDialog(onDismiss: () -> Unit) {
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = "Research Workflow Tool",
+                Text(text = stringResource(R.string.auto_aff822cb0971),
                     style = MaterialTheme.concordance.cardTitle,
                     color = ElectricCyan
                 )
-                Text(
-                    text = "Concordance is a scientific hypothesis adjudication tool for researchers and oncologists evaluating mutation organotropism claims against assay detection artifact boundaries. It is not a clinical decision support device or diagnostic instrument.",
+                Text(text = stringResource(R.string.auto_6aded0e74f5c),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary
                 )
                 HorizontalDivider(color = SlateCardBorder, modifier = Modifier.padding(vertical = 4.dp))
-                Text(
-                    text = "Transparency and Auditability",
+                Text(text = stringResource(R.string.auto_eba0bc28e4bd),
                     style = MaterialTheme.concordance.cardTitle,
                     color = ElectricCyan
                 )
-                Text(
-                    text = "All adjudications produce cryptographically hashed capsules (SHA-256) disclosing full assumptions, mathematical formulas, and limitation conditions to support independent scientific review.",
+                Text(text = stringResource(R.string.auto_2328f5b36c8e),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary
                 )
@@ -336,7 +333,7 @@ fun RegulatoryDisclaimerDialog(onDismiss: () -> Unit) {
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
             ) {
-                Text("Understood")
+                Text(stringResource(R.string.auto_bc79700b155e))
             }
         },
         containerColor = SlateCard

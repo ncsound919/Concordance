@@ -27,6 +27,8 @@ import com.example.ui.theme.*
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun SensitivityCurveChart(
@@ -49,8 +51,7 @@ fun SensitivityCurveChart(
                 .background(SlateCard),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Threshold curve unavailable (infeasible prevalence bounds)",
+            Text(text = stringResource(R.string.auto_e4bb3e2b4718),
                 color = TextSecondary,
                 style = MaterialTheme.concordance.bodyDense
             )
@@ -75,8 +76,7 @@ fun SensitivityCurveChart(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "CORRECTED ODDS RATIO CURVE",
+            Text(text = stringResource(R.string.auto_fa3cc5a540ee),
                 color = ElectricCyan,
                 style = MaterialTheme.concordance.overline,
                 fontWeight = FontWeight.Bold,
@@ -100,8 +100,7 @@ fun SensitivityCurveChart(
                     fontWeight = FontWeight.Bold
                 )
             } else {
-                Text(
-                    text = "Touch/drag to inspect",
+                Text(text = stringResource(R.string.auto_67caca005467),
                     color = TextMuted,
                     style = MaterialTheme.concordance.monoId
                 )
@@ -319,13 +318,11 @@ fun SensitivityCurveChart(
                 style = MaterialTheme.concordance.monoId,
                 fontFamily = FontFamily.Monospace
             )
-            Text(
-                text = "Relative Sensitivity (r = s_brain / s_non_cns) →",
+            Text(text = stringResource(R.string.auto_f113fbf27424),
                 color = TextMuted,
                 style = MaterialTheme.concordance.monoId
             )
-            Text(
-                text = "r = 1.00",
+            Text(text = stringResource(R.string.auto_88b6fad14f1b),
                 color = TextSecondary,
                 style = MaterialTheme.concordance.monoId,
                 fontFamily = FontFamily.Monospace

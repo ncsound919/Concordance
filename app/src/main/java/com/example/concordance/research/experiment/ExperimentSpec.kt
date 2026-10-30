@@ -146,6 +146,7 @@ data class ExperimentSpec(
                     field(ds.license),
                     ds.access.name,
                     ds.dataClass.name,
+                    field(ds.datasetId ?: ""),
                 ).joinToString(separator.toString())
             }
 
@@ -293,6 +294,7 @@ data class DatasetRef(
     val license: String,
     val access: DataAccess,
     val dataClass: DataClass,
+    val datasetId: String? = null,
 )
 
 data class MethodRef(

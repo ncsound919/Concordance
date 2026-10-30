@@ -16,6 +16,10 @@ import com.example.concordance.evidence.ReviewStatus
 import com.example.concordance.evidence.RoomEvidenceStore
 import com.example.concordance.evidence.SourceArtifact
 import com.example.concordance.evidence.Hypothesis
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -37,7 +41,7 @@ class RoomEvidenceStoreTest {
     fun setup() {
         val ctx = RuntimeEnvironment.getApplication()
         db = Room.inMemoryDatabaseBuilder(ctx, ConcordanceDatabase::class.java).allowMainThreadQueries().build()
-        store = RoomEvidenceStore(db.evidenceDao())
+        store = RoomEvidenceStore(db.evidenceDao(), db)
     }
 
     @After
@@ -159,5 +163,25 @@ class RoomEvidenceStoreTest {
         assertEquals(listOf("wet_1"), reloaded.wetlabIds)
         assertEquals(listOf(edge.edgeId), reloaded.supportingEdgeIds)
         assertEquals(0.7, reloaded.rankScore, 0.0)
+    }
+
+    @Test
+    fun concurrentWritersNeverBothReportCreation() = runBlocking {
+        val artifact = SourceArtifact.create(
+            contentHash = "c".repeat(64),
+            type = ArtifactType.PAPER_PDF,
+            originUri = "pmid:concurrent-race",
+            mimeType = "application/pdf",
+            sizeBytes = 512,
+            ingestedAtUtc = "2026-10-29T00:00:00Z",
+        )
+
+        val results = (1..8).map { attempt ->
+            async(Dispatchers.IO) { store.putArtifact(artifact) to attempt }
+        }.awaitAll()
+
+        val created = results.count { (it.first as PutResult.Stored<*>).created }
+        assertEquals("exactly one concurrent writer may create the row", 1, created)
+        assertEquals(1, store.artifacts().size)
     }
 }

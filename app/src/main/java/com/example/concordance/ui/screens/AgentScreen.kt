@@ -56,6 +56,8 @@ import com.example.concordance.ui.components.LocalCorpusCard
 import com.example.ui.theme.*
 import java.io.File
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Client for the self-hosted adjudication agent.
@@ -228,26 +230,26 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = SlateCard, contentColor = TextPrimary)
         ) {
-            Text("Quick report (state of affairs)", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_7c6eaa7cbf45), style = MaterialTheme.concordance.buttonSmall)
         }
         if (showQuickReport) {
             AlertDialog(
                 onDismissRequest = { showQuickReport = false },
-                title = { Text("Quick report", color = TextPrimary) },
+                title = { Text(stringResource(R.string.auto_71e4480e786e), color = TextPrimary) },
                 text = {
                     Column {
-                        Text("Mode: SLOW (background)", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                        Text(stringResource(R.string.auto_bdf2f2219e2d), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                         Text("Pending decisions: ${pendingDecisions.size}", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                         researchResult?.let { r ->
                             Text("Last run: ${r.runId}", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                             Text("Claims: ${r.claimUpdates.size}  Critic: ${r.criticVerdict}", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                             Text("Stop: ${r.stopShouldStop}  Dead ends: ${r.deadEnds.size}", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                             Text("Paper: ${r.paperArtifacts} files", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
-                        } ?: Text("No research run yet.", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                        } ?: Text(stringResource(R.string.auto_320e1241686c), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = { showQuickReport = false }) { Text("Close", color = ElectricCyan) }
+                    TextButton(onClick = { showQuickReport = false }) { Text(stringResource(R.string.auto_bbfa773e5a63), color = ElectricCyan) }
                 }
             )
         }
@@ -316,7 +318,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
 
         if (job != null || upload != null || correction != null) {
             TextButton(onClick = { viewModel.clearAgentResult() }) {
-                Text("Clear result", color = TextSecondary, style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_22b8ff08b86b), color = TextSecondary, style = MaterialTheme.concordance.buttonSmall)
             }
         }
     }
@@ -352,8 +354,8 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = url,
             onValueChange = onUrlChange,
-            label = { Text("Agent base URL", style = MaterialTheme.concordance.bodyDense) },
-            placeholder = { Text("http://10.0.2.2:8000", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_bcb88e4a444e), style = MaterialTheme.concordance.bodyDense) },
+            placeholder = { Text(stringResource(R.string.auto_1768aa663705), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -362,7 +364,7 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = apiKey,
             onValueChange = onApiKeyChange,
-            label = { Text("API key (leave blank if auth is off)", style = MaterialTheme.concordance.monoId) },
+            label = { Text(stringResource(R.string.auto_8ac2c0218cdf), style = MaterialTheme.concordance.monoId) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -372,8 +374,8 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = communityUrl,
             onValueChange = onCommunityUrlChange,
-            label = { Text("Community website URL (publish destination)", style = MaterialTheme.concordance.monoId) },
-            placeholder = { Text("http://10.0.2.2:3001", style = MaterialTheme.concordance.monoId) },
+            label = { Text(stringResource(R.string.auto_9edcfc196fd9), style = MaterialTheme.concordance.monoId) },
+            placeholder = { Text(stringResource(R.string.auto_a5f70ac9efe8), style = MaterialTheme.concordance.monoId) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -382,12 +384,12 @@ private fun ConnectionCard(
         Button(
             onClick = onSaveCommunityUrl,
             colors = ButtonDefaults.buttonColors(containerColor = SlateCardElevated, contentColor = ElectricCyan)
-        ) { Text("Save community URL", style = MaterialTheme.concordance.monoId) }
+        ) { Text(stringResource(R.string.auto_f3424444ae03), style = MaterialTheme.concordance.monoId) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
                 onClick = onSave,
                 colors = ButtonDefaults.buttonColors(containerColor = SlateCardElevated, contentColor = ElectricCyan)
-            ) { Text("Save", style = MaterialTheme.concordance.buttonSmall) }
+            ) { Text(stringResource(R.string.auto_efc007a393f6), style = MaterialTheme.concordance.buttonSmall) }
             Button(
                 onClick = onTest,
                 enabled = !busy,
@@ -401,10 +403,10 @@ private fun ConnectionCard(
                     )
                     Spacer(Modifier.width(6.dp))
                 }
-                Text("Test connection", style = MaterialTheme.concordance.monoId)
+                Text(stringResource(R.string.auto_ccf66f074649), style = MaterialTheme.concordance.monoId)
             }
             if (!config.isConfigured) {
-                Text("Not configured", style = MaterialTheme.concordance.monoId, color = WarningAmber, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(stringResource(R.string.auto_811931bba8d1), style = MaterialTheme.concordance.monoId, color = WarningAmber, modifier = Modifier.align(Alignment.CenterVertically))
             }
         }
         Text(status, style = MaterialTheme.concordance.monoId, color = ClinicalTeal, fontFamily = FontFamily.Monospace)
@@ -422,7 +424,7 @@ private fun ConnectionCard(
             )
             Spacer(Modifier.width(8.dp))
             Column {
-                Text("Plain language first", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.auto_49f993374535), style = MaterialTheme.concordance.bodyDense, color = TextPrimary, fontWeight = FontWeight.Bold)
                 Text(
                     "The agent writes the plain version; this app only lays it out. " +
                         "The expert payload stays one tap away.",
@@ -481,7 +483,7 @@ private fun DictationCard(
             ) {
                 Icon(Icons.Default.Mic, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Start / stop", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_01c5d5743ae0), style = MaterialTheme.concordance.buttonSmall)
             }
             Text("e.g. \"EGFR L858R in brain\"", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
         }
@@ -495,7 +497,7 @@ private fun DictationCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Research & design experiments", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_24fc790d9d35), style = MaterialTheme.concordance.buttonSmall)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -516,8 +518,7 @@ private fun DictationCard(
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextPrimary
                 )
-                Text(
-                    "Uncheck when the model is rate-limited. The gates, critic, and local paper still run.",
+                Text(stringResource(R.string.auto_9a955bb7874d),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary,
                     lineHeight = 13.sp
@@ -527,7 +528,7 @@ private fun DictationCard(
         OutlinedTextField(
             value = transcript,
             onValueChange = onTranscriptChange,
-            label = { Text("What you said (editable)", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_3845f80204cb), style = MaterialTheme.concordance.bodyDense) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.bodyDense,
             colors = fieldColors()
@@ -572,7 +573,7 @@ private fun AdjudicateCard(
             OutlinedTextField(
                 value = selected,
                 onValueChange = { selected = it },
-                label = { Text("Anchor id", style = MaterialTheme.concordance.bodyDense) },
+                label = { Text(stringResource(R.string.auto_34b26f12c2d1), style = MaterialTheme.concordance.bodyDense) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -583,7 +584,7 @@ private fun AdjudicateCard(
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 if (anchors.isEmpty()) {
-                    DropdownMenuItem(text = { Text("No anchors loaded", style = MaterialTheme.concordance.monoId) }, onClick = { expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.auto_a967bfd20dc6), style = MaterialTheme.concordance.monoId) }, onClick = { expanded = false })
                 }
                 anchors.forEach { anchor ->
                     DropdownMenuItem(
@@ -615,7 +616,7 @@ private fun AdjudicateCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Run adjudication", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_f38b6ce5db74), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -647,7 +648,7 @@ private fun CorrectionCard(
         OutlinedTextField(
             value = anchorId,
             onValueChange = { anchorId = it },
-            label = { Text("Anchor id", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_34b26f12c2d1), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -657,8 +658,8 @@ private fun CorrectionCard(
             OutlinedTextField(
                 value = site,
                 onValueChange = { site = it },
-                label = { Text("Site", style = MaterialTheme.concordance.monoId) },
-                placeholder = { Text("brain", style = MaterialTheme.concordance.monoId) },
+                label = { Text(stringResource(R.string.auto_5b6825d3c67a), style = MaterialTheme.concordance.monoId) },
+                placeholder = { Text(stringResource(R.string.auto_8b9248a4e0b6), style = MaterialTheme.concordance.monoId) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.concordance.monoValue,
@@ -667,7 +668,7 @@ private fun CorrectionCard(
             OutlinedTextField(
                 value = sn,
                 onValueChange = { sn = it },
-                label = { Text("Assay sensitivity", style = MaterialTheme.concordance.monoId) },
+                label = { Text(stringResource(R.string.auto_8157aa912625), style = MaterialTheme.concordance.monoId) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.concordance.monoValue,
@@ -691,7 +692,7 @@ private fun CorrectionCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Correct", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_48e09e45c570), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -716,7 +717,7 @@ private fun RefereeAuditCard(
         OutlinedTextField(
             value = claimId,
             onValueChange = { claimId = it },
-            label = { Text("Claim id", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_6532303b375f), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -725,7 +726,7 @@ private fun RefereeAuditCard(
         OutlinedTextField(
             value = claimedAuc,
             onValueChange = { claimedAuc = it },
-            label = { Text("Claimed AUC", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_f824f9ffbe47), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -734,7 +735,7 @@ private fun RefereeAuditCard(
         OutlinedTextField(
             value = csvText,
             onValueChange = { csvText = it },
-            label = { Text("Prediction CSV (patient_id,label,split,score)", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_b3967b528a77), style = MaterialTheme.concordance.bodyDense) },
             modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
             textStyle = MaterialTheme.concordance.monoValue,
             colors = fieldColors()
@@ -752,7 +753,7 @@ private fun RefereeAuditCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Run referee audit", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_875cf0c43b44), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -769,7 +770,7 @@ private fun RefereeAuditResultCard(report: AgentRefereeReport) {
             }
         }
         if (report.dimensions.isNotEmpty()) {
-            Text("Dimensions", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_9f4ca9ec0871), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
             report.dimensions.forEach { (k, v) ->
                 Text("$k: $v", style = MaterialTheme.concordance.monoId, color = TextSecondary, fontFamily = FontFamily.Monospace)
             }
@@ -796,8 +797,7 @@ private fun verdictColorForReferee(verdict: String): Color = when (verdict.upper
 @Composable
 private fun RefereeExperimentsCard(experiments: List<com.example.concordance.integration.agent.AgentExperiment>) {
     AppSectionCard(title = "Referee-driven experiments") {
-        Text(
-            "Follow-up experiments generated from the Referee audit verdict.",
+        Text(stringResource(R.string.auto_26c286bc8897),
             style = MaterialTheme.concordance.bodyDense,
             color = TextSecondary,
             lineHeight = 16.sp
@@ -912,7 +912,7 @@ private fun UploadCard(
             lineHeight = 16.sp
         )
 
-        Text("How should the agent treat this file?", style = MaterialTheme.concordance.overline, color = TextPrimary, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.auto_bf4993b7019d), style = MaterialTheme.concordance.overline, color = TextPrimary, fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("public" to "Published", "de_identified" to "De-identified", "phi" to "PHI").forEach { (value, label) ->
                 FilterChip(
@@ -944,8 +944,7 @@ private fun UploadCard(
                 onCheckedChange = { if (it) onAcknowledge() },
                 colors = CheckboxDefaults.colors(checkedColor = ElectricCyan, checkmarkColor = MidnightDeep)
             )
-            Text(
-                "I understand the file is sent to my agent server and its text comes back here.",
+            Text(stringResource(R.string.auto_073de75d7194),
                 style = MaterialTheme.concordance.bodyDense,
                 color = TextSecondary,
                 lineHeight = 14.sp
@@ -962,7 +961,7 @@ private fun UploadCard(
             ) {
                 Icon(Icons.Default.UploadFile, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Choose file", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_eb7eb7a8196c), style = MaterialTheme.concordance.buttonSmall)
             }
             Button(
                 onClick = {
@@ -977,7 +976,7 @@ private fun UploadCard(
             ) {
                 Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Photograph", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_eeeba73a15a3), style = MaterialTheme.concordance.buttonSmall)
             }
         }
     }
@@ -1059,7 +1058,7 @@ private fun PaperRunsCard(
                     )
                     Spacer(Modifier.width(6.dp))
                 }
-                Text("Refresh papers", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_c51eadcd1f55), style = MaterialTheme.concordance.buttonSmall)
             }
             if (runs.isNotEmpty()) {
                 Badge(text = "${runs.size} chain(s)", color = NeonEmerald)
@@ -1113,7 +1112,7 @@ private fun PaperRunsCard(
                     Text("Written to ${run.dir}", style = MaterialTheme.concordance.monoId, color = TextSecondary)
                 }
                 TextButton(onClick = { onOpen(run.runId) }, enabled = !busy) {
-                    Text("Open paper.md", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
+                    Text(stringResource(R.string.auto_37b79cdcc724), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
                 }
             }
         }
@@ -1131,14 +1130,14 @@ private fun PaperRunsCard(
                     color = ElectricCyan,
                     fontWeight = FontWeight.Bold
                 )
-                TextButton(onClick = onClose) { Text("Close", style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
+                TextButton(onClick = onClose) { Text(stringResource(R.string.auto_bbfa773e5a63), style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
             }
             if (detail.files.isNotEmpty()) {
                 Text("Files: ${detail.files.keys.sorted().joinToString(", ")}", style = MaterialTheme.concordance.monoId, color = TextSecondary)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = { onVerify(detail.runId) }) {
-                    Text("Verify hashes & receipt", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
+                    Text(stringResource(R.string.auto_e1e391e72d62), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
                 }
                 verification?.let { v ->
                     Badge(
@@ -1151,8 +1150,7 @@ private fun PaperRunsCard(
                 }
             }
             if (detail.paper.isBlank()) {
-                Text(
-                    "This chain has no paper.md. The other files are still readable on the agent.",
+                Text(stringResource(R.string.auto_b43216dbfd24),
                     style = MaterialTheme.concordance.bodyDense,
                     color = WarningAmber
                 )
@@ -1200,14 +1198,14 @@ private fun EcosystemCard(
                 enabled = !busy,
                 colors = ButtonDefaults.buttonColors(containerColor = SlateCard, contentColor = TextPrimary)
             ) {
-                Text("Check the APIs", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_ebd1af12b83f), style = MaterialTheme.concordance.buttonSmall)
             }
             Button(
                 onClick = onRunLoop,
                 enabled = !busy,
                 colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
             ) {
-                Text("Run research loop", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_8d9f184855d9), style = MaterialTheme.concordance.buttonSmall)
             }
         }
 
@@ -1226,8 +1224,7 @@ private fun EcosystemCard(
                 if (!r.tokenConfigured) Badge(text = "no tool token", color = VividCoral)
             }
             r.services.forEach { service -> FleetServiceRow(service) }
-        } ?: Text(
-            "Not listed yet. Checking costs the agent a few measured seconds.",
+        } ?: Text(stringResource(R.string.auto_d65c416a79ec),
             style = MaterialTheme.concordance.monoId,
             color = TextSecondary
         )
@@ -1320,8 +1317,7 @@ private fun AgentJobCard(job: com.example.concordance.integration.agent.AgentJob
             }
         }
         if (job.wasRefused) {
-            Text(
-                "Withheld is a result, not a fault: the agent only reports a verdict it can support.",
+            Text(stringResource(R.string.auto_9f7bd8f31cec),
                 style = MaterialTheme.concordance.monoId,
                 color = WarningAmber,
                 lineHeight = 14.sp
@@ -1353,9 +1349,9 @@ private fun SpeechCard(
             ) {
                 Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Speak", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_7a8171965058), style = MaterialTheme.concordance.buttonSmall)
             }
-            TextButton(onClick = onStop) { Text("Stop", style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
+            TextButton(onClick = onStop) { Text(stringResource(R.string.auto_9e253470c876), style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
         }
         Text(
             "\"${EasyMode.speakableSummary(view)}\"",
@@ -1393,7 +1389,7 @@ private fun EasyModeCard(view: EasyModeView) {
         BulletList("What to do next", view.nextSteps)
 
         if (view.wordsWeUsed.isNotEmpty()) {
-            Text("Words we used", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_07516be42a5c), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
             view.wordsWeUsed.forEach { term ->
                 Column {
                     Text("${term.term} - ${term.plain}", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 16.sp)
@@ -1405,7 +1401,7 @@ private fun EasyModeCard(view: EasyModeView) {
         }
 
         if (view.numbers.isNotEmpty()) {
-            Text("The numbers (unchanged from the agent)", style = MaterialTheme.concordance.monoId, color = ElectricCyan, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_e4310347f2aa), style = MaterialTheme.concordance.monoId, color = ElectricCyan, fontWeight = FontWeight.Bold)
             view.numbers.forEach { (k, v) ->
                 Text("$k = $v", style = MaterialTheme.concordance.monoId, color = TextSecondary, fontFamily = FontFamily.Monospace)
             }
@@ -1535,7 +1531,7 @@ private fun PendingDecisionsCard(
     onResolve: (String, String) -> Unit
 ) {
     AppSectionCard(title = "Pending decisions (${decisions.size})") {
-        Text("The decision model flagged these as ambiguous or high-risk. Pick a path.", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+        Text(stringResource(R.string.auto_3d292f86f348), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
         decisions.forEach { d ->
             Column(Modifier.padding(vertical = 6.dp)) {
                 Text("${d.action.uppercase()}  score ${"%.2f".format(d.score)}", style = MaterialTheme.concordance.bodyDense, color = WarningAmber, fontWeight = FontWeight.Bold)
@@ -1568,7 +1564,7 @@ private fun IngestCard(
         if (uri != null) onIngest(uri)
     }
     AppSectionCard(title = "Ingest & seed (start where you want)") {
-        Text("Load your papers, datasets, or notes. The agent analyzes them and proposes a founded starting point.", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+        Text(stringResource(R.string.auto_93936d49a42a), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
         Button(
             onClick = { picker.launch("*/*") },
             enabled = !busy,
@@ -1576,17 +1572,17 @@ private fun IngestCard(
             colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
         ) {
             if (busy) { CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep); Spacer(Modifier.width(6.dp)) }
-            Text("Choose file to ingest", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_6b2ccbff276d), style = MaterialTheme.concordance.buttonSmall)
         }
         if (!seed.isNullOrBlank()) {
             Spacer(Modifier.height(8.dp))
-            Text("Research seed (review, then start):", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_1406061a067f), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             Text(seed.take(1200), style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 6.dp)) {
                 Button(onClick = onStartResearch, enabled = !busy, colors = ButtonDefaults.buttonColors(containerColor = ClinicalTeal, contentColor = MidnightDeep)) {
-                    Text("Start research from seed", style = MaterialTheme.concordance.buttonSmall)
+                    Text(stringResource(R.string.auto_7d58a931a445), style = MaterialTheme.concordance.buttonSmall)
                 }
-                TextButton(onClick = onClear) { Text("Clear", color = TextSecondary) }
+                TextButton(onClick = onClear) { Text(stringResource(R.string.auto_719ea396ad92), color = TextSecondary) }
             }
         }
     }
@@ -1600,11 +1596,11 @@ private fun ResearchResultCard(result: AgentResearchResult, onFeedback: (String,
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
             TextButton(onClick = { onSpeak(result.summary + " " + result.nextSteps.joinToString(". ")) }) {
-                Text("Speak report", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
+                Text(stringResource(R.string.auto_f11799ede16e), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan)
             }
         }
         Spacer(Modifier.height(8.dp))
-        Text("Checks & balances", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.auto_83f003e35700), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
         if (result.runId.isNotBlank()) {
             Text("Run: ${result.runId}", style = MaterialTheme.concordance.monoId, color = TextSecondary)
         }
@@ -1650,7 +1646,7 @@ private fun ResearchResultCard(result: AgentResearchResult, onFeedback: (String,
         }
         if (result.stopShouldStop) {
             Spacer(Modifier.height(8.dp))
-            Text("Stop condition met:", style = MaterialTheme.concordance.bodyDense, color = WarningAmber, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_c6826dc42d94), style = MaterialTheme.concordance.bodyDense, color = WarningAmber, fontWeight = FontWeight.Bold)
             result.stopReasons.forEach { r ->
                 Text("   * $r", style = MaterialTheme.concordance.bodyDense, color = WarningAmber, lineHeight = 13.sp)
             }
@@ -1661,7 +1657,7 @@ private fun ResearchResultCard(result: AgentResearchResult, onFeedback: (String,
         }
         if (result.claimUpdates.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Claims updated", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_118d8485fe7e), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.claimUpdates.forEach { c ->
                 Column(Modifier.padding(vertical = 2.dp)) {
                     Text("${c.status.uppercase()}  conf ${"%.2f".format(c.confidence)}  - ${c.claim.take(120)}", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
@@ -1687,14 +1683,14 @@ private fun ResearchResultCard(result: AgentResearchResult, onFeedback: (String,
         }
         if (result.hypotheses.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Hypotheses", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_564b7df37839), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.hypotheses.forEach { h ->
                 Text("- $h", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
             }
         }
         if (result.experiments.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Experiments", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_e8f296b5904f), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.experiments.forEach { e ->
                 Column(Modifier.padding(vertical = 4.dp)) {
                     Text(e.title, style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
@@ -1715,7 +1711,7 @@ private fun ResearchResultCard(result: AgentResearchResult, onFeedback: (String,
         }
         if (result.nextSteps.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Next steps", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_11fc14203dd0), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.nextSteps.forEach { n ->
                 Text("- $n", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
             }

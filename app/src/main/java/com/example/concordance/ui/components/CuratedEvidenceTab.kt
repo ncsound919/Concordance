@@ -26,6 +26,8 @@ import com.example.concordance.integration.api.SomaticMutation
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Curated variant evidence (CIViC) and public cohorts (cBioPortal). Both
@@ -62,8 +64,7 @@ fun CuratedEvidenceTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text = "CURATED VARIANT & COHORT EVIDENCE",
+                Text(text = stringResource(R.string.auto_63081dce725a),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan
@@ -82,7 +83,7 @@ fun CuratedEvidenceTab(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = { Text("Gene symbol or cohort keyword (e.g. ESR1, breast)", style = MaterialTheme.concordance.caption) },
+                placeholder = { Text(stringResource(R.string.auto_03f79cd8181a), style = MaterialTheme.concordance.caption) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextMuted) },
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.concordance.bodyDense
@@ -103,7 +104,7 @@ fun CuratedEvidenceTab(
                 ) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("CIViC Evidence", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_4e098dc891ec), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
                 Button(
                     onClick = { viewModel.searchCohorts(query) },
@@ -114,7 +115,7 @@ fun CuratedEvidenceTab(
                 ) {
                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("cBioPortal Cohorts", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_eb34bcf3eafb), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -153,9 +154,8 @@ fun CuratedEvidenceTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("SOMATIC MUTATIONS (cBioPortal)", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
-                Text(
-                    "Pull sample-level mutation calls for a gene within a study's mutation profile.",
+                Text(stringResource(R.string.auto_929b9abe1d0b), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_e9b02c45dd2e),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary
                 )
@@ -163,14 +163,14 @@ fun CuratedEvidenceTab(
                     OutlinedTextField(
                         value = mutationStudy,
                         onValueChange = { mutationStudy = it },
-                        placeholder = { Text("study id (e.g. brca_tcga)", style = MaterialTheme.concordance.caption) },
+                        placeholder = { Text(stringResource(R.string.auto_851b20fc6b5e), style = MaterialTheme.concordance.caption) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense
                     )
                     OutlinedTextField(
                         value = mutationGene,
                         onValueChange = { mutationGene = it },
-                        placeholder = { Text("gene (ESR1)", style = MaterialTheme.concordance.caption) },
+                        placeholder = { Text(stringResource(R.string.auto_e349b335a685), style = MaterialTheme.concordance.caption) },
                         modifier = Modifier.weight(0.7f),
                         textStyle = MaterialTheme.concordance.bodyDense
                     )
@@ -184,7 +184,7 @@ fun CuratedEvidenceTab(
                 ) {
                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Fetch Mutations", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_5dbc17d8bda3), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -336,7 +336,7 @@ private fun CuratedEvidenceCard(
         ) {
             Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(6.dp))
-            Text("Import as Draft Claim", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_278353fb380d), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -408,7 +408,7 @@ private fun CohortStudyCard(
         ) {
             Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(6.dp))
-            Text("Copy cBioPortal Study Link", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_fc8805b84c16), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }

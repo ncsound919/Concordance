@@ -52,6 +52,8 @@ import com.example.ui.theme.VividCoral
 import com.example.ui.theme.WarningAmber
 import com.example.ui.theme.concordance
 import kotlinx.coroutines.delay
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * The "what is running right now" panel for the background automation.
@@ -172,10 +174,9 @@ fun LiveWorkCard(
         OutlinedTextField(
             value = goal,
             onValueChange = { goal = it },
-            label = { Text("Research goal", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_8b862c6ab8e1), style = MaterialTheme.concordance.bodyDense) },
             placeholder = {
-                Text(
-                    "e.g. EGFR L858R resistance in brain metastases",
+                Text(stringResource(R.string.auto_2a1151e4c59b),
                     style = MaterialTheme.concordance.caption
                 )
             },
@@ -213,7 +214,7 @@ fun LiveWorkCard(
                     contentColor = MidnightDeep
                 )
             ) {
-                Text("Pause", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_781961bc81c2), style = MaterialTheme.concordance.buttonSmall)
             }
             Button(
                 onClick = onStop,
@@ -223,21 +224,19 @@ fun LiveWorkCard(
                     contentColor = TextPrimary
                 )
             ) {
-                Text("Stop", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_9e253470c876), style = MaterialTheme.concordance.buttonSmall)
             }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpaceXS)) {
             TextButton(onClick = onRunStep) {
-                Text(
-                    "Run one step now",
+                Text(stringResource(R.string.auto_be438b4e40fb),
                     style = MaterialTheme.concordance.bodyDense,
                     color = ElectricCyan
                 )
             }
             TextButton(onClick = onCancelSlow) {
-                Text(
-                    "Cancel slow worker",
+                Text(stringResource(R.string.auto_6ef2db1dec6f),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary
                 )
@@ -250,16 +249,14 @@ fun LiveWorkCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                text = "Recent activity",
+            Text(text = stringResource(R.string.auto_72d5617f3f47),
                 style = MaterialTheme.concordance.overline,
                 color = TextSecondary,
                 fontWeight = FontWeight.Bold
             )
             if (entries.isNotEmpty()) {
                 TextButton(onClick = onClearLog) {
-                    Text(
-                        "Clear",
+                    Text(stringResource(R.string.auto_719ea396ad92),
                         style = MaterialTheme.concordance.caption,
                         color = TextSecondary
                     )
@@ -268,8 +265,7 @@ fun LiveWorkCard(
         }
 
         if (entries.isEmpty()) {
-            Text(
-                text = "No steps recorded yet.",
+            Text(text = stringResource(R.string.auto_94cbec1d8340),
                 style = MaterialTheme.concordance.caption,
                 color = TextMuted
             )

@@ -12,6 +12,10 @@ import com.example.concordance.engine.CapsuleEngine
 import com.example.concordance.engine.LocalModelEngine
 import com.example.concordance.engine.PairedAnalyzer
 import com.example.concordance.engine.StatisticalEngine
+import com.example.concordance.evidence.EvidenceStore
+import com.example.concordance.evidence.RoomEvidenceStore
+import com.example.concordance.evidence.connectors.CivicConnector
+import com.example.concordance.evidence.connectors.ConnectorIngest
 import com.example.concordance.integration.agent.AgentAnchor
 import com.example.concordance.integration.agent.AgentClient
 import com.example.concordance.integration.agent.AgentConfig
@@ -30,6 +34,9 @@ import com.example.concordance.integration.agent.CorrectionResult
 import com.example.concordance.integration.agent.EasyModeView
 import com.example.concordance.integration.agent.UploadedFigure
 import com.example.concordance.integration.knowledge.IndraClient
+import com.example.concordance.research.experiment.CatalogEntry
+import com.example.concordance.research.experiment.ExperimentCatalog
+import com.example.concordance.research.experiment.SpecStatus
 import com.example.concordance.integration.knowledge.IndraContradictions
 import com.example.concordance.integration.knowledge.IndraKnowledge
 import com.example.concordance.integration.knowledge.IndraResult
@@ -106,10 +113,12 @@ import com.example.concordance.local.LocalModels
 import com.example.concordance.local.ModelDownloadService
 import com.example.concordance.local.ModelDownloadStatus
 import com.example.concordance.local.ModelDownloader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ConcordanceViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -1134,20 +1143,23 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    fun seedSubExperiments() {
+    fun loadExperimentCatalog() {
         viewModelScope.launch {
             try {
-                val json = getApplication<Application>().assets.open("sub-experiments.json").bufferedReader().readText()
-                val arr = org.json.JSONArray(json)
-                var readyCount = 0
-                var plannedCount = 0
-                for (i in 0 until arr.length()) {
-                    val o = arr.getJSONObject(i)
-                    if (o.optString("status") == "ready") readyCount++ else plannedCount++
-                }
-                _uiNotice.emit("Loaded ${arr.length()} sub-experiments: $readyCount ready, $plannedCount planned. Launch from Kaggle Compute tab.")
+                val json = getApplication<Application>().assets
+                    .open("experiment-specs.json")
+                    .bufferedReader()
+                    .readText()
+                val entries = ExperimentCatalog.parse(json)
+                _experimentCatalog.value = entries
+                val ready = entries.count { it.status == SpecStatus.READY }
+                val design = entries.count { it.status == SpecStatus.DESIGN_ONLY }
+                val blocked = entries.count { it.status == SpecStatus.UNSUPPORTED }
+                _uiNotice.emit(
+                    "Loaded ${entries.size} experiment specs: $ready ready, $design design-only, $blocked blocked."
+                )
             } catch (e: Exception) {
-                _uiNotice.emit("Could not load sub-experiments: ${e.message}")
+                _uiNotice.emit("Could not load experiment specs: ${e.message}")
             }
         }
     }
@@ -1242,7 +1254,22 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         )
         addClaim(anchor)
         viewModelScope.launch {
-            _uiNotice.emit("Imported CIViC evidence as draft claim '${anchor.label}'.")
+            // The store is synchronous and hits Room once per row; keep that off
+            // Main so an import cannot freeze the UI for every artifact/edge.
+            val summary = withContext(Dispatchers.IO) {
+                ConnectorIngest.write(
+                    evidenceStore,
+                    CivicConnector.fromEvidence(evidence, ProvenanceRecorder.nowUtc().take(10)),
+                )
+            }
+            val notice = if (summary.rejected.isEmpty()) {
+                "Imported CIViC evidence as draft claim '${anchor.label}'; ingested " +
+                    "${summary.artifactsCreated} artifact(s), ${summary.edgesCreated} edge(s)."
+            } else {
+                "Imported CIViC evidence as draft claim '${anchor.label}'; evidence ingest " +
+                    "rejected: ${summary.rejected.joinToString { it.code }}."
+            }
+            _uiNotice.emit(notice)
         }
     }
 
@@ -1689,6 +1716,22 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
     private val _researchSeed = MutableStateFlow<String?>(null)
     val researchSeed: StateFlow<String?> = _researchSeed.asStateFlow()
     val agentTranscript: StateFlow<String> = _agentTranscript.asStateFlow()
+
+    /**
+     * The evidence backbone, persisted in Room. Lazy so a build that never touches evidence
+     * never opens the new tables.
+     */
+    private val evidenceStore: EvidenceStore by lazy {
+        val database = ConcordanceDatabase.getDatabase(getApplication())
+        RoomEvidenceStore(database.evidenceDao(), database)
+    }
+
+    /**
+     * The typed experiment catalog. Every entry carries its own status and the reason it cannot
+     * run, so the Research screen never advertises a launch that the system cannot perform.
+     */
+    private val _experimentCatalog = MutableStateFlow<List<CatalogEntry>>(emptyList())
+    val experimentCatalog: StateFlow<List<CatalogEntry>> = _experimentCatalog.asStateFlow()
 
     private val _agentResearchResult = MutableStateFlow<AgentResearchResult?>(null)
     val agentResearchResult: StateFlow<AgentResearchResult?> = _agentResearchResult.asStateFlow()

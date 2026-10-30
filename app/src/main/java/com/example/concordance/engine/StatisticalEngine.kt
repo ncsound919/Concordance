@@ -25,12 +25,12 @@ object StatisticalEngine {
     fun observedPrevalences(anchor: Anchor): Pair<Double, Double> {
         requireUsable(anchor)
         return if (anchor.hasCounts) {
-            val pb = anchor.brainEvents!!.toDouble() / anchor.brainTotal!!
-            val pn = anchor.otherEvents!!.toDouble() / anchor.otherTotal!!
+            val pb = requireNotNull(anchor.brainEvents).toDouble() / requireNotNull(anchor.brainTotal)
+            val pn = requireNotNull(anchor.otherEvents).toDouble() / requireNotNull(anchor.otherTotal)
             Pair(pb, pn)
         } else {
-            val pn = anchor.referencePrevalence!!
-            val oddsB = anchor.oddsRatio!! * odds(pn)
+            val pn = requireNotNull(anchor.referencePrevalence)
+            val oddsB = requireNotNull(anchor.oddsRatio) * odds(pn)
             val pb = oddsB / (1.0 + oddsB)
             Pair(pb, pn)
         }
@@ -39,12 +39,12 @@ object StatisticalEngine {
     fun observedOrCi(anchor: Anchor): Triple<Double, Double, Double> {
         requireUsable(anchor)
         if (!anchor.hasCounts) {
-            return Triple(anchor.oddsRatio!!, anchor.orCiLow!!, anchor.orCiHigh!!)
+            return Triple(requireNotNull(anchor.oddsRatio), requireNotNull(anchor.orCiLow), requireNotNull(anchor.orCiHigh))
         }
-        val b = anchor.brainEvents!!.toDouble()
-        val nb = anchor.brainTotal!!.toDouble()
-        val o = anchor.otherEvents!!.toDouble()
-        val no = anchor.otherTotal!!.toDouble()
+        val b = requireNotNull(anchor.brainEvents).toDouble()
+        val nb = requireNotNull(anchor.brainTotal).toDouble()
+        val o = requireNotNull(anchor.otherEvents).toDouble()
+        val no = requireNotNull(anchor.otherTotal).toDouble()
 
         val est = (b / (nb - b)) / (o / (no - o))
         val se = sqrt(1.0 / b + 1.0 / (nb - b) + 1.0 / o + 1.0 / (no - o))
@@ -63,8 +63,8 @@ object StatisticalEngine {
         return if (anchor.hasCounts) {
             pb / sn
         } else {
-            val refPrev = anchor.referencePrevalence!!
-            val oddsHi = anchor.orCiHigh!! * odds(refPrev)
+            val refPrev = requireNotNull(anchor.referencePrevalence)
+            val oddsHi = requireNotNull(anchor.orCiHigh) * odds(refPrev)
             val pHi = oddsHi / (1.0 + oddsHi)
             pHi / sn
         }
@@ -95,16 +95,16 @@ object StatisticalEngine {
         val est = odds(piB) / odds(piN)
 
         return if (anchor.hasCounts) {
-            val varLogitB = (pb * (1.0 - pb) / anchor.brainTotal!!) / (r * sn).pow(2) / (piB * (1.0 - piB)).pow(2)
-            val varLogitN = (pn * (1.0 - pn) / anchor.otherTotal!!) / sn.pow(2) / (piN * (1.0 - piN)).pow(2)
+            val varLogitB = (pb * (1.0 - pb) / requireNotNull(anchor.brainTotal)) / (r * sn).pow(2) / (piB * (1.0 - piB)).pow(2)
+            val varLogitN = (pn * (1.0 - pn) / requireNotNull(anchor.otherTotal)) / sn.pow(2) / (piN * (1.0 - piN)).pow(2)
             val se = sqrt(varLogitB + varLogitN)
             val lo = exp(ln(est) - Z95 * se)
             val hi = exp(ln(est) + Z95 * se)
             CorrectedPoint(r, true, est, lo, hi, piB, piN)
         } else {
-            val refPrev = anchor.referencePrevalence!!
-            val lo = summaryCorrectedOr(anchor.orCiLow!!, refPrev, r, sn)
-            val hi = summaryCorrectedOr(anchor.orCiHigh!!, refPrev, r, sn)
+            val refPrev = requireNotNull(anchor.referencePrevalence)
+            val lo = summaryCorrectedOr(requireNotNull(anchor.orCiLow), refPrev, r, sn)
+            val hi = summaryCorrectedOr(requireNotNull(anchor.orCiHigh), refPrev, r, sn)
             if (lo == null || hi == null) {
                 CorrectedPoint(r = r, feasible = false)
             } else {
@@ -212,10 +212,10 @@ object StatisticalEngine {
     // Two-tailed Fisher Exact Test
     fun fisherP(anchor: Anchor): Double? {
         if (!anchor.hasCounts) return null
-        val a = anchor.brainEvents!!
-        val b = anchor.brainTotal!! - a
-        val c = anchor.otherEvents!!
-        val d = anchor.otherTotal!! - c
+        val a = requireNotNull(anchor.brainEvents)
+        val b = requireNotNull(anchor.brainTotal) - a
+        val c = requireNotNull(anchor.otherEvents)
+        val d = requireNotNull(anchor.otherTotal) - c
 
         val n = a + b + c + d
         val row1 = a + b
@@ -346,8 +346,8 @@ object StatisticalEngine {
             verdict = Verdict.THRESHOLD_ONLY
             rationale = "No sensitivity range was supplied. Threshold r* = ${String.format(Locale.US, "%.2f", rNull)} and r_sig = ${String.format(Locale.US, "%.2f", rSig ?: rNull)} are what a paired study has to beat."
         } else {
-            val loC = atRangeLow!!
-            val hiC = atRangeHigh!!
+            val loC = requireNotNull(atRangeLow)
+            val hiC = requireNotNull(atRangeHigh)
             if (hiC.feasible && (hiC.ciHigh ?: 2.0) >= 1.0) {
                 verdict = Verdict.NOT_SUPPORTED
                 rationale = "Even at the most favourable sensitivity in the stated range, the corrected interval includes OR = 1: the depletion is indistinguishable from detection artifact."

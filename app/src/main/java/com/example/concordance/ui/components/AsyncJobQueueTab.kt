@@ -24,6 +24,8 @@ import com.example.concordance.integration.queue.*
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun AsyncJobQueueTab(
@@ -68,8 +70,7 @@ fun AsyncJobQueueTab(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(Icons.Default.CloudSync, contentDescription = null, tint = ElectricCyan, modifier = Modifier.size(18.dp))
-                        Text(
-                            text = "JOB SUBMISSION & OS SCHEDULER",
+                        Text(text = stringResource(R.string.auto_38685d25adc9),
                             style = MaterialTheme.concordance.overline,
                             fontWeight = FontWeight.Bold,
                             color = ElectricCyan,
@@ -82,8 +83,7 @@ fun AsyncJobQueueTab(
                             .background(ClinicalTeal.copy(alpha = 0.2f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(
-                            text = "FastAPI + WorkManager",
+                        Text(text = stringResource(R.string.auto_6d7985237371),
                             style = MaterialTheme.concordance.monoId,
                             fontWeight = FontWeight.Bold,
                             color = ClinicalTeal,
@@ -92,8 +92,7 @@ fun AsyncJobQueueTab(
                     }
                 }
 
-                Text(
-                    text = "Asynchronous compute with immutable content-hash JobSpec (SHA-256). The phone submits spec, receives task UUID, and schedules on Android WorkManager (Network: Connected, Battery: Not Low). Remote workers execute heavy compute (AWS Fargate VLM OCR, AWS Batch 10k permutation); notification triggers upon completion instead of battery-draining polling loops.",
+                Text(text = stringResource(R.string.auto_8ffb2b456fb5),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary,
                     lineHeight = 16.sp
@@ -105,8 +104,8 @@ fun AsyncJobQueueTab(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("• Stuck-Task Recovery: >5m auto-reset to PENDING", style = MaterialTheme.concordance.bodyDense, color = TextMuted)
-                    Text("• WorkManager: Survives reboots", style = MaterialTheme.concordance.bodyDense, color = NeonEmerald)
+                    Text(stringResource(R.string.auto_d756c1ca7157), style = MaterialTheme.concordance.bodyDense, color = TextMuted)
+                    Text(stringResource(R.string.auto_007c918a47a0), style = MaterialTheme.concordance.bodyDense, color = NeonEmerald)
                 }
             }
         }
@@ -122,8 +121,7 @@ fun AsyncJobQueueTab(
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
-                        text = "SAMPLE DATA",
+                    Text(text = stringResource(R.string.auto_3206c6a29025),
                         style = MaterialTheme.concordance.overline,
                         fontWeight = FontWeight.Bold,
                         color = WarningGold
@@ -150,15 +148,13 @@ fun AsyncJobQueueTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    text = "SUBMIT HEAVY COMPUTE TASK",
+                Text(text = stringResource(R.string.auto_c17d7dc3db56),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan
                 )
 
-                Text(
-                    text = "Select Heavy Process:",
+                Text(text = stringResource(R.string.auto_0d587aa02d21),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary
@@ -206,8 +202,7 @@ fun AsyncJobQueueTab(
                 }
 
                 // Target Routing Worker selector
-                Text(
-                    text = "Target Worker Architecture:",
+                Text(text = stringResource(R.string.auto_926dba83488c),
                     style = MaterialTheme.concordance.monoId,
                     fontWeight = FontWeight.SemiBold,
                     color = TextPrimary
@@ -244,7 +239,7 @@ fun AsyncJobQueueTab(
                 ) {
                     Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Submit Task to FastAPI Queue & OS Scheduler", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_4a885731a5e9), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -270,15 +265,13 @@ fun AsyncJobQueueTab(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(Icons.Default.Healing, contentDescription = null, tint = WarningAmber, modifier = Modifier.size(18.dp))
-                        Text(
-                            text = "AUTOMATIC STUCK-TASK RECOVERY",
+                        Text(text = stringResource(R.string.auto_5ee94b84ab3a),
                             style = MaterialTheme.concordance.overline,
                             fontWeight = FontWeight.Bold,
                             color = WarningAmber
                         )
                     }
-                    Text(
-                        text = "5-Min SLA",
+                    Text(text = stringResource(R.string.auto_069ee23c28c1),
                         style = MaterialTheme.concordance.monoId,
                         fontWeight = FontWeight.Bold,
                         color = WarningAmber,
@@ -286,8 +279,7 @@ fun AsyncJobQueueTab(
                     )
                 }
 
-                Text(
-                    text = "Reproducibility guarantee: Tasks stuck in PROCESSING for >5 minutes due to node preemption or network drop are automatically reset to PENDING with exponential backoff.",
+                Text(text = stringResource(R.string.auto_f879c08c57f1),
                     style = MaterialTheme.concordance.monoId,
                     color = TextSecondary,
                     lineHeight = 15.sp
@@ -305,7 +297,7 @@ fun AsyncJobQueueTab(
                     ) {
                         Icon(Icons.Default.Autorenew, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Check & Recover Stuck", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.auto_cb24b43adde8), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                     }
 
                 }
@@ -319,7 +311,7 @@ fun AsyncJobQueueTab(
                             .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text("Recovery Audit Trail:", style = MaterialTheme.concordance.monoId, fontWeight = FontWeight.Bold, color = TextMuted)
+                        Text(stringResource(R.string.auto_3584d2186267), style = MaterialTheme.concordance.monoId, fontWeight = FontWeight.Bold, color = TextMuted)
                         stuckLogs.take(2).forEach { log ->
                             Text(log, style = MaterialTheme.concordance.monoId, color = WarningAmber, fontFamily = FontFamily.Monospace)
                         }
@@ -357,8 +349,7 @@ fun AsyncJobQueueTab(
                     color = TextMuted,
                     letterSpacing = 1.sp
                 )
-                Text(
-                    text = "Auto-refreshed",
+                Text(text = stringResource(R.string.auto_8c5be9977e27),
                     style = MaterialTheme.concordance.overline,
                     color = ClinicalTeal
                 )
@@ -555,7 +546,7 @@ fun AsyncJobCard(
                     .padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text("RESULT ARTIFACT:", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = NeonEmerald)
+                Text(stringResource(R.string.auto_eb9f9e1638e9), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = NeonEmerald)
                 Text(job.resultSummary, style = MaterialTheme.concordance.overline, color = TextPrimary, lineHeight = 15.sp)
 
                 if (job.citableCapsuleSha256 != null) {
