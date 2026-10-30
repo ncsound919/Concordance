@@ -195,19 +195,23 @@ object HttpJsonClient {
         }
     }
 
+    /**
+     * Query-parameter names whose values are secrets and must never be
+     * persisted (provenance `endpoint`, cache keys) or surfaced in the UI /
+     * exported capsules.
+     */
+    private val SECRET_PARAM =
+        Regex("(?i)([?&](?:api[_-]?key|apikey|key|token|access[_-]?token|auth|secret|password|sig|signature)=)[^&#]*")
+
+    /**
+     * Redact secret query-parameter values from a URL. The wire request keeps the
+     * real value; only the persisted provenance/cache representation is scrubbed,
+     * so an API key placed in the query string (e.g. PubPeer BYOK) is not written
+     * into Room or surfaced in an exported capsule.
+     */
+    internal fun sanitizeUrlForStorage(url: String): String =
+        url.replace(SECRET_PARAM, "$1[redacted]")
+
     /** Redact secret-bearing query parameters before persisting provenance/cache keys. */
-    private fun redactSecrets(url: String): String = try {
-        val uri = android.net.Uri.parse(url)
-        val redactedQuery = uri.query?.split("&")?.joinToString("&") { param ->
-            val key = param.substringBefore("=")
-            if (key.lowercase() in setOf("api_key", "apikey", "key", "token", "access_token", "secret", "password")) {
-                "$key=[REDACTED]"
-            } else {
-                param
-            }
-        }
-        uri.buildUpon().query(redactedQuery).toString()
-    } catch (e: Exception) {
-        url
-    }
+    private fun redactSecrets(url: String): String = sanitizeUrlForStorage(url)
 }

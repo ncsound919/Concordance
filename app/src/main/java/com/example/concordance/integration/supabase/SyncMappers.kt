@@ -22,7 +22,8 @@ object SyncMappers {
         put("or_ci_high", c.orCiHigh)
         put("reference_prevalence", c.referencePrevalence)
         put("denominator", c.denominator)
-        put("notes", c.notes)
+        // Claim notes are free text and never leave the device: they are not part
+        // of the payload, and a pull without notes must not wipe the local copy.
         put("is_custom", c.isCustom)
         put("date_added", c.dateAdded)
         put("challenge_count", c.challengeCount)
