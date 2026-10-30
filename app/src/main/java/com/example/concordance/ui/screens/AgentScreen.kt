@@ -15,7 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.UploadFile
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.*
@@ -42,6 +42,9 @@ import com.example.concordance.ui.components.AppSectionCard
 import com.example.concordance.ui.components.EmptyState
 import com.example.ui.theme.*
 import java.io.File
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Client for the self-hosted adjudication agent.
@@ -55,21 +58,21 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) {
-    val config by viewModel.agentConfig.collectAsState()
-    val status by viewModel.agentStatus.collectAsState()
-    val busy by viewModel.agentBusy.collectAsState()
-    val anchors by viewModel.agentAnchors.collectAsState()
-    val job by viewModel.agentJob.collectAsState()
-    val easyView by viewModel.agentEasyView.collectAsState()
-    val correction by viewModel.agentCorrection.collectAsState()
-    val correctionEasy by viewModel.agentCorrectionEasy.collectAsState()
-    val upload by viewModel.agentUpload.collectAsState()
-    val transcript by viewModel.agentTranscript.collectAsState()
-    val researchResult by viewModel.agentResearchResult.collectAsState()
-    val refereeReport by viewModel.agentRefereeReport.collectAsState()
-    val ack by viewModel.agentUploadAck.collectAsState()
-    val easyMode by viewModel.easyMode.collectAsState()
-    val communityBaseUrl by viewModel.communityBaseUrl.collectAsState()
+    val config by viewModel.agentConfig.collectAsStateWithLifecycle()
+    val status by viewModel.agentStatus.collectAsStateWithLifecycle()
+    val busy by viewModel.agentBusy.collectAsStateWithLifecycle()
+    val anchors by viewModel.agentAnchors.collectAsStateWithLifecycle()
+    val job by viewModel.agentJob.collectAsStateWithLifecycle()
+    val easyView by viewModel.agentEasyView.collectAsStateWithLifecycle()
+    val correction by viewModel.agentCorrection.collectAsStateWithLifecycle()
+    val correctionEasy by viewModel.agentCorrectionEasy.collectAsStateWithLifecycle()
+    val upload by viewModel.agentUpload.collectAsStateWithLifecycle()
+    val transcript by viewModel.agentTranscript.collectAsStateWithLifecycle()
+    val researchResult by viewModel.agentResearchResult.collectAsStateWithLifecycle()
+    val refereeReport by viewModel.agentRefereeReport.collectAsStateWithLifecycle()
+    val ack by viewModel.agentUploadAck.collectAsStateWithLifecycle()
+    val easyMode by viewModel.easyMode.collectAsStateWithLifecycle()
+    val communityBaseUrl by viewModel.communityBaseUrl.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     var url by remember { mutableStateOf(config.baseUrl) }
@@ -179,7 +182,7 @@ fun AgentScreen(viewModel: ConcordanceViewModel, modifier: Modifier = Modifier) 
 
         if (job != null || upload != null || correction != null || refereeReport != null) {
             TextButton(onClick = { viewModel.clearAgentResult() }) {
-                Text("Clear result", color = TextSecondary, style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_22b8ff08b86b), color = TextSecondary, style = MaterialTheme.concordance.buttonSmall)
             }
         }
     }
@@ -215,8 +218,8 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = url,
             onValueChange = onUrlChange,
-            label = { Text("Agent base URL", style = MaterialTheme.concordance.bodyDense) },
-            placeholder = { Text("http://10.0.2.2:8000", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_bcb88e4a444e), style = MaterialTheme.concordance.bodyDense) },
+            placeholder = { Text(stringResource(R.string.auto_1768aa663705), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -225,7 +228,7 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = apiKey,
             onValueChange = onApiKeyChange,
-            label = { Text("API key (leave blank if auth is off)", style = MaterialTheme.concordance.monoId) },
+            label = { Text(stringResource(R.string.auto_8ac2c0218cdf), style = MaterialTheme.concordance.monoId) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -235,8 +238,8 @@ private fun ConnectionCard(
         OutlinedTextField(
             value = communityUrl,
             onValueChange = onCommunityUrlChange,
-            label = { Text("Community website URL (publish destination)", style = MaterialTheme.concordance.monoId) },
-            placeholder = { Text("http://10.0.2.2:3001", style = MaterialTheme.concordance.monoId) },
+            label = { Text(stringResource(R.string.auto_9edcfc196fd9), style = MaterialTheme.concordance.monoId) },
+            placeholder = { Text(stringResource(R.string.auto_a5f70ac9efe8), style = MaterialTheme.concordance.monoId) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -245,12 +248,12 @@ private fun ConnectionCard(
         Button(
             onClick = onSaveCommunityUrl,
             colors = ButtonDefaults.buttonColors(containerColor = SlateCardElevated, contentColor = ElectricCyan)
-        ) { Text("Save community URL", style = MaterialTheme.concordance.monoId) }
+        ) { Text(stringResource(R.string.auto_f3424444ae03), style = MaterialTheme.concordance.monoId) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
                 onClick = onSave,
                 colors = ButtonDefaults.buttonColors(containerColor = SlateCardElevated, contentColor = ElectricCyan)
-            ) { Text("Save", style = MaterialTheme.concordance.buttonSmall) }
+            ) { Text(stringResource(R.string.auto_efc007a393f6), style = MaterialTheme.concordance.buttonSmall) }
             Button(
                 onClick = onTest,
                 enabled = !busy,
@@ -264,10 +267,10 @@ private fun ConnectionCard(
                     )
                     Spacer(Modifier.width(6.dp))
                 }
-                Text("Test connection", style = MaterialTheme.concordance.monoId)
+                Text(stringResource(R.string.auto_ccf66f074649), style = MaterialTheme.concordance.monoId)
             }
             if (!config.isConfigured) {
-                Text("Not configured", style = MaterialTheme.concordance.monoId, color = WarningAmber, modifier = Modifier.align(Alignment.CenterVertically))
+                Text(stringResource(R.string.auto_811931bba8d1), style = MaterialTheme.concordance.monoId, color = WarningAmber, modifier = Modifier.align(Alignment.CenterVertically))
             }
         }
         Text(status, style = MaterialTheme.concordance.monoId, color = ClinicalTeal, fontFamily = FontFamily.Monospace)
@@ -285,7 +288,7 @@ private fun ConnectionCard(
             )
             Spacer(Modifier.width(8.dp))
             Column {
-                Text("Plain language first", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.auto_49f993374535), style = MaterialTheme.concordance.bodyDense, color = TextPrimary, fontWeight = FontWeight.Bold)
                 Text(
                     "The agent writes the plain version; this app only lays it out. " +
                         "The expert payload stays one tap away.",
@@ -344,7 +347,7 @@ private fun DictationCard(
             ) {
                 Icon(Icons.Default.Mic, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Start / stop", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_01c5d5743ae0), style = MaterialTheme.concordance.buttonSmall)
             }
             Text("e.g. \"EGFR L858R in brain\"", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
         }
@@ -362,9 +365,8 @@ private fun DictationCard(
                 )
             )
             Column(Modifier.weight(1f)) {
-                Text("Use cloud model for this run", style = MaterialTheme.concordance.bodyDense, color = TextPrimary)
-                Text(
-                    "Off runs the deterministic scaffold (no model quota).",
+                Text(stringResource(R.string.auto_36c3b660f892), style = MaterialTheme.concordance.bodyDense, color = TextPrimary)
+                Text(stringResource(R.string.auto_2ad6a2c9b82a),
                     style = MaterialTheme.concordance.caption,
                     color = TextSecondary
                 )
@@ -380,12 +382,12 @@ private fun DictationCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Research & design experiments", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_24fc790d9d35), style = MaterialTheme.concordance.buttonSmall)
         }
         OutlinedTextField(
             value = transcript,
             onValueChange = onTranscriptChange,
-            label = { Text("What you said (editable)", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_3845f80204cb), style = MaterialTheme.concordance.bodyDense) },
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.bodyDense,
             colors = fieldColors()
@@ -430,18 +432,18 @@ private fun AdjudicateCard(
             OutlinedTextField(
                 value = selected,
                 onValueChange = { selected = it },
-                label = { Text("Anchor id", style = MaterialTheme.concordance.bodyDense) },
+                label = { Text(stringResource(R.string.auto_34b26f12c2d1), style = MaterialTheme.concordance.bodyDense) },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(),
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                 textStyle = MaterialTheme.concordance.monoValue,
                 colors = fieldColors(),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
             )
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 if (anchors.isEmpty()) {
-                    DropdownMenuItem(text = { Text("No anchors loaded", style = MaterialTheme.concordance.monoId) }, onClick = { expanded = false })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.auto_a967bfd20dc6), style = MaterialTheme.concordance.monoId) }, onClick = { expanded = false })
                 }
                 anchors.forEach { anchor ->
                     DropdownMenuItem(
@@ -473,7 +475,7 @@ private fun AdjudicateCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Run adjudication", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_f38b6ce5db74), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -505,7 +507,7 @@ private fun CorrectionCard(
         OutlinedTextField(
             value = anchorId,
             onValueChange = { anchorId = it },
-            label = { Text("Anchor id", style = MaterialTheme.concordance.bodyDense) },
+            label = { Text(stringResource(R.string.auto_34b26f12c2d1), style = MaterialTheme.concordance.bodyDense) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = MaterialTheme.concordance.monoValue,
@@ -515,8 +517,8 @@ private fun CorrectionCard(
             OutlinedTextField(
                 value = site,
                 onValueChange = { site = it },
-                label = { Text("Site", style = MaterialTheme.concordance.monoId) },
-                placeholder = { Text("brain", style = MaterialTheme.concordance.monoId) },
+                label = { Text(stringResource(R.string.auto_5b6825d3c67a), style = MaterialTheme.concordance.monoId) },
+                placeholder = { Text(stringResource(R.string.auto_8b9248a4e0b6), style = MaterialTheme.concordance.monoId) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.concordance.monoValue,
@@ -525,7 +527,7 @@ private fun CorrectionCard(
             OutlinedTextField(
                 value = sn,
                 onValueChange = { sn = it },
-                label = { Text("Assay sensitivity", style = MaterialTheme.concordance.monoId) },
+                label = { Text(stringResource(R.string.auto_8157aa912625), style = MaterialTheme.concordance.monoId) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 textStyle = MaterialTheme.concordance.monoValue,
@@ -549,7 +551,7 @@ private fun CorrectionCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Correct", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_48e09e45c570), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -654,7 +656,7 @@ private fun RefereeAuditCard(
             OutlinedTextField(
                 value = claim,
                 onValueChange = { claim = it },
-                label = { Text("Claim specification (JSON)", style = MaterialTheme.concordance.bodyDense) },
+                label = { Text(stringResource(R.string.auto_e65dc9d931fa), style = MaterialTheme.concordance.bodyDense) },
                 placeholder = {
                     Text(
                         "{\"claim_id\": \"...\", \"claimed_auc\": 0.85, ...}",
@@ -672,8 +674,7 @@ private fun RefereeAuditCard(
                 value = csv,
                 onValueChange = { csv = it },
                 label = {
-                    Text(
-                        "Prediction table (CSV: patient_id, label, split, score)",
+                    Text(stringResource(R.string.auto_69417d4f0fd1),
                         style = MaterialTheme.concordance.bodyDense
                     )
                 },
@@ -703,7 +704,7 @@ private fun RefereeAuditCard(
                 CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = MidnightDeep)
                 Spacer(Modifier.width(6.dp))
             }
-            Text("Run referee audit", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_875cf0c43b44), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -819,7 +820,7 @@ private fun UploadCard(
             lineHeight = 16.sp
         )
 
-        Text("How should the agent treat this file?", style = MaterialTheme.concordance.overline, color = TextPrimary, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.auto_bf4993b7019d), style = MaterialTheme.concordance.overline, color = TextPrimary, fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("public" to "Published", "de_identified" to "De-identified", "phi" to "PHI").forEach { (value, label) ->
                 FilterChip(
@@ -851,8 +852,7 @@ private fun UploadCard(
                 onCheckedChange = { if (it) onAcknowledge() },
                 colors = CheckboxDefaults.colors(checkedColor = ElectricCyan, checkmarkColor = MidnightDeep)
             )
-            Text(
-                "I understand the file is sent to my agent server and its text comes back here.",
+            Text(stringResource(R.string.auto_073de75d7194),
                 style = MaterialTheme.concordance.bodyDense,
                 color = TextSecondary,
                 lineHeight = 14.sp
@@ -869,7 +869,7 @@ private fun UploadCard(
             ) {
                 Icon(Icons.Default.UploadFile, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Choose file", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_eb7eb7a8196c), style = MaterialTheme.concordance.buttonSmall)
             }
             Button(
                 onClick = {
@@ -884,7 +884,7 @@ private fun UploadCard(
             ) {
                 Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Photograph", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_eeeba73a15a3), style = MaterialTheme.concordance.buttonSmall)
             }
         }
     }
@@ -952,8 +952,7 @@ private fun AgentJobCard(job: com.example.concordance.integration.agent.AgentJob
             }
         }
         if (job.wasRefused) {
-            Text(
-                "Withheld is a result, not a fault: the agent only reports a verdict it can support.",
+            Text(stringResource(R.string.auto_9f7bd8f31cec),
                 style = MaterialTheme.concordance.monoId,
                 color = WarningAmber,
                 lineHeight = 14.sp
@@ -983,11 +982,11 @@ private fun SpeechCard(
                 onClick = onSpeak,
                 colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
             ) {
-                Icon(Icons.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Default.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Speak", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_7a8171965058), style = MaterialTheme.concordance.buttonSmall)
             }
-            TextButton(onClick = onStop) { Text("Stop", style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
+            TextButton(onClick = onStop) { Text(stringResource(R.string.auto_9e253470c876), style = MaterialTheme.concordance.bodyDense, color = TextSecondary) }
         }
         Text(
             "\"${EasyMode.speakableSummary(view)}\"",
@@ -1025,7 +1024,7 @@ private fun EasyModeCard(view: EasyModeView) {
         BulletList("What to do next", view.nextSteps)
 
         if (view.wordsWeUsed.isNotEmpty()) {
-            Text("Words we used", style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_07516be42a5c), style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
             view.wordsWeUsed.forEach { term ->
                 Column {
                     Text("${term.term} — ${term.plain}", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 16.sp)
@@ -1037,7 +1036,7 @@ private fun EasyModeCard(view: EasyModeView) {
         }
 
         if (view.numbers.isNotEmpty()) {
-            Text("The numbers (unchanged from the agent)", style = MaterialTheme.concordance.monoId, color = ElectricCyan, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_e4310347f2aa), style = MaterialTheme.concordance.monoId, color = ElectricCyan, fontWeight = FontWeight.Bold)
             view.numbers.forEach { (k, v) ->
                 Text("$k = $v", style = MaterialTheme.concordance.monoId, color = TextSecondary, fontFamily = FontFamily.Monospace)
             }
@@ -1177,14 +1176,14 @@ private fun ResearchResultCard(result: AgentResearchResult) {
         }
         if (result.hypotheses.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Hypotheses", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_564b7df37839), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.hypotheses.forEach { h ->
                 Text("- $h", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
             }
         }
         if (result.experiments.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Experiments", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_e8f296b5904f), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.experiments.forEach { e ->
                 Column(Modifier.padding(vertical = 4.dp)) {
                     Text(e.title, style = MaterialTheme.concordance.bodyDense, color = ElectricCyan, fontWeight = FontWeight.Bold)
@@ -1198,7 +1197,7 @@ private fun ResearchResultCard(result: AgentResearchResult) {
         }
         if (result.nextSteps.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            Text("Next steps", style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.auto_11fc14203dd0), style = MaterialTheme.concordance.bodyDense, color = TextSecondary, fontWeight = FontWeight.Bold)
             result.nextSteps.forEach { n ->
                 Text("- $n", style = MaterialTheme.concordance.bodyDense, color = TextPrimary, lineHeight = 14.sp)
             }

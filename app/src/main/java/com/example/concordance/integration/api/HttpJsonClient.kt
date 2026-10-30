@@ -43,6 +43,23 @@ object HttpJsonClient {
     fun cacheTtlMs(): Long = cacheTtlMs
 
     /**
+     * Query-parameter names whose values are secrets and must never be
+     * persisted (provenance `endpoint`, cache keys) or surfaced in the UI /
+     * exported capsules.
+     */
+    private val SECRET_PARAM =
+        Regex("(?i)([?&](?:api[_-]?key|key|token|access[_-]?token|auth|secret|password|sig|signature)=)[^&#]*")
+
+    /**
+     * Redact secret query-parameter values from a URL. The wire request keeps the
+     * real value; only the persisted provenance/cache representation is scrubbed,
+     * so an API key placed in the query string (e.g. PubPeer BYOK) is not written
+     * into Room or surfaced in an exported capsule.
+     */
+    internal fun sanitizeUrlForStorage(url: String): String =
+        url.replace(SECRET_PARAM, "$1[redacted]")
+
+    /**
      * The OkHttp client every call goes through.
      *
      * It is replaceable so the integration tests can point it at a local
@@ -111,7 +128,8 @@ object HttpJsonClient {
         authToken: String? = null,
         extraHeaders: Map<String, String>? = null
     ): HttpJsonResult? {
-        val cacheKey = "$providerId|$url|${jsonBody ?: ""}"
+        val safeUrl = sanitizeUrlForStorage(url)
+        val cacheKey = "$providerId|$safeUrl|${jsonBody ?: ""}"
         // Only keyless GET responses participate in the cache, on both the read
         // and write paths — token-authenticated and POST responses must never be
         // served from, or stored to, a shared keyless cache.
@@ -123,7 +141,7 @@ object HttpJsonClient {
             if (cached != null) {
                 val provenance = Provenance(
                     providerId = providerId,
-                    endpoint = url,
+                    endpoint = safeUrl,
                     query = queryLabel,
                     httpStatus = 200,
                     retrievedUtc = ProvenanceRecorder.nowUtc(),
@@ -173,7 +191,7 @@ object HttpJsonClient {
 
         val provenance = Provenance(
             providerId = providerId,
-            endpoint = url,
+            endpoint = safeUrl,
             query = queryLabel,
             httpStatus = status,
             retrievedUtc = ProvenanceRecorder.nowUtc(),

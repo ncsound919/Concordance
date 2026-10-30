@@ -211,6 +211,36 @@ class HttpJsonClientTest {
     }
 
     @Test
+    fun `a secret query parameter is redacted from the persisted provenance endpoint`() = runBlocking {
+        harness.enqueue(200, "{}")
+        HttpJsonClient.getJson(
+            "pubpeer_api",
+            "https://example.org/v1/publications?doi=10.1/a&api_key=super-secret",
+            "10.1/a",
+            spec,
+            LicenseClass.OPEN
+        )
+        val record = ProvenanceRecorder.records.value.first()
+        // The wire request keeps the real key...
+        assertTrue(harness.takeRequest().path!!.contains("api_key=super-secret"))
+        // ...but the persisted provenance never stores it.
+        org.junit.Assert.assertFalse(record.endpoint.contains("super-secret"))
+        assertTrue(record.endpoint.contains("api_key=[redacted]"))
+    }
+
+    @Test
+    fun `sanitizeUrlForStorage redacts known secret params and leaves others`() {
+        val scrubbed = HttpJsonClient.sanitizeUrlForStorage(
+            "https://h.test/p?token=abc&api_key=k1&page=2&access_token=t2&signature=s"
+        )
+        org.junit.Assert.assertFalse(scrubbed.contains("abc"))
+        org.junit.Assert.assertFalse(scrubbed.contains("k1"))
+        org.junit.Assert.assertFalse(scrubbed.contains("t2"))
+        org.junit.Assert.assertFalse(scrubbed.contains("signature=s"))
+        assertTrue(scrubbed.contains("page=2"))
+    }
+
+    @Test
     fun `the provenance digest is the digest of the body`() = runBlocking {
         val body = """{"ok":true}"""
         harness.enqueue(200, body)

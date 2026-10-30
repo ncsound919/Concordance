@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Science
-import androidx.compose.material.icons.filled.Undo
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +23,9 @@ import com.example.concordance.learning.ModelRevision
 import com.example.concordance.learning.ParameterSearch
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Self-learning tab (Phase 1): runs a bounded dry-run round, shows candidate
@@ -34,26 +37,26 @@ fun ModelLearningTab(
     viewModel: ConcordanceViewModel,
     modifier: Modifier = Modifier
 ) {
-    val isRunning by viewModel.isRunningLearningRound.collectAsState()
-    val report by viewModel.learningReport.collectAsState()
-    val candidates by viewModel.learningCandidates.collectAsState()
-    val summary by viewModel.trainingSummary.collectAsState()
-    val current by viewModel.currentModelRevision.collectAsState()
-    val revisions by viewModel.modelRevisions.collectAsState()
-    val diff by viewModel.revisionDiff.collectAsState()
-    val audit by viewModel.learningAudit.collectAsState()
-    val health by viewModel.learningHealth.collectAsState()
-    val autoRoundThreshold by viewModel.autoRoundThreshold.collectAsState()
-    val stabilityThreshold by viewModel.stabilityThreshold.collectAsState()
-    val challenges by viewModel.allChallenges.collectAsState()
-    val lastAutoCount by viewModel.lastAutoRoundChallengeCount.collectAsState()
-    val telemetrySuggestions by viewModel.telemetrySuggestions.collectAsState()
+    val isRunning by viewModel.isRunningLearningRound.collectAsStateWithLifecycle()
+    val report by viewModel.learningReport.collectAsStateWithLifecycle()
+    val candidates by viewModel.learningCandidates.collectAsStateWithLifecycle()
+    val summary by viewModel.trainingSummary.collectAsStateWithLifecycle()
+    val current by viewModel.currentModelRevision.collectAsStateWithLifecycle()
+    val revisions by viewModel.modelRevisions.collectAsStateWithLifecycle()
+    val diff by viewModel.revisionDiff.collectAsStateWithLifecycle()
+    val audit by viewModel.learningAudit.collectAsStateWithLifecycle()
+    val health by viewModel.learningHealth.collectAsStateWithLifecycle()
+    val autoRoundThreshold by viewModel.autoRoundThreshold.collectAsStateWithLifecycle()
+    val stabilityThreshold by viewModel.stabilityThreshold.collectAsStateWithLifecycle()
+    val challenges by viewModel.allChallenges.collectAsStateWithLifecycle()
+    val lastAutoCount by viewModel.lastAutoRoundChallengeCount.collectAsStateWithLifecycle()
+    val telemetrySuggestions by viewModel.telemetrySuggestions.collectAsStateWithLifecycle()
 
     var approver by remember { mutableStateOf("") }
     var pendingCandidate by remember { mutableStateOf<ParameterSearch.CandidateScore?>(null) }
     var pendingRevert by remember { mutableStateOf<ModelRevision?>(null) }
     var importText by remember { mutableStateOf("") }
-    val archiveExport by viewModel.revisionArchiveExport.collectAsState()
+    val archiveExport by viewModel.revisionArchiveExport.collectAsStateWithLifecycle()
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -94,7 +97,7 @@ fun ModelLearningTab(
                          shape = RoundedCornerShape(8.dp),
                          modifier = Modifier.fillMaxWidth()
                      ) {
-                         Text("Re-adjudicate all claims under this revision", style = MaterialTheme.concordance.overline)
+                         Text(stringResource(R.string.auto_3fc689486fde), style = MaterialTheme.concordance.overline)
                      }
                     }
                 }
@@ -187,14 +190,13 @@ fun ModelLearningTab(
                         )
                     }
                     if (d.flips.isEmpty()) {
-                        Text(
-                            "No verdict changes — this revision would not alter any existing adjudication.",
+                        Text(stringResource(R.string.auto_1f151043399f),
                             style = MaterialTheme.concordance.monoId,
                             color = TextMuted
                         )
                     }
                     Spacer(Modifier.height(4.dp))
-                    TextButton(onClick = { viewModel.clearRevisionDiff() }) { Text("Close diff", style = MaterialTheme.concordance.bodyDense) }
+                    TextButton(onClick = { viewModel.clearRevisionDiff() }) { Text(stringResource(R.string.auto_62d8711138c9), style = MaterialTheme.concordance.bodyDense) }
                 }
             }
         }
@@ -204,7 +206,7 @@ fun ModelLearningTab(
                 OutlinedTextField(
                     value = approver,
                     onValueChange = { approver = it },
-                    label = { Text("Your name / handle", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_a608b328a9ba), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     singleLine = true
@@ -214,8 +216,7 @@ fun ModelLearningTab(
 
         if (candidates.isNotEmpty()) {
             item {
-                Text(
-                    "TOP CANDIDATES (promotion is manual)",
+                Text(stringResource(R.string.auto_2f5ac962f9ff),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan,
@@ -242,7 +243,7 @@ fun ModelLearningTab(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Preview diff", style = MaterialTheme.concordance.buttonSmall)
+                            Text(stringResource(R.string.auto_d57393194772), style = MaterialTheme.concordance.buttonSmall)
                         }
                         Button(
                             onClick = { pendingCandidate = c },
@@ -264,8 +265,7 @@ fun ModelLearningTab(
 
         if (revisions.isNotEmpty()) {
             item {
-                Text(
-                    "REVISION HISTORY (append-only)",
+                Text(stringResource(R.string.auto_db4653da5ad3),
                     style = MaterialTheme.concordance.bodyDense,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan,
@@ -300,7 +300,7 @@ fun ModelLearningTab(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Diff vs current", style = MaterialTheme.concordance.buttonSmall)
+                            Text(stringResource(R.string.auto_566ea8ade947), style = MaterialTheme.concordance.buttonSmall)
                         }
                         OutlinedButton(
                             onClick = { pendingRevert = rev },
@@ -308,9 +308,9 @@ fun ModelLearningTab(
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.Undo, contentDescription = null, modifier = Modifier.size(12.dp))
+                            Icon(Icons.AutoMirrored.Default.Undo, contentDescription = null, modifier = Modifier.size(12.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Revert", style = MaterialTheme.concordance.buttonSmall)
+                            Text(stringResource(R.string.auto_272607a7bd01), style = MaterialTheme.concordance.buttonSmall)
                         }
                     }
                 }
@@ -319,8 +319,7 @@ fun ModelLearningTab(
 
         if (audit.isNotEmpty()) {
             item {
-                Text(
-                    "DECISION AUDIT (append-only, promoted & rejected)",
+                Text(stringResource(R.string.auto_468f285b8094),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan,
@@ -465,14 +464,14 @@ fun ModelLearningTab(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Analyze now", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_cc56669344ce), style = MaterialTheme.concordance.buttonSmall)
                     }
                     OutlinedButton(
                         onClick = { viewModel.flushTelemetryToCloud() },
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Flush to CloudWatch", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_f958849905e5), style = MaterialTheme.concordance.buttonSmall)
                     }
                 }
             }
@@ -495,7 +494,7 @@ fun ModelLearningTab(
                 )
                 if (health.metricTrend.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
-                    Text("Metric trend (promoted revisions):", style = MaterialTheme.concordance.monoId, color = TextMuted)
+                    Text(stringResource(R.string.auto_a17169bb44e4), style = MaterialTheme.concordance.monoId, color = TextMuted)
                     health.metricTrend.forEach { (id, e) ->
                         Text(
                             "  $id  E=${"%.4f".format(e)}",
@@ -506,7 +505,7 @@ fun ModelLearningTab(
                     }
                 }
                 Spacer(Modifier.height(6.dp))
-                Text("Continual mode settings:", style = MaterialTheme.concordance.monoId, color = TextMuted)
+                Text(stringResource(R.string.auto_7c05c5c19b2f), style = MaterialTheme.concordance.monoId, color = TextMuted)
                 Text(
                     "Challenges since last round: ${(challenges.size - lastAutoCount).coerceAtLeast(0)} / $autoRoundThreshold",
                     style = MaterialTheme.concordance.monoId,
@@ -520,7 +519,7 @@ fun ModelLearningTab(
                     OutlinedTextField(
                         value = autoRoundThreshold.toString(),
                         onValueChange = { it.toIntOrNull()?.let { v -> viewModel.setAutoRoundThreshold(v) } },
-                        label = { Text("Auto-round every N challenges", style = MaterialTheme.concordance.bodyDense) },
+                        label = { Text(stringResource(R.string.auto_1e7b30aade72), style = MaterialTheme.concordance.bodyDense) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense,
                         singleLine = true
@@ -528,7 +527,7 @@ fun ModelLearningTab(
                     OutlinedTextField(
                         value = (stabilityThreshold * 100).toInt().toString(),
                         onValueChange = { it.toIntOrNull()?.let { v -> viewModel.setStabilityThreshold(v / 100.0) } },
-                        label = { Text("Stability guard %", style = MaterialTheme.concordance.bodyDense) },
+                        label = { Text(stringResource(R.string.auto_6485d869e56d), style = MaterialTheme.concordance.bodyDense) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense,
                         singleLine = true
@@ -540,7 +539,7 @@ fun ModelLearningTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Run auto-trigger check now", style = MaterialTheme.concordance.buttonSmall)
+                    Text(stringResource(R.string.auto_acc5b0d8221c), style = MaterialTheme.concordance.buttonSmall)
                 }
             }
         }
@@ -559,7 +558,7 @@ fun ModelLearningTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Export revisions (JSON)", style = MaterialTheme.concordance.monoId)
+                    Text(stringResource(R.string.auto_74d9491f35ba), style = MaterialTheme.concordance.monoId)
                 }
                 archiveExport?.let { json ->
                     Spacer(Modifier.height(6.dp))
@@ -570,14 +569,14 @@ fun ModelLearningTab(
                         fontFamily = FontFamily.Monospace
                     )
                     TextButton(onClick = { viewModel.clearRevisionArchiveExport() }) {
-                        Text("Dismiss export", style = MaterialTheme.concordance.monoId)
+                        Text(stringResource(R.string.auto_d259d34a5a1e), style = MaterialTheme.concordance.monoId)
                     }
                 }
                 Spacer(Modifier.height(6.dp))
                 OutlinedTextField(
                     value = importText,
                     onValueChange = { importText = it },
-                    label = { Text("Paste revision JSON to import", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_1449540e8ae4), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
@@ -589,7 +588,7 @@ fun ModelLearningTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Import revisions", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_b4a827f10791), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -599,7 +598,7 @@ fun ModelLearningTab(
     pendingCandidate?.let { c ->
         AlertDialog(
             onDismissRequest = { pendingCandidate = null },
-            title = { Text("Promote model revision?") },
+            title = { Text(stringResource(R.string.auto_d041598f53ad)) },
             text = {
                 Text(
                     "This will publish sn=${c.parameters.sn}, ref=${c.parameters.referencePrevalence} " +
@@ -613,10 +612,10 @@ fun ModelLearningTab(
                 Button(onClick = {
                     viewModel.promoteCandidate(c, approver)
                     pendingCandidate = null
-                }) { Text("Promote") }
+                }) { Text(stringResource(R.string.auto_61c57736e70d)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingCandidate = null }) { Text("Cancel") }
+                TextButton(onClick = { pendingCandidate = null }) { Text(stringResource(R.string.auto_77dfd2135f4d)) }
             }
         )
     }
@@ -636,10 +635,10 @@ fun ModelLearningTab(
                 Button(onClick = {
                     viewModel.revertToRevision(rev.id, approver)
                     pendingRevert = null
-                }) { Text("Revert") }
+                }) { Text(stringResource(R.string.auto_272607a7bd01)) }
             },
             dismissButton = {
-                TextButton(onClick = { pendingRevert = null }) { Text("Cancel") }
+                TextButton(onClick = { pendingRevert = null }) { Text(stringResource(R.string.auto_77dfd2135f4d)) }
             }
         )
     }

@@ -24,6 +24,9 @@ import com.example.concordance.engine.PairedAnalyzer
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun PairedDataScreen(
@@ -32,14 +35,14 @@ fun PairedDataScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val pairedCsv by viewModel.pairedCsvText.collectAsState()
-    val pairedResult by viewModel.pairedResult.collectAsState()
-    val pairedErrors by viewModel.pairedErrors.collectAsState()
+    val pairedCsv by viewModel.pairedCsvText.collectAsStateWithLifecycle()
+    val pairedResult by viewModel.pairedResult.collectAsStateWithLifecycle()
+    val pairedErrors by viewModel.pairedErrors.collectAsStateWithLifecycle()
 
-    val powerTargetR by viewModel.powerTargetR.collectAsState()
-    val powerDesired by viewModel.powerDesired.collectAsState()
-    val powerReq by viewModel.powerRequirement.collectAsState()
-    val powerSweep by viewModel.powerSweep.collectAsState()
+    val powerTargetR by viewModel.powerTargetR.collectAsStateWithLifecycle()
+    val powerDesired by viewModel.powerDesired.collectAsStateWithLifecycle()
+    val powerReq by viewModel.powerRequirement.collectAsStateWithLifecycle()
+    val powerSweep by viewModel.powerSweep.collectAsStateWithLifecycle()
 
     var showCsvEditor by remember { mutableStateOf(false) }
 
@@ -51,15 +54,13 @@ fun PairedDataScreen(
     ) {
         Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = "EMPIRICAL CONCORDANCE & POWER",
+        Text(text = stringResource(R.string.auto_f455521c840f),
             style = MaterialTheme.concordance.overline,
             fontWeight = FontWeight.Bold,
             color = ElectricCyan,
             letterSpacing = 1.sp
         )
-        Text(
-            text = "Analyze paired tissue-plasma datasets and calculate sample size required to statistically separate true depletion from artifact.",
+        Text(text = stringResource(R.string.auto_3fecf7c00a47),
             style = MaterialTheme.concordance.overline,
             color = TextSecondary,
             lineHeight = 16.sp
@@ -81,12 +82,12 @@ fun PairedDataScreen(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Paired Concordance", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_31bcd9d8d436), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Power & Sample Size", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_d7562af0f614), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
         }
 
@@ -102,7 +103,7 @@ fun PairedDataScreen(
                 // Preset selection chips
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("PRESET DATASETS:", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
+                        Text(stringResource(R.string.auto_03510c002b89), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -116,7 +117,7 @@ fun PairedDataScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("2026 Case Benchmark", style = MaterialTheme.concordance.buttonSmall, maxLines = 1)
+                                Text(stringResource(R.string.auto_0eaa7f0e89e5), style = MaterialTheme.concordance.buttonSmall, maxLines = 1)
                             }
 
                             OutlinedButton(
@@ -130,7 +131,7 @@ fun PairedDataScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Synthetic Guardrail", style = MaterialTheme.concordance.buttonSmall, color = VividCoral, maxLines = 1)
+                                Text(stringResource(R.string.auto_f20db848e9fc), style = MaterialTheme.concordance.buttonSmall, color = VividCoral, maxLines = 1)
                             }
                         }
                     }
@@ -150,8 +151,7 @@ fun PairedDataScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    text = "RELATIVE SENSITIVITY ESTIMATE (r)",
+                                Text(text = stringResource(R.string.auto_a1f407ddd128),
                                     style = MaterialTheme.concordance.overline,
                                     fontWeight = FontWeight.Bold,
                                     color = ElectricCyan
@@ -203,19 +203,17 @@ fun PairedDataScreen(
                                 ) {
                                     Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(6.dp))
-                                    Text("Apply This Range to Adjudication Screen", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.auto_4e5ae0000d26), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                                 }
                             } else {
-                                Text(
-                                    text = "Relative sensitivity could not be estimated from the dataset.",
+                                Text(text = stringResource(R.string.auto_19946116d3a0),
                                     color = VividCoral,
                                     style = MaterialTheme.concordance.bodyDense
                                 )
                             }
 
                             if (res.synthetic) {
-                                Text(
-                                    text = "⚠️ Contains synthetic data. Protocol requires withholding verdict.",
+                                Text(text = stringResource(R.string.auto_06dfa9706c81),
                                     color = VividCoral,
                                     style = MaterialTheme.concordance.bodyDense,
                                     fontWeight = FontWeight.Bold
@@ -239,8 +237,7 @@ fun PairedDataScreen(
                                 .padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = "MODALITY CONCORDANCE TABLES",
+                            Text(text = stringResource(R.string.auto_8d38dc79b010),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
@@ -263,7 +260,7 @@ fun PairedDataScreen(
                                 ConcordanceCell("Both-", res.brainBothNeg, TextMuted)
                             }
 
-                            Divider(color = SlateCardBorder)
+                            HorizontalDivider(color = SlateCardBorder)
 
                             // Non-CNS Stratum
                             Text(
@@ -334,7 +331,7 @@ fun PairedDataScreen(
                                 .background(VividCoral.copy(alpha = 0.15f))
                                 .padding(10.dp)
                         ) {
-                            Text("CSV Parsing Errors:", color = VividCoral, fontWeight = FontWeight.Bold, style = MaterialTheme.concordance.bodyDense)
+                            Text(stringResource(R.string.auto_429778349786), color = VividCoral, fontWeight = FontWeight.Bold, style = MaterialTheme.concordance.bodyDense)
                             for (err in pairedErrors) {
                                 Text("• $err", color = TextPrimary, style = MaterialTheme.concordance.bodyDense)
                             }
@@ -359,15 +356,13 @@ fun PairedDataScreen(
                             .padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "REQUIRED DATA TO SEPARATE BIOLOGY FROM ARTIFACT",
+                        Text(text = stringResource(R.string.auto_13d4cc515f37),
                             style = MaterialTheme.concordance.overline,
                             fontWeight = FontWeight.Bold,
                             color = ElectricCyan,
                             letterSpacing = 1.sp
                         )
-                        Text(
-                            text = "Calculates the cohort size needed to reject the null hypothesis that depletion is explained by detection artifact alone (r = r*).",
+                        Text(text = stringResource(R.string.auto_987b43566647),
                             style = MaterialTheme.concordance.bodyDense,
                             color = TextSecondary
                         )
@@ -378,7 +373,7 @@ fun PairedDataScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Target True Relative Sensitivity (r_true):", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                                Text(stringResource(R.string.auto_8c3b44e09c85), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                                 Text(
                                     text = String.format(Locale.US, "%.2f×", powerTargetR),
                                     style = MaterialTheme.concordance.monoId,
@@ -402,17 +397,17 @@ fun PairedDataScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Statistical Power (1 - β, α = 0.05):", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                            Text(stringResource(R.string.auto_4067e4c47e20), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 FilterChip(
                                     selected = powerDesired == 0.80,
                                     onClick = { viewModel.updatePowerDesired(0.80) },
-                                    label = { Text("80%") }
+                                    label = { Text(stringResource(R.string.auto_5366a7416787)) }
                                 )
                                 FilterChip(
                                     selected = powerDesired == 0.90,
                                     onClick = { viewModel.updatePowerDesired(0.90) },
-                                    label = { Text("90%") }
+                                    label = { Text(stringResource(R.string.auto_ce25e2fd4794)) }
                                 )
                             }
                         }
@@ -431,8 +426,7 @@ fun PairedDataScreen(
                                 .padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text(
-                                text = "ENROLLMENT REQUIREMENT",
+                            Text(text = stringResource(R.string.auto_abe8629c6145),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = NeonEmerald
@@ -468,14 +462,12 @@ fun PairedDataScreen(
                                 .padding(14.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "SAMPLE SIZE SWEEP ACROSS r_true",
+                            Text(text = stringResource(R.string.auto_196374a59330),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
                             )
-                            Text(
-                                text = "As hypothetical r_true approaches artifact null (r* = 0.31), required sample size explodes asymptotically.",
+                            Text(text = stringResource(R.string.auto_bdd2fcc60a49),
                                 style = MaterialTheme.concordance.bodyDense,
                                 color = TextSecondary
                             )
@@ -488,10 +480,10 @@ fun PairedDataScreen(
                                     .padding(6.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("True r", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
-                                Text("Positives (m)", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
-                                Text("Brain N", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
-                                Text("Non-CNS N", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
+                                Text(stringResource(R.string.auto_e92ef86f3f6f), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
+                                Text(stringResource(R.string.auto_91e1cbaf33e5), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
+                                Text(stringResource(R.string.auto_aac18f4a5422), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
+                                Text(stringResource(R.string.auto_a93333159d9a), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = TextMuted)
                             }
 
                             for (row in powerSweep) {

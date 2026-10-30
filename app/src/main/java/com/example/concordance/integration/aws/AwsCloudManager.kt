@@ -73,8 +73,8 @@ object AwsCloudManager {
         _syncStatus.value = if (isConfigured) AwsSyncStatus.CONNECTED else AwsSyncStatus.DISCONNECTED
     }
 
-    private fun md5Hex(content: String): String {
-        val digest = MessageDigest.getInstance("MD5").digest(content.toByteArray())
+    private fun sha256Hex(content: String): String {
+        val digest = MessageDigest.getInstance("SHA-256").digest(content.toByteArray())
         return digest.joinToString("") { "%02x".format(it) }
     }
 

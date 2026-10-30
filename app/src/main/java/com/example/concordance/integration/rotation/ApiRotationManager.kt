@@ -84,7 +84,7 @@ object ApiRotationManager {
             id = "arxiv_api",
             name = "arXiv Preprints (Cornell University)",
             category = ProviderCategory.LITERATURE,
-            baseUrl = "http://export.arxiv.org/api/query",
+            baseUrl = "https://export.arxiv.org/api/query",
             avgLatencyMs = 290
         ),
         ApiProvider(

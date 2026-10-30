@@ -15,12 +15,16 @@ import org.json.JSONObject
  */
 data class SyncConflict(val entityType: String, val entityId: String, val reason: String)
 
+/** A record the sync boundary refused to upload because its free text looked identifier-bearing. */
+data class PhiBlocked(val entityType: String, val entityId: String)
+
 class SupabaseSyncManager(
     private val auth: SupabaseAuth,
     private val rest: PostgRestClient,
     private val db: ConcordanceDatabase
 ) {
     val conflicts: MutableList<SyncConflict> = mutableListOf()
+    val phiBlocked: MutableList<PhiBlocked> = mutableListOf()
     var onConflict: ((SyncConflict) -> Unit)? = null
     suspend fun pullClaims(): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
@@ -41,7 +45,14 @@ class SupabaseSyncManager(
                     // Route into self-learning/trends/agent repair team (Phase 3.3)
                     onConflict?.invoke(SyncConflict("claim", remote.id, "local vs server divergence"))
                 } else {
-                    db.claimDao().upsert(remote)
+                    // Claim notes are never pushed, so a server row without
+                    // notes must not wipe the local annotation on pull.
+                    val merged = if (local != null && remote.notes.isBlank()) {
+                        remote.copy(notes = local.notes)
+                    } else {
+                        remote
+                    }
+                    db.claimDao().upsert(merged)
                 }
                 n++
             }
@@ -155,7 +166,12 @@ class SupabaseSyncManager(
         }
     }
 
-    /** Push dirty claims. PHI-class records are refused at the boundary. */
+    /**
+     * Push dirty claims. PHI-class records are refused at the boundary: any
+     * claim whose free text looks identifier-bearing (PhiScreen) stays local,
+     * is not marked synced, and is recorded in [phiBlocked]. Claim notes are
+     * never included in the payload at all.
+     */
     suspend fun pushClaims(): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
             val session = auth.session ?: error("Not signed in")
@@ -164,6 +180,10 @@ class SupabaseSyncManager(
             }
             var n = 0
             for (c in dirty) {
+                if (PhiScreen.claimBlocked(c)) {
+                    phiBlocked.add(PhiBlocked("claim", c.id))
+                    continue
+                }
                 val body = SyncMappers.claimToSupabase(c).apply {
                     put("owner_id", session.userId)
                     put("data_class", "aggregate")
@@ -190,6 +210,10 @@ class SupabaseSyncManager(
             }
             var n = 0
             for (c in dirty) {
+                if (PhiScreen.capsuleBlocked(c)) {
+                    phiBlocked.add(PhiBlocked("capsule", c.id))
+                    continue
+                }
                 val body = SyncMappers.capsuleToSupabase(c).apply {
                     put("owner_id", session.userId)
                     put("data_class", "aggregate")
@@ -216,6 +240,10 @@ class SupabaseSyncManager(
             }
             var n = 0
             for (c in dirty) {
+                if (PhiScreen.challengeBlocked(c)) {
+                    phiBlocked.add(PhiBlocked("challenge", c.id))
+                    continue
+                }
                 val body = SyncMappers.challengeToSupabase(c).apply {
                     put("author_id", session.userId)
                 }.toString()

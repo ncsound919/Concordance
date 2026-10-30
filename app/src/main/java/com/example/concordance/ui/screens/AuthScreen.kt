@@ -11,6 +11,8 @@ import com.example.concordance.integration.supabase.SupabaseAuth
 import com.example.concordance.integration.supabase.SupabaseSession
 import com.example.concordance.integration.supabase.createSupabaseSessionStore
 import kotlinx.coroutines.launch
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun AuthScreen(
@@ -20,8 +22,9 @@ fun AuthScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val store = remember { createSupabaseSessionStore(context) }
     val auth = remember { SupabaseAuth(store) }
-    var email by remember { mutableStateOf("citizen@concordance.dev") }
-    var password by remember { mutableStateOf("demo1234") }
+    // No prefilled credentials: demo accounts must never ship in a build.
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var isSignUp by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -32,17 +35,16 @@ fun AuthScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Concordance Account", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.auto_32a39b95e1d4), style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
-        Text(
-            "Same account for the phone app and the website.",
+        Text(stringResource(R.string.auto_8d82131376f0),
             style = MaterialTheme.typography.bodySmall
         )
         Spacer(Modifier.height(24.dp))
-        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email") }, singleLine = true)
+        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text(stringResource(R.string.auto_84add5b29527)) }, singleLine = true)
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
-            value = password, onValueChange = { password = it }, label = { Text("Password") },
+            value = password, onValueChange = { password = it }, label = { Text(stringResource(R.string.auto_8be3c943b160)) },
             singleLine = true, visualTransformation = PasswordVisualTransformation()
         )
         Spacer(Modifier.height(16.dp))
@@ -66,7 +68,7 @@ fun AuthScreen(
             Text(if (isSignUp) "Already have an account? Sign in" else "New here? Create account")
         }
         Spacer(Modifier.height(8.dp))
-        TextButton(onClick = onGuest) { Text("Continue as guest (offline only)") }
+        TextButton(onClick = onGuest) { Text(stringResource(R.string.auto_d83bf2ce50ff)) }
         if (error != null) {
             Spacer(Modifier.height(8.dp))
             Text(error!!, color = MaterialTheme.colorScheme.error)

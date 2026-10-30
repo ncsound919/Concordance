@@ -22,6 +22,8 @@ dependencyResolutionManagement {
   }
 }
 
+includeBuild("../shared/kotlin-core")
+
 rootProject.name = "Concordance"
 
 include(":app")

@@ -71,4 +71,45 @@ class TaskerBridgeTest {
         TaskerBridge.handleIntent(ctx, null)
         assertEquals(0, TaskerBridge.pendingCount(ctx))
     }
+
+    @Test
+    fun anOversizedExtraIsTruncated() {
+        val ctx = RuntimeEnvironment.getApplication()
+        TaskerBridge.drain(ctx)
+
+        TaskerBridge.enqueue(ctx, TaskerBridge.ACTION_RE_ADJUDICATE, "x".repeat(5_000))
+        val drained = TaskerBridge.drain(ctx)
+        assertEquals(1, drained.size)
+        // action + '=' + capped extra
+        assertTrue("length was ${drained[0].length}", drained[0].length <= 128 + 64)
+    }
+
+    @Test
+    fun anExtraCannotInjectASecondQueueEntry() {
+        val ctx = RuntimeEnvironment.getApplication()
+        TaskerBridge.drain(ctx)
+
+        val separator = "\u001f"
+        TaskerBridge.enqueue(
+            ctx,
+            TaskerBridge.ACTION_RE_ADJUDICATE,
+            "rev-1$separator${TaskerBridge.ACTION_SYNC_CAPSULES}"
+        )
+        val drained = TaskerBridge.drain(ctx)
+        assertEquals("the separator must not create a fake entry", 1, drained.size)
+        assertTrue(drained[0].startsWith(TaskerBridge.ACTION_RE_ADJUDICATE))
+        assertTrue(drained[0].contains(TaskerBridge.ACTION_SYNC_CAPSULES))
+    }
+
+    @Test
+    fun theQueueIsCappedSoAFloodCannotGrowStorageWithoutBound() {
+        val ctx = RuntimeEnvironment.getApplication()
+        TaskerBridge.drain(ctx)
+
+        repeat(100) {
+            TaskerBridge.enqueue(ctx, TaskerBridge.ACTION_RUN_LEARNING_ROUND)
+        }
+        assertTrue(TaskerBridge.pendingCount(ctx) <= 32)
+        TaskerBridge.drain(ctx)
+    }
 }

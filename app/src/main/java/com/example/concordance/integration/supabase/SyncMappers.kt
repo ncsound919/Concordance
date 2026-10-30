@@ -22,13 +22,17 @@ object SyncMappers {
         put("or_ci_high", c.orCiHigh)
         put("reference_prevalence", c.referencePrevalence)
         put("denominator", c.denominator)
-        put("notes", c.notes)
+        // Free-text notes never leave the device: they are researcher-local
+        // annotations and the only record class the server accepts is
+        // 'aggregate'. See PhiScreen for the boundary check on the rest.
         put("is_custom", c.isCustom)
         put("date_added", c.dateAdded)
         put("challenge_count", c.challengeCount)
         put("model_revision_id", c.modelRevisionId)
         put("owner_type", "user")
-        put("visibility", if (c.isCustom) "private" else "public")
+        // Everything syncs private; publishing to the public registry is an
+        // explicit separate action (SupabaseSyncManager.publishClaim).
+        put("visibility", "private")
     }
 
     fun claimFromSupabase(o: JSONObject): ClaimEntity = ClaimEntity(

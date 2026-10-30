@@ -9,7 +9,13 @@ import java.util.*
 
 object CapsuleEngine {
     private const val CAPSULE_VERSION = "1"
-    private const val SOFTWARE_VERSION = "0.1.0"
+
+    /**
+     * Version stamped into every capsule. Derived from the app's real version
+     * (BuildConfig.VERSION_NAME) so provenance never misreports the producing
+     * software as a stale hard-coded number.
+     */
+    val SOFTWARE_VERSION: String = com.example.BuildConfig.VERSION_NAME
 
     private val ASSUMPTIONS = listOf(
         "Perfect assay specificity; depletion can only arise from reduced sensitivity in brain samples.",

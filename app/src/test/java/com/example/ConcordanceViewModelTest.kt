@@ -123,6 +123,42 @@ class ConcordanceViewModelTest {
     }
 
     @Test
+    fun communityBaseUrl_acceptsRealLoopbackHosts() {
+        val previous = vm.communityBaseUrl.value
+        try {
+            vm.setCommunityBaseUrl("http://localhost:3001")
+            assertEquals("http://localhost:3001", vm.communityBaseUrl.value)
+            vm.setCommunityBaseUrl("http://127.0.0.1:3001")
+            assertEquals("http://127.0.0.1:3001", vm.communityBaseUrl.value)
+            vm.setCommunityBaseUrl("http://10.0.2.2:3001")
+            assertEquals("http://10.0.2.2:3001", vm.communityBaseUrl.value)
+        } finally {
+            vm.setCommunityBaseUrl(previous)
+        }
+    }
+
+    @Test
+    fun communityBaseUrl_rejectsNonLoopbackCleartextAndHostnameTricks() {
+        val previous = vm.communityBaseUrl.value
+        try {
+            // Plain non-loopback cleartext.
+            vm.setCommunityBaseUrl("http://evil.example.com")
+            assertEquals(previous, vm.communityBaseUrl.value)
+
+            // Substring trick: "localhost" appears but the HOST is evil.com —
+            // host parsing must not treat this as loopback.
+            vm.setCommunityBaseUrl("http://localhost.evil.com")
+            assertEquals(previous, vm.communityBaseUrl.value)
+
+            // Same trick with the emulator alias.
+            vm.setCommunityBaseUrl("http://10.0.2.2.evil.com")
+            assertEquals(previous, vm.communityBaseUrl.value)
+        } finally {
+            vm.setCommunityBaseUrl(previous)
+        }
+    }
+
+    @Test
     fun rotationAndProviders() {
         vm.setRotationStrategy(com.example.concordance.integration.rotation.RotationStrategy.ROUND_ROBIN)
         assertEquals(com.example.concordance.integration.rotation.RotationStrategy.ROUND_ROBIN, vm.rotationStrategy.value)

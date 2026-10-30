@@ -37,6 +37,9 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SensitivityCurveChart
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun AdjudicationScreen(
@@ -45,12 +48,12 @@ fun AdjudicationScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val claims by viewModel.claims.collectAsState()
-    val selectedAnchor by viewModel.selectedAnchor.collectAsState()
-    val adj by viewModel.adjudicationResult.collectAsState()
-    val sn by viewModel.sn.collectAsState()
-    val rLow by viewModel.rLow.collectAsState()
-    val rHigh by viewModel.rHigh.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
+    val selectedAnchor by viewModel.selectedAnchor.collectAsStateWithLifecycle()
+    val adj by viewModel.adjudicationResult.collectAsStateWithLifecycle()
+    val sn by viewModel.sn.collectAsStateWithLifecycle()
+    val rLow by viewModel.rLow.collectAsStateWithLifecycle()
+    val rHigh by viewModel.rHigh.collectAsStateWithLifecycle()
 
     var showPresetMenu by remember { mutableStateOf(false) }
     var copiedNotice by remember { mutableStateOf<String?>(null) }
@@ -78,15 +81,13 @@ fun AdjudicationScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "ACTIVE CLAIM ANCHOR",
+                    Text(text = stringResource(R.string.auto_732c4f9a7d35),
                         style = MaterialTheme.concordance.overline,
                         fontWeight = FontWeight.Bold,
                         color = ElectricCyan,
                         letterSpacing = 1.sp
                     )
-                    Text(
-                        text = "Browse Registry →",
+                    Text(text = stringResource(R.string.auto_108c5211949e),
                         style = MaterialTheme.concordance.buttonSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = ClinicalTeal,
@@ -273,7 +274,7 @@ fun AdjudicationScreen(
                         ) {
                             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Copy Quote", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_580d3d47cd64), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -289,7 +290,7 @@ fun AdjudicationScreen(
                         ) {
                             Icon(Icons.Default.BookmarkAdd, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Mint Capsule", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_e7f0dd418978), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -316,16 +317,14 @@ fun AdjudicationScreen(
                             tint = ClinicalTeal,
                             modifier = Modifier.size(18.dp)
                         )
-                        Text(
-                            text = "2026 CLINICAL EVIDENCE ANCHOR (Current Oncology)",
+                        Text(text = stringResource(R.string.auto_fd1a06c8f535),
                             color = ClinicalTeal,
                             style = MaterialTheme.concordance.overline,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    Text(
-                        text = "A July 2026 case report documents ESR1 Y537S detected in a brain metastasis but NOT in postoperative plasma ctDNA in isolated CNS progression. The authors confirm limited CNS DNA release produces tissue-plasma discordance (r < 0.40), validating Concordance's artifact boundary.",
+                    Text(text = stringResource(R.string.auto_35ea2d2f68de),
                         color = TextSecondary,
                         style = MaterialTheme.concordance.bodyDense,
                         lineHeight = 18.sp
@@ -385,8 +384,7 @@ fun AdjudicationScreen(
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "SENSITIVITY ASSUMPTIONS & HYPOTHESIS TESTING",
+                    Text(text = stringResource(R.string.auto_a8ac84002f18),
                         color = ElectricCyan,
                         style = MaterialTheme.concordance.overline,
                         fontWeight = FontWeight.Bold,
@@ -399,8 +397,7 @@ fun AdjudicationScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "Assumed non-CNS sensitivity (s_n):",
+                            Text(text = stringResource(R.string.auto_d38b792218c9),
                                 style = MaterialTheme.concordance.bodyDense,
                                 color = TextSecondary
                             )
@@ -427,8 +424,7 @@ fun AdjudicationScreen(
 
                     // Stated Range presets
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "Stated Relative Sensitivity Range [r_low, r_high]:",
+                        Text(text = stringResource(R.string.auto_684de863585d),
                             style = MaterialTheme.concordance.bodyDense,
                             color = TextSecondary
                         )
@@ -445,7 +441,7 @@ fun AdjudicationScreen(
                                     contentColor = if (rLow == 0.25 && rHigh == 0.38) ElectricCyan else TextSecondary
                                 )
                             ) {
-                                Text("2026 Discordance [0.25–0.38]", style = MaterialTheme.concordance.buttonSmall)
+                                Text(stringResource(R.string.auto_c96864af294a), style = MaterialTheme.concordance.buttonSmall)
                             }
 
                             OutlinedButton(
@@ -456,7 +452,7 @@ fun AdjudicationScreen(
                                     contentColor = if (rLow == 0.80 && rHigh == 1.00) ElectricCyan else TextSecondary
                                 )
                             ) {
-                                Text("High Concordance [0.80–1.00]", style = MaterialTheme.concordance.buttonSmall)
+                                Text(stringResource(R.string.auto_0f3e62ca4fe1), style = MaterialTheme.concordance.buttonSmall)
                             }
                         }
 
@@ -471,7 +467,7 @@ fun AdjudicationScreen(
                             ) {
                                 Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("From Paired Data", style = MaterialTheme.concordance.buttonSmall)
+                                Text(stringResource(R.string.auto_1dc943aaa3f2), style = MaterialTheme.concordance.buttonSmall)
                             }
 
                             OutlinedButton(
@@ -479,7 +475,7 @@ fun AdjudicationScreen(
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Reset to Threshold Only", style = MaterialTheme.concordance.buttonSmall)
+                                Text(stringResource(R.string.auto_a3da10f28f33), style = MaterialTheme.concordance.buttonSmall)
                             }
                         }
                     }
@@ -497,8 +493,7 @@ fun AdjudicationScreen(
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "WHAT WOULD CHANGE THIS ADJUDICATION",
+                    Text(text = stringResource(R.string.auto_6922130f8796),
                         color = ElectricCyan,
                         style = MaterialTheme.concordance.overline,
                         fontWeight = FontWeight.Bold,
@@ -543,16 +538,14 @@ fun AdjudicationScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(Icons.Default.CloudSync, contentDescription = null, tint = ElectricCyan, modifier = Modifier.size(16.dp))
-                            Text(
-                                text = "ASYNC WORKER OFFLOAD & OS SCHEDULER",
+                            Text(text = stringResource(R.string.auto_9fd543c11f40),
                                 color = ElectricCyan,
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
                         }
-                        Text(
-                            text = "WorkManager",
+                        Text(text = stringResource(R.string.auto_a05988316ad2),
                             color = ClinicalTeal,
                             style = MaterialTheme.concordance.cardTitle,
                             fontWeight = FontWeight.Bold,
@@ -560,8 +553,7 @@ fun AdjudicationScreen(
                         )
                     }
 
-                    Text(
-                        text = "Offload heavy computation to remote workers (AWS Batch / Fargate). Android WorkManager runs with network/battery constraints and shows an Ongoing Notification with progress bar & ETA, triggering a notification on completion without holding open polling connections.",
+                    Text(text = stringResource(R.string.auto_8414d8d63d97),
                         style = MaterialTheme.concordance.bodyDense,
                         color = TextSecondary,
                         lineHeight = 16.sp
@@ -587,7 +579,7 @@ fun AdjudicationScreen(
                         ) {
                             Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("10k Resample (Batch)", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_190541c83c39), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -606,7 +598,7 @@ fun AdjudicationScreen(
                         ) {
                             Icon(Icons.Default.ImageSearch, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("VLM Figure OCR (Fargate)", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_6706a8b20d35), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
                     }
                 }

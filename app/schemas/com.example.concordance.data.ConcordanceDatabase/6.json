@@ -1,0 +1,674 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "7fdad666c4b139eb1edb0bb6d4545bb2",
+    "entities": [
+      {
+        "tableName": "claims",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `label` TEXT NOT NULL, `source` TEXT NOT NULL, `evidenceGrade` TEXT NOT NULL, `brainEvents` INTEGER, `brainTotal` INTEGER, `otherEvents` INTEGER, `otherTotal` INTEGER, `oddsRatio` REAL, `orCiLow` REAL, `orCiHigh` REAL, `referencePrevalence` REAL, `denominator` TEXT NOT NULL, `notes` TEXT NOT NULL, `isCustom` INTEGER NOT NULL, `dateAdded` TEXT NOT NULL, `challengeCount` INTEGER NOT NULL, `modelRevisionId` TEXT, `syncStatus` TEXT NOT NULL, `serverUpdatedAt` INTEGER, `version` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "evidenceGrade",
+            "columnName": "evidenceGrade",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "brainEvents",
+            "columnName": "brainEvents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "brainTotal",
+            "columnName": "brainTotal",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "otherEvents",
+            "columnName": "otherEvents",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "otherTotal",
+            "columnName": "otherTotal",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "oddsRatio",
+            "columnName": "oddsRatio",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "orCiLow",
+            "columnName": "orCiLow",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "orCiHigh",
+            "columnName": "orCiHigh",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "referencePrevalence",
+            "columnName": "referencePrevalence",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "denominator",
+            "columnName": "denominator",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCustom",
+            "columnName": "isCustom",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateAdded",
+            "columnName": "dateAdded",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "challengeCount",
+            "columnName": "challengeCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelRevisionId",
+            "columnName": "modelRevisionId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverUpdatedAt",
+            "columnName": "serverUpdatedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "capsules",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `permalink` TEXT NOT NULL, `capsuleVersion` TEXT NOT NULL, `softwareVersion` TEXT NOT NULL, `createdUtc` TEXT NOT NULL, `sha256` TEXT NOT NULL, `question` TEXT NOT NULL, `anchorLabel` TEXT NOT NULL, `verdict` TEXT NOT NULL, `citableArgument` TEXT NOT NULL, `plainLanguageVerdict` TEXT NOT NULL, `rNull` REAL NOT NULL, `rSignificance` REAL, `snAssumed` REAL NOT NULL, `rLow` REAL, `rHigh` REAL, `observedOr` REAL NOT NULL, `rawJson` TEXT NOT NULL, `markdown` TEXT NOT NULL, `provenanceDigest` TEXT, `provenanceRecordIds` TEXT, `modelRevisionId` TEXT, `supersedesCapsuleId` TEXT, `syncStatus` TEXT NOT NULL, `serverUpdatedAt` INTEGER, `version` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "permalink",
+            "columnName": "permalink",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capsuleVersion",
+            "columnName": "capsuleVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "softwareVersion",
+            "columnName": "softwareVersion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdUtc",
+            "columnName": "createdUtc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "question",
+            "columnName": "question",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anchorLabel",
+            "columnName": "anchorLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "verdict",
+            "columnName": "verdict",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "citableArgument",
+            "columnName": "citableArgument",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plainLanguageVerdict",
+            "columnName": "plainLanguageVerdict",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rNull",
+            "columnName": "rNull",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rSignificance",
+            "columnName": "rSignificance",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "snAssumed",
+            "columnName": "snAssumed",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rLow",
+            "columnName": "rLow",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "rHigh",
+            "columnName": "rHigh",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "observedOr",
+            "columnName": "observedOr",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rawJson",
+            "columnName": "rawJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "markdown",
+            "columnName": "markdown",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "provenanceDigest",
+            "columnName": "provenanceDigest",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "provenanceRecordIds",
+            "columnName": "provenanceRecordIds",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "modelRevisionId",
+            "columnName": "modelRevisionId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "supersedesCapsuleId",
+            "columnName": "supersedesCapsuleId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverUpdatedAt",
+            "columnName": "serverUpdatedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "challenges",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `claimId` TEXT NOT NULL, `author` TEXT NOT NULL, `date` TEXT NOT NULL, `notes` TEXT NOT NULL, `updatedBrainEvents` INTEGER NOT NULL, `updatedBrainTotal` INTEGER NOT NULL, `updatedOtherEvents` INTEGER NOT NULL, `updatedOtherTotal` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `serverUpdatedAt` INTEGER, `version` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "claimId",
+            "columnName": "claimId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "author",
+            "columnName": "author",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedBrainEvents",
+            "columnName": "updatedBrainEvents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedBrainTotal",
+            "columnName": "updatedBrainTotal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedOtherEvents",
+            "columnName": "updatedOtherEvents",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedOtherTotal",
+            "columnName": "updatedOtherTotal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverUpdatedAt",
+            "columnName": "serverUpdatedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "provenance_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `providerId` TEXT NOT NULL, `endpoint` TEXT NOT NULL, `query` TEXT NOT NULL, `httpStatus` INTEGER NOT NULL, `retrievedUtc` TEXT NOT NULL, `responseSha256` TEXT NOT NULL, `licenseClass` TEXT NOT NULL, `elapsedMs` INTEGER NOT NULL, `capsuleId` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "providerId",
+            "columnName": "providerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endpoint",
+            "columnName": "endpoint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "query",
+            "columnName": "query",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "httpStatus",
+            "columnName": "httpStatus",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "retrievedUtc",
+            "columnName": "retrievedUtc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "responseSha256",
+            "columnName": "responseSha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "licenseClass",
+            "columnName": "licenseClass",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elapsedMs",
+            "columnName": "elapsedMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capsuleId",
+            "columnName": "capsuleId",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        }
+      },
+      {
+        "tableName": "response_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cacheKey` TEXT NOT NULL, `body` TEXT NOT NULL, `sha256` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `ttlMs` INTEGER NOT NULL, PRIMARY KEY(`cacheKey`))",
+        "fields": [
+          {
+            "fieldPath": "cacheKey",
+            "columnName": "cacheKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ttlMs",
+            "columnName": "ttlMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cacheKey"
+          ]
+        }
+      },
+      {
+        "tableName": "model_revisions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `parentRevisionId` TEXT, `createdAtUtc` TEXT NOT NULL, `parametersJson` TEXT NOT NULL, `metricE` REAL NOT NULL, `promotedBy` TEXT, `notes` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentRevisionId",
+            "columnName": "parentRevisionId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtUtc",
+            "columnName": "createdAtUtc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parametersJson",
+            "columnName": "parametersJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metricE",
+            "columnName": "metricE",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "promotedBy",
+            "columnName": "promotedBy",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "learning_audit",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `candidateParamsJson` TEXT NOT NULL, `baselineParamsJson` TEXT NOT NULL, `metricTotal` REAL NOT NULL, `stabilityPenalty` REAL NOT NULL, `resolutionMiss` REAL NOT NULL, `calibrationError` REAL NOT NULL, `parsimony` REAL NOT NULL, `decision` TEXT NOT NULL, `approver` TEXT, `revisionId` TEXT, `createdAtUtc` TEXT NOT NULL, `notes` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateParamsJson",
+            "columnName": "candidateParamsJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baselineParamsJson",
+            "columnName": "baselineParamsJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metricTotal",
+            "columnName": "metricTotal",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stabilityPenalty",
+            "columnName": "stabilityPenalty",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resolutionMiss",
+            "columnName": "resolutionMiss",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calibrationError",
+            "columnName": "calibrationError",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parsimony",
+            "columnName": "parsimony",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "decision",
+            "columnName": "decision",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "approver",
+            "columnName": "approver",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revisionId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtUtc",
+            "columnName": "createdAtUtc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        }
+      },
+      {
+        "tableName": "sync_cursor",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entity` TEXT NOT NULL, `lastPulledAt` TEXT, PRIMARY KEY(`entity`))",
+        "fields": [
+          {
+            "fieldPath": "entity",
+            "columnName": "entity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastPulledAt",
+            "columnName": "lastPulledAt",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "entity"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7fdad666c4b139eb1edb0bb6d4545bb2')"
+    ]
+  }
+}

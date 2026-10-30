@@ -7,11 +7,11 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 
 /**
- * Bridge for Tasker (and other automation apps) to trigger Concordance actions
- * without holding a UI reference. Tasker can send an ordered broadcast with one
- * of the ACTION_* constants; the receiver records it into a SharedPreferences
- * queue that the app drains on the next foreground pass (or immediately if the
- * app is already running).
+ * Bridge for automation to trigger Concordance actions without holding a UI
+ * reference. The manifest receiver is NOT exported (an exported receiver let
+ * any app queue these actions), so triggers now come from in-app callers that
+ * [enqueue] directly; the queue is drained on the next foreground pass (or
+ * immediately if the app is already running).
  *
  * No secrets or credentials are ever exposed through this bridge - it only
  * triggers already-defined, human-gated workflows (learning rounds stay in
@@ -30,15 +30,34 @@ object TaskerBridge {
     private const val KEY_QUEUE = "pending_actions"
     private const val SEP = "\u001f"
 
+    /** Cap on queued actions so a flood cannot grow the queue without bound. */
+    private const val MAX_QUEUE = 32
+    /** Cap on a single extra (e.g. revisionId) so a giant payload cannot be persisted. */
+    private const val MAX_EXTRA_LENGTH = 128
+
     private fun prefs(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    /** Record an action for later execution. Safe to call from any thread. */
+    /**
+     * Record an action for later execution. Safe to call from any thread.
+     *
+     * The extra is length-capped and stripped of the queue separator so a value
+     * cannot inject a second fake entry, and the queue itself is capped so a
+     * flood of triggers cannot grow storage without bound.
+     */
     fun enqueue(context: Context, action: String, extra: String? = null) {
-        val entry = if (extra.isNullOrBlank()) action else "$action=$extra"
-        val current = prefs(context).getString(KEY_QUEUE, "").orEmpty()
-        val next = if (current.isBlank()) entry else "$current$SEP$entry"
-        prefs(context).edit { putString(KEY_QUEUE, next) }
+        val cleanExtra = extra
+            ?.take(MAX_EXTRA_LENGTH)
+            ?.replace(SEP, " ")
+            ?.trim()
+        val entry = if (cleanExtra.isNullOrEmpty()) action else "$action=$cleanExtra"
+        val p = prefs(context)
+        val current = p.getString(KEY_QUEUE, "").orEmpty()
+        val entries = if (current.isBlank()) mutableListOf()
+        else current.split(SEP).filter { it.isNotBlank() }.toMutableList()
+        if (entries.size >= MAX_QUEUE) return
+        entries.add(entry)
+        p.edit { putString(KEY_QUEUE, entries.joinToString(SEP)) }
     }
 
     /** Drain and return all queued actions, clearing the queue. */

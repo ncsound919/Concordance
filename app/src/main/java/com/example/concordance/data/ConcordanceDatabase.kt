@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 @Database(
     entities = [ClaimEntity::class, CapsuleEntity::class, ChallengeEntity::class, ProvenanceEntity::class, CachedResponseEntity::class, ModelRevisionEntity::class, LearningAuditEntity::class, SyncCursorEntity::class],
     version = 6,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class ConcordanceDatabase : RoomDatabase() {
     abstract fun claimDao(): ClaimDao

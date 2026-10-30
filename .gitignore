@@ -29,3 +29,9 @@ app_key.txt
 # The release build type uses a different, out-of-band signingConfig.)
 *.jks
 release*.keystore
+
+# signing + local secrets (audit SEC-011)
+*.keystore
+keystore.properties
+.env.*
+!.env.example

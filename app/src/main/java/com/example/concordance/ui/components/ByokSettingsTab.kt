@@ -36,6 +36,9 @@ import com.example.concordance.local.LocalLlmStatus
 import com.example.concordance.local.LocalModels
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.ui.theme.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * BYOK (bring-your-own-key) settings: license acknowledgments and API keys
@@ -49,7 +52,7 @@ fun ByokSettingsTab(
     val keyStore = viewModel.keyStore
     val licenseStore = viewModel.licenseStore
     // Re-read the keystore whenever a config file has been imported.
-    val configRevision by viewModel.configRevision.collectAsState()
+    val configRevision by viewModel.configRevision.collectAsStateWithLifecycle()
 
     var oncoKey by remember(configRevision) { mutableStateOf(keyStore.getKey("oncokb_api").orEmpty()) }
     var academicAck by remember(configRevision) { mutableStateOf(licenseStore.isAcknowledged(LicenseClass.ACADEMIC_ONLY)) }
@@ -69,7 +72,7 @@ fun ByokSettingsTab(
     var modelName by remember(configRevision) { mutableStateOf(viewModel.agentConfig.value.modelName.orEmpty()) }
 
     val oncoGate = IntegrationGate.evaluate(OncoKBAdapter.descriptor, keyStore, licenseStore)
-    val isSearching by viewModel.isSearchingCurated.collectAsState()
+    val isSearching by viewModel.isSearchingCurated.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     val importLauncher = rememberLauncherForActivityResult(
@@ -102,7 +105,7 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text("BRING-YOUR-OWN-KEY (BYOK) SETTINGS", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_a9a05a8644b5), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
                 Button(
                     onClick = { importLauncher.launch("application/json") },
                     modifier = Modifier.fillMaxWidth(),
@@ -110,7 +113,7 @@ fun ByokSettingsTab(
                 ) {
                     Icon(Icons.Default.FileOpen, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Import Config from File", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.auto_943be8b6ca44), fontWeight = FontWeight.SemiBold)
                 }
                 Text(
                     "Gated providers (ACADEMIC_ONLY / PAID) require a license acknowledgment " +
@@ -124,7 +127,7 @@ fun ByokSettingsTab(
 
         // On-device models: weights live outside the APK in the app's external files dir.
         item {
-            val llmStatus by viewModel.localLlmStatus.collectAsState()
+            val llmStatus by viewModel.localLlmStatus.collectAsStateWithLifecycle()
             val models = remember(configRevision) { viewModel.installedLocalModels() }
             var selected by remember(models) { mutableStateOf(models.firstOrNull()) }
             val kokoroReady = remember(configRevision) { viewModel.localKokoroReady() }
@@ -138,14 +141,12 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    "ON-DEVICE MODELS",
+                Text(stringResource(R.string.auto_a02afc084057),
                     style = MaterialTheme.concordance.overline,
                     fontWeight = FontWeight.Bold,
                     color = ElectricCyan
                 )
-                Text(
-                    "Runs entirely on this phone over loopback — no key, no network.",
+                Text(stringResource(R.string.auto_03dfd1b8e6b1),
                     style = MaterialTheme.concordance.overline,
                     color = TextSecondary,
                     lineHeight = 15.sp
@@ -185,8 +186,8 @@ fun ByokSettingsTab(
                             containerColor = ElectricCyan,
                             contentColor = Color.Black
                         )
-                    ) { Text("Start", fontWeight = FontWeight.SemiBold) }
-                    OutlinedButton(onClick = { viewModel.stopLocalModel() }) { Text("Stop") }
+                    ) { Text(stringResource(R.string.auto_952f375412e8), fontWeight = FontWeight.SemiBold) }
+                    OutlinedButton(onClick = { viewModel.stopLocalModel() }) { Text(stringResource(R.string.auto_9e253470c876)) }
                 }
 
                 Text(
@@ -222,7 +223,7 @@ fun ByokSettingsTab(
                     style = MaterialTheme.concordance.bodyDense,
                     color = if (kokoroReady) TextSecondary else Color(0xFFE57373)
                 )
-                OutlinedButton(onClick = { viewModel.testLocalVoice() }) { Text("Test voice") }
+                OutlinedButton(onClick = { viewModel.testLocalVoice() }) { Text(stringResource(R.string.auto_24e8f7518264)) }
             }
         }
 
@@ -237,7 +238,7 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("LICENSE ACKNOWLEDGMENTS", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_2715273f328f), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = academicAck,
@@ -247,7 +248,7 @@ fun ByokSettingsTab(
                             else viewModel.revokeLicense(LicenseClass.ACADEMIC_ONLY)
                         }
                     )
-                    Text("I acknowledge ACADEMIC_ONLY use (research, non-clinical).", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                    Text(stringResource(R.string.auto_95d911cc279d), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
@@ -258,7 +259,7 @@ fun ByokSettingsTab(
                             else viewModel.revokeLicense(LicenseClass.PAID)
                         }
                     )
-                    Text("I have a valid PAID license for gated providers.", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                    Text(stringResource(R.string.auto_af4be3374624), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                 }
             }
         }
@@ -276,7 +277,7 @@ fun ByokSettingsTab(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Icon(Icons.Default.Key, contentDescription = null, tint = ElectricCyan, modifier = Modifier.size(16.dp))
-                    Text("OncoKB API TOKEN", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                    Text(stringResource(R.string.auto_5deed7c7eff3), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
                 }
                 Text(
                     "Required for gene-level annotations. Evidence levels are public. " +
@@ -288,7 +289,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = oncoKey,
                     onValueChange = { oncoKey = it },
-                    placeholder = { Text("paste token here", style = MaterialTheme.concordance.bodyDense) },
+                    placeholder = { Text(stringResource(R.string.auto_69c00916ca5e), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -300,7 +301,7 @@ fun ByokSettingsTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Save OncoKB Token", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_4f585f7198cb), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Icon(Icons.Default.Lock, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
@@ -333,7 +334,7 @@ fun ByokSettingsTab(
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("OncoKB Levels", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_6b2628612bd2), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold)
                 }
                 Button(
                     onClick = { viewModel.searchOncoKBGene("ESR1") },
@@ -344,7 +345,7 @@ fun ByokSettingsTab(
                 ) {
                     Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("OncoKB Gene ESR1", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_ef952cee5288), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -363,26 +364,26 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("RUNTIME TUNING", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_aa0dc73d1bb1), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = threshold,
                         onValueChange = { threshold = it },
-                        label = { Text("CB threshold", style = MaterialTheme.concordance.overline) },
+                        label = { Text(stringResource(R.string.auto_1eecb8b67a3c), style = MaterialTheme.concordance.overline) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense
                     )
                     OutlinedTextField(
                         value = cooldown,
                         onValueChange = { cooldown = it },
-                        label = { Text("cooldown (s)", style = MaterialTheme.concordance.bodyDense) },
+                        label = { Text(stringResource(R.string.auto_178f8bb519b1), style = MaterialTheme.concordance.bodyDense) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense
                     )
                     OutlinedTextField(
                         value = cacheTtl,
                         onValueChange = { cacheTtl = it },
-                        label = { Text("cache TTL (min)", style = MaterialTheme.concordance.bodyDense) },
+                        label = { Text(stringResource(R.string.auto_07648ef62d86), style = MaterialTheme.concordance.bodyDense) },
                         modifier = Modifier.weight(1f),
                         textStyle = MaterialTheme.concordance.bodyDense
                     )
@@ -397,7 +398,7 @@ fun ByokSettingsTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Apply Runtime Tuning", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_aeea9b546867), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -411,16 +412,15 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("LLM PROVIDERS & MODEL SELECTION", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
-                Text(
-                    "Free tiers rotate models often. Type the model name you want (e.g. a stealth/free model id from OpenRouter or OpenCode).",
+                Text(stringResource(R.string.auto_01fbd7021bd4), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_9f8046bff005),
                     style = MaterialTheme.concordance.overline,
                     color = TextSecondary
                 )
                 OutlinedTextField(
                     value = openaiKey,
                     onValueChange = { openaiKey = it },
-                    label = { Text("OpenCode API key", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_bb5bfbd8f300), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -429,7 +429,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = openrouterKey,
                     onValueChange = { openrouterKey = it },
-                    label = { Text("OpenRouter API key", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_bba2d9fb0bb9), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -438,7 +438,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = geminiKey,
                     onValueChange = { geminiKey = it },
-                    label = { Text("Gemini API key", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_ef66ea16d799), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -447,7 +447,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = mistralKey,
                     onValueChange = { mistralKey = it },
-                    label = { Text("Mistral API key", style = MaterialTheme.concordance.overline) },
+                    label = { Text(stringResource(R.string.auto_e45f48cd9d0b), style = MaterialTheme.concordance.overline) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.overline,
                     visualTransformation = PasswordVisualTransformation(),
@@ -456,7 +456,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = nvidiaKey,
                     onValueChange = { nvidiaKey = it },
-                    label = { Text("NVIDIA NIM API key", style = MaterialTheme.concordance.overline) },
+                    label = { Text(stringResource(R.string.auto_bb152ddca21f), style = MaterialTheme.concordance.overline) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.overline,
                     visualTransformation = PasswordVisualTransformation(),
@@ -465,14 +465,14 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = ollamaUrl,
                     onValueChange = { ollamaUrl = it },
-                    label = { Text("Ollama base URL", style = MaterialTheme.concordance.overline) },
+                    label = { Text(stringResource(R.string.auto_450ac3c5d77b), style = MaterialTheme.concordance.overline) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
                 OutlinedTextField(
                     value = modelName,
                     onValueChange = { modelName = it },
-                    label = { Text("Model name (free-text)", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_33559ea9539b), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
@@ -495,14 +495,14 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = awsApigwEndpoint,
                     onValueChange = { awsApigwEndpoint = it },
-                    label = { Text("AWS API Gateway endpoint URL", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_311c3c363e77), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
                 OutlinedTextField(
                     value = awsApigwKey,
                     onValueChange = { awsApigwKey = it },
-                    label = { Text("AWS API Gateway API key", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_ec6d38c91128), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
@@ -527,7 +527,7 @@ fun ByokSettingsTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Save LLM & API Gateway Settings", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_916cc5cd5c73), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -542,11 +542,11 @@ fun ByokSettingsTab(
                     .padding(14.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("SERVICE TOKENS (Kaggle / Cloudflare R2)", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold, color = ElectricCyan)
+                Text(stringResource(R.string.auto_5b7ab8114f32), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold, color = ElectricCyan)
                 OutlinedTextField(
                     value = kaggleToken,
                     onValueChange = { kaggleToken = it },
-                    label = { Text("Kaggle API token", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_13de23019d14), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -555,14 +555,14 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = cfAccountId,
                     onValueChange = { cfAccountId = it },
-                    label = { Text("Cloudflare account ID", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_b0ef4d9b2ef4), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
                 OutlinedTextField(
                     value = cfToken,
                     onValueChange = { cfToken = it },
-                    label = { Text("Cloudflare R2 API token", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_fc4324669d19), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense,
                     visualTransformation = PasswordVisualTransformation(),
@@ -571,7 +571,7 @@ fun ByokSettingsTab(
                 OutlinedTextField(
                     value = cfEndpoint,
                     onValueChange = { cfEndpoint = it },
-                    label = { Text("Cloudflare R2 endpoint (optional)", style = MaterialTheme.concordance.bodyDense) },
+                    label = { Text(stringResource(R.string.auto_6054bbea7302), style = MaterialTheme.concordance.bodyDense) },
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = MaterialTheme.concordance.bodyDense
                 )
@@ -588,7 +588,7 @@ fun ByokSettingsTab(
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Save Service Tokens", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_cd76d3308a6e), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                 }
             }
         }

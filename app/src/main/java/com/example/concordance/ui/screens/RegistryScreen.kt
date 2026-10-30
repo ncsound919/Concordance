@@ -27,6 +27,9 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SkeletonCard
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun RegistryScreen(
@@ -34,9 +37,9 @@ fun RegistryScreen(
     onSelectAndAdjudicate: (Anchor) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val claims by viewModel.claims.collectAsState()
-    val loadingClaims by viewModel.isLoadingClaims.collectAsState()
-    val communityPublishing by viewModel.communityPublishing.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
+    val loadingClaims by viewModel.isLoadingClaims.collectAsStateWithLifecycle()
+    val communityPublishing by viewModel.communityPublishing.collectAsStateWithLifecycle()
     var showAddDialog by remember { mutableStateOf(false) }
     var challengeTarget by remember { mutableStateOf<Anchor?>(null) }
 
@@ -64,13 +67,11 @@ fun RegistryScreen(
         ) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = "LIVING CLAIM REGISTRY",
+                    Text(text = stringResource(R.string.auto_586fe215aafc),
                         style = MaterialTheme.concordance.overline,
                         color = ElectricCyan,
                     )
-                    Text(
-                        text = "Public repository of organotropism claims, provenance, and empirical challenges. Each claim is evaluated against detection artifact thresholds.",
+                    Text(text = stringResource(R.string.auto_66d779ec1e87),
                         style = MaterialTheme.concordance.bodyDense,
                         color = TextSecondary,
                     )
@@ -196,7 +197,7 @@ fun ClaimRegistryCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text("Observed OR", style = MaterialTheme.concordance.metricLabel, color = TextMuted)
+                Text(stringResource(R.string.auto_33edb207beee), style = MaterialTheme.concordance.metricLabel, color = TextMuted)
                 Text(
                     text = String.format(Locale.US, "%.3f", observedOr),
                     style = MaterialTheme.concordance.monoValue,
@@ -205,7 +206,7 @@ fun ClaimRegistryCard(
             }
 
             Column {
-                Text("95% Interval", style = MaterialTheme.concordance.metricLabel, color = TextMuted)
+                Text(stringResource(R.string.auto_e1f42b940b07), style = MaterialTheme.concordance.metricLabel, color = TextMuted)
                 Text(
                     text = "[${String.format(Locale.US, "%.2f", ciLow)}–${String.format(Locale.US, "%.2f", ciHigh)}]",
                     style = MaterialTheme.concordance.monoValue,
@@ -214,7 +215,7 @@ fun ClaimRegistryCard(
             }
 
             Column {
-                Text("Artifact Null r*", style = MaterialTheme.concordance.metricLabel, color = TextMuted)
+                Text(stringResource(R.string.auto_4a87eb8c1654), style = MaterialTheme.concordance.metricLabel, color = TextMuted)
                 Text(
                     text = String.format(Locale.US, "%.2f×", rNull),
                     style = MaterialTheme.concordance.monoValue,
@@ -243,7 +244,7 @@ fun ClaimRegistryCard(
             ) {
                 Icon(Icons.Default.Flag, contentDescription = null, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Challenge", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_bb9d653f4e12), style = MaterialTheme.concordance.buttonSmall)
             }
 
             Button(
@@ -254,7 +255,7 @@ fun ClaimRegistryCard(
             ) {
                 Icon(Icons.Default.Calculate, contentDescription = null, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Adjudicate", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_67a4afc759cd), style = MaterialTheme.concordance.buttonSmall)
             }
         }
 
@@ -290,32 +291,32 @@ fun AddClaimDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Register New Claim Anchor", color = TextPrimary, fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.auto_5dae7afff05e), color = TextPrimary, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it },
-                    label = { Text("Claim Label (e.g. Study Name)") },
+                    label = { Text(stringResource(R.string.auto_8088bacc1037)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = source,
                     onValueChange = { source = it },
-                    label = { Text("Citation / Source") },
+                    label = { Text(stringResource(R.string.auto_891ffddcdb07)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = brainEvents,
                         onValueChange = { brainEvents = it },
-                        label = { Text("Brain Events") },
+                        label = { Text(stringResource(R.string.auto_ea10081caadb)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = brainTotal,
                         onValueChange = { brainTotal = it },
-                        label = { Text("Brain Total") },
+                        label = { Text(stringResource(R.string.auto_6eb24a432f13)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -323,20 +324,20 @@ fun AddClaimDialog(
                     OutlinedTextField(
                         value = otherEvents,
                         onValueChange = { otherEvents = it },
-                        label = { Text("Other Events") },
+                        label = { Text(stringResource(R.string.auto_718591843f9b)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = otherTotal,
                         onValueChange = { otherTotal = it },
-                        label = { Text("Other Total") },
+                        label = { Text(stringResource(R.string.auto_c112a476375b)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Notes / Assay Details") },
+                    label = { Text(stringResource(R.string.auto_c5a096d859f6)) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -366,11 +367,11 @@ fun AddClaimDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = ElectricCyan, contentColor = MidnightDeep)
             ) {
-                Text("Register")
+                Text(stringResource(R.string.auto_d672995a1465))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = TextSecondary) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.auto_77dfd2135f4d), color = TextSecondary) }
         },
         containerColor = SlateCard
     )
@@ -394,34 +395,33 @@ fun ChallengeClaimDialog(
         title = { Text("Challenge Claim: ${claim.label}", style = MaterialTheme.concordance.dialogTitle, color = TextPrimary, fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    text = "Log alternative counts, audit corrections, or tissue re-evaluations for this claim.",
+                Text(text = stringResource(R.string.auto_dc79c232ce08),
                     style = MaterialTheme.concordance.dialogBody,
                     color = TextSecondary
                 )
                 OutlinedTextField(
                     value = author,
                     onValueChange = { author = it },
-                    label = { Text("Challenger Name / Lab") },
+                    label = { Text(stringResource(R.string.auto_544c71925e52)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = notes,
                     onValueChange = { notes = it },
-                    label = { Text("Scientific Rationale / Citation") },
+                    label = { Text(stringResource(R.string.auto_de456e416701)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = brainEvents,
                         onValueChange = { brainEvents = it },
-                        label = { Text("Corrected Brain Events") },
+                        label = { Text(stringResource(R.string.auto_a8997bf7b376)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = brainTotal,
                         onValueChange = { brainTotal = it },
-                        label = { Text("Brain Total") },
+                        label = { Text(stringResource(R.string.auto_6eb24a432f13)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -429,13 +429,13 @@ fun ChallengeClaimDialog(
                     OutlinedTextField(
                         value = otherEvents,
                         onValueChange = { otherEvents = it },
-                        label = { Text("Corrected Other Events") },
+                        label = { Text(stringResource(R.string.auto_2d5cd8c99380)) },
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
                         value = otherTotal,
                         onValueChange = { otherTotal = it },
-                        label = { Text("Other Total") },
+                        label = { Text(stringResource(R.string.auto_c112a476375b)) },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -452,11 +452,11 @@ fun ChallengeClaimDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = WarningGold, contentColor = MidnightDeep)
             ) {
-                Text("Submit Challenge")
+                Text(stringResource(R.string.auto_b84650481d36))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel", color = TextSecondary) }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.auto_77dfd2135f4d), color = TextSecondary) }
         },
         containerColor = SlateCard
     )

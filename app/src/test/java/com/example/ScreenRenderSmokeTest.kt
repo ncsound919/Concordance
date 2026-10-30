@@ -35,7 +35,33 @@ class ScreenRenderSmokeTest {
     val composeRule = createComposeRule()
 
     private val app get() = ApplicationProvider.getApplicationContext<android.app.Application>()
-    private val vm by lazy { ConcordanceViewModel(app) }
+    private val vm by lazy {
+        val ctx = app
+        val db = com.example.concordance.data.ConcordanceDatabase.getDatabase(ctx)
+        kotlinx.coroutines.runBlocking {
+            db.claimDao().insertClaim(com.example.concordance.data.ClaimEntity(
+                id = "a", label = "L", source = "S", evidenceGrade = com.example.concordance.model.EvidenceGrade.COUNTS.name,
+                brainEvents = 1, brainTotal = 10, otherEvents = 2, otherTotal = 100,
+                oddsRatio = null, orCiLow = null, orCiHigh = null, referencePrevalence = 0.5,
+                denominator = "samples", notes = "n", isCustom = false, dateAdded = "d"
+            ))
+            db.capsuleDao().insertCapsule(com.example.concordance.data.CapsuleEntity(
+                id = "k1", permalink = "p", capsuleVersion = "1", softwareVersion = "1",
+                createdUtc = "2026-01-01", sha256 = "h", question = "q", anchorLabel = "L",
+                verdict = "SUPPORTS", citableArgument = "arg", plainLanguageVerdict = "pv",
+                rNull = 0.5, rSignificance = 0.1, snAssumed = 0.9, rLow = 0.0, rHigh = 1.0,
+                observedOr = 2.0, rawJson = "{}", markdown = "md"
+            ))
+        }
+        val v = com.example.concordance.ui.ConcordanceViewModel(ctx)
+        v.selectAnchor(com.example.concordance.model.Anchor(
+            id = "a", label = "L", source = "S", evidenceGrade = com.example.concordance.model.EvidenceGrade.COUNTS,
+            brainEvents = 1, brainTotal = 10, otherEvents = 2, otherTotal = 100,
+            oddsRatio = null, orCiLow = null, orCiHigh = null, referencePrevalence = 0.5,
+            denominator = "samples", notes = "n", isCustom = false, dateAdded = "d"
+        ))
+        v
+    }
 
     @Test
     fun adjudication() {

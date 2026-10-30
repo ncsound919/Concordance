@@ -1648,10 +1648,19 @@ class ConcordanceViewModel(application: Application) : AndroidViewModel(applicat
         agentNotice("Community URL saved.")
     }
 
-    private fun isLoopbackHost(url: String): Boolean =
-        url.contains("://localhost", ignoreCase = true) ||
-            url.contains("://127.0.0.1", ignoreCase = true) ||
-            url.contains("://10.0.2.2", ignoreCase = true)
+    /**
+     * True when [url] points at the device itself. Parses the URI host instead
+     * of matching substrings, so `http://localhost.evil.com` is NOT loopback.
+     */
+    private fun isLoopbackHost(url: String): Boolean {
+        val host = try {
+            java.net.URI(url).host?.lowercase()
+        } catch (e: Exception) {
+            null
+        } ?: return false
+        return host == "localhost" || host == "127.0.0.1" || host == "10.0.2.2" ||
+            host == "::1" || host == "0:0:0:0:0:0:0:1"
+    }
 
     fun publishClaimToCommunity(claim: Anchor) {
         if (_communityPublishing.value) return

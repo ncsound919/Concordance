@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  HTTPS-only by default. Cleartext is permitted only for the emulator's host
-  loopback aliases, which is the documented local-development path. A physical
-  device should use HTTPS for the self-hosted agent (or add its exact host to a
-  debug-only variant of this file).
+  HTTPS-only by default. Cleartext is permitted only for loopback aliases, which
+  cannot be reached off-device; every other destination must use TLS. The
+  debug-only file permits the developer's LAN address.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />

@@ -68,6 +68,8 @@ import com.example.ui.theme.ThemeMode
 import com.example.ui.theme.blueprintGrid
 import com.example.ui.theme.concordance
 import com.example.ui.theme.rememberBrandBrush
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * The app shell: top bar, bottom navigation (phones) or navigation rail
@@ -147,20 +149,17 @@ fun ConcordanceScaffold(
                                 )
                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                         ) {
-                            Text(
-                                text = "v0.1",
+                            Text(text = stringResource(R.string.auto_eaa20f06a61e),
                                 style = MaterialTheme.concordance.chip,
                                 color = if (skin.layered) MidnightDeep else ElectricCyan,
                             )
                         }
                         Column {
-                            Text(
-                                text = "CONCORDANCE",
+                            Text(text = stringResource(R.string.auto_f7803689ba52),
                                 style = MaterialTheme.concordance.sectionTitle,
                                 color = TextPrimary,
                             )
-                            Text(
-                                text = "Detection-Corrected",
+                            Text(text = stringResource(R.string.auto_c618e861e7ac),
                                 style = MaterialTheme.concordance.caption,
                                 color = TextSecondary,
                                 maxLines = 1,
@@ -344,8 +343,7 @@ fun ConcordanceScaffold(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text(
-                    text = "More",
+                Text(text = stringResource(R.string.auto_4bab2d8fe13f),
                     style = MaterialTheme.concordance.cardTitle,
                     color = TextPrimary,
                     modifier = Modifier.padding(bottom = 8.dp),

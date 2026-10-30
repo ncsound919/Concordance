@@ -523,6 +523,74 @@ class SupabaseSyncTest {
     }
 
     @Test
+    fun `pushing a claim omits free-text notes from the payload`() = runBlocking {
+        signedIn()
+        db.claimDao().upsert(localClaim(id = "c1", syncStatus = "local"))
+        harness.enqueue(201, """[{"id":"c1"}]""")
+        manager().pushClaims()
+        val body = org.json.JSONObject(harness.takeRequest().body.readUtf8())
+        org.junit.Assert.assertFalse("notes must not be uploaded", body.has("notes"))
+    }
+
+    @Test
+    fun `a claim whose label looks like PHI is refused at the boundary and stays local`() = runBlocking {
+        signedIn()
+        db.claimDao().upsert(
+            localClaim(id = "c1", syncStatus = "local", label = "MRN 123456 for John Doe")
+        )
+        val sync = manager()
+        val result = sync.pushClaims()
+        assertEquals(0, result.getOrNull())
+        assertEquals(0, harness.requestCount())
+        assertEquals("local", db.claimDao().getClaimById("c1")!!.syncStatus)
+        assertEquals(1, sync.phiBlocked.size)
+        assertEquals("claim", sync.phiBlocked.first().entityType)
+        assertEquals("c1", sync.phiBlocked.first().entityId)
+    }
+
+    @Test
+    fun `a capsule whose citable argument looks like PHI is refused and stays local`() = runBlocking {
+        signedIn()
+        val capsule = localCapsule(id = "k1", syncStatus = "local")
+            .copy(citableArgument = "patient Jane has SSN 123-45-6789")
+        db.capsuleDao().upsert(capsule)
+        val sync = manager()
+        val result = sync.pushCapsules()
+        assertEquals(0, result.getOrNull())
+        assertEquals(0, harness.requestCount())
+        assertEquals("local", db.capsuleDao().getCapsuleById("k1")!!.syncStatus)
+        assertEquals(1, sync.phiBlocked.size)
+    }
+
+    @Test
+    fun `a challenge whose notes look like PHI is refused and stays local`() = runBlocking {
+        signedIn()
+        val challenge = localChallenge(id = "ch1", syncStatus = "local")
+            .copy(notes = "email me at jane@example.com about this")
+        db.challengeDao().upsert(challenge)
+        val sync = manager()
+        val result = sync.pushChallenges()
+        assertEquals(0, result.getOrNull())
+        assertEquals(0, harness.requestCount())
+        assertEquals(1, sync.phiBlocked.size)
+    }
+
+    @Test
+    fun `pull does not wipe local notes when the server row has none`() = runBlocking {
+        signedIn()
+        // A locally annotated claim that was already synced.
+        db.claimDao().upsert(localClaim(id = "c1", syncStatus = "synced", label = "Local"))
+        // The server row carries no notes (notes are never uploaded).
+        val serverJson = """[{"id":"c1","label":"Server label","updated_at":"2026-10-19T00:00:00Z","version":2}]"""
+        harness.enqueue(200, serverJson)
+        manager().pullClaims()
+        val stored = db.claimDao().getClaimById("c1")!!
+        assertEquals("Server label", stored.label)
+        // The local free-text annotation survives the pull.
+        assertEquals("n", stored.notes)
+    }
+
+    @Test
     fun `publishing a claim makes it public and records a publication`() = runBlocking {
         signedIn()
         harness.enqueue(200, "[]")

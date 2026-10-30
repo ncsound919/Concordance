@@ -13,16 +13,31 @@ plugins {
   id("jacoco")
 }
 
+// A coverage run can be given its own build directory:
+//   ./gradlew -Pconcordance.buildDir=build-coverage :app:testDebugUnitTest
+// Two Gradle builds in one project directory serialise on the build lock, so
+// the parallel coverage jobs (one per test area) each need their own output
+// directory.
+val buildDirOverride = providers.gradleProperty("concordance.buildDir").orNull
+if (buildDirOverride != null) {
+  layout.buildDirectory.set(File(rootDir, buildDirOverride))
+}
+
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  // 37 is required by the current Compose BOM / lifecycle libraries; targetSdk
+  // below stays at 36, so this only widens what we compile against.
+  compileSdk { version = release(37) }
 
   defaultConfig {
-    applicationId = "com.aistudio.concordance.rkzv"
+    // Distinct from the private edition so both can be installed side by side.
+    applicationId = "com.aistudio.concordance.rkzv.oss"
     minSdk = 24
     targetSdk = 36
-    versionCode = 2
-    versionName = "1.0.0"
+    // Must exceed the version already installed on the device (versionCode 3,
+    // versionName 1.0.1) or adb refuses the install as a downgrade.
+    versionCode = 4
+    versionName = "1.0.2"
 
     // The embedded llama.cpp and sherpa-onnx runtimes are arm64-only.
     ndk { abiFilters += listOf("arm64-v8a") }
@@ -46,12 +61,6 @@ android {
       keyAlias = "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
     }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
-    }
   }
 
   buildTypes {
@@ -67,7 +76,6 @@ android {
     debug {
       // Do not remove or modify this signingConfig assignment. It is necessary for Android apps in
       // AI Studio.
-      signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
   compileOptions {
@@ -156,9 +164,17 @@ secrets {
 
 googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN }
 
+// Room schema export (ConcordanceDatabase has exportSchema = true). Exporting the
+// versioned schema JSONs into source control lets migration tests validate each
+// manual migration against the real prior schema.
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
+  implementation("com.overlay:kotlin-core:1.0.0")
   coreLibraryDesugaring(libs.desugar.jdk.libs)
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))

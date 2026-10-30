@@ -30,6 +30,8 @@ import com.example.ui.theme.Skin
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.concordance
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 /**
  * Skin picker.
@@ -48,16 +50,14 @@ fun SkinPickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                text = "Appearance",
+            Text(text = stringResource(R.string.auto_41def7a0febe),
                 style = MaterialTheme.concordance.cardTitle,
                 color = TextPrimary,
             )
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpaceS)) {
-                Text(
-                    text = "Pick the look. Light and dark still follow the system setting.",
+                Text(text = stringResource(R.string.auto_3d23a60c611e),
                     style = MaterialTheme.concordance.bodyDense,
                     color = TextSecondary,
                 )
@@ -72,7 +72,7 @@ fun SkinPickerDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done", color = TextPrimary)
+                Text(stringResource(R.string.auto_e9b450d14bc2), color = TextPrimary)
             }
         },
     )

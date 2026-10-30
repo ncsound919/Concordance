@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 import com.example.concordance.model.Anchor
 import com.example.concordance.ui.ConcordanceViewModel
 import com.example.concordance.ui.components.EmptyState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun ClaimsScreen(
@@ -19,7 +22,7 @@ fun ClaimsScreen(
     onOpenClaim: (Anchor) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val claims by viewModel.claims.collectAsState()
+    val claims by viewModel.claims.collectAsStateWithLifecycle()
     var query by remember { mutableStateOf("") }
     val filtered = remember(claims, query) {
         if (query.isBlank()) claims else claims.filter {
@@ -34,7 +37,7 @@ fun ClaimsScreen(
                 value = query,
                 onValueChange = { query = it },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                placeholder = { Text("Search claims…") },
+                placeholder = { Text(stringResource(R.string.auto_cad5f3de36b9)) },
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
                 singleLine = true
             )
@@ -51,7 +54,7 @@ fun ClaimsScreen(
                             headlineContent = { Text(claim.label) },
                             supportingContent = { Text("${claim.source} · ${claim.evidenceGrade}") },
                             trailingContent = {
-                                TextButton(onClick = { onOpenClaim(claim) }) { Text("Open") }
+                                TextButton(onClick = { onOpenClaim(claim) }) { Text(stringResource(R.string.auto_cf9b77061f7b)) }
                             }
                         )
                         HorizontalDivider()

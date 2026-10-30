@@ -52,19 +52,13 @@
         </provider>
 
         <!-- Tasker / automation trigger receiver (see integration.tasker.TaskerBridge).
-             Exported so external automation apps can send the declared broadcasts; the
-             actions are app-specific and carry no PHI. -->
+             NOT exported: an exported receiver let any installed app queue learning
+             rounds, re-adjudication, or capsule sync (resource abuse / unwanted data
+             movement). Automation must now go through an explicit in-app call. -->
         <receiver
             android:name="com.example.concordance.integration.tasker.TaskerTriggerReceiver"
-            android:exported="true"
-            tools:ignore="ExportedReceiver">
-            <intent-filter>
-                <action android:name="concordance.action.RUN_LEARNING_ROUND" />
-                <action android:name="concordance.action.CHECK_AUTO_TRIGGER" />
-                <action android:name="concordance.action.RE_ADJUDICATE" />
-                <action android:name="concordance.action.SYNC_CAPSULES" />
-            </intent-filter>
-        </receiver>
+            android:exported="false"
+            tools:ignore="ExportedReceiver" />
 
         <!-- Embedded llama.cpp server. Runs as a foreground service so Android does not
              freeze the CPU while a local model is streaming. Weights are never bundled in

@@ -37,6 +37,9 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.SkeletonCard
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun CapsulesScreen(
@@ -44,13 +47,13 @@ fun CapsulesScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val capsules by viewModel.savedCapsules.collectAsState()
-    val loadingCapsules by viewModel.isLoadingCapsules.collectAsState()
-    val verificationResult by viewModel.verificationResult.collectAsState()
-    val capsuleProvenance by viewModel.capsuleProvenance.collectAsState()
-    val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsState()
-    val communityPublishing by viewModel.communityPublishing.collectAsState()
-    val syncConflicts by viewModel.syncConflicts.collectAsState()
+    val capsules by viewModel.savedCapsules.collectAsStateWithLifecycle()
+    val loadingCapsules by viewModel.isLoadingCapsules.collectAsStateWithLifecycle()
+    val verificationResult by viewModel.verificationResult.collectAsStateWithLifecycle()
+    val capsuleProvenance by viewModel.capsuleProvenance.collectAsStateWithLifecycle()
+    val selectedCapsuleId by viewModel.selectedCapsuleId.collectAsStateWithLifecycle()
+    val communityPublishing by viewModel.communityPublishing.collectAsStateWithLifecycle()
+    val syncConflicts by viewModel.syncConflicts.collectAsStateWithLifecycle()
     var showConflictDialog by remember { mutableStateOf(false) }
 
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -102,10 +105,10 @@ fun CapsulesScreen(
                     )
                 }
                 TextButton(onClick = { viewModel.clearSyncConflicts() }) {
-                    Text("Dismiss", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                    Text(stringResource(R.string.auto_70afe9eff3f2), style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
                 }
                 TextButton(onClick = { showConflictDialog = true }) {
-                    Text("Resolve...", style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
+                    Text(stringResource(R.string.auto_905ae0adf461), style = MaterialTheme.concordance.buttonSmall, color = WarningAmber)
                 }
             }
         }
@@ -114,7 +117,7 @@ fun CapsulesScreen(
         if (showConflictDialog && syncConflicts.isNotEmpty()) {
             AlertDialog(
                 onDismissRequest = { showConflictDialog = false },
-                title = { Text("Resolve sync conflicts", style = MaterialTheme.concordance.cardTitle) },
+                title = { Text(stringResource(R.string.auto_a30350212d51), style = MaterialTheme.concordance.cardTitle) },
                 text = {
                     ConflictResolutionScreen(
                         conflicts = syncConflicts,
@@ -126,19 +129,17 @@ fun CapsulesScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { showConflictDialog = false }) {
-                        Text("Close", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_bbfa773e5a63), style = MaterialTheme.concordance.buttonSmall)
                     }
                 }
             )
         }
         // Title and Header
-        Text(
-            text = "CITABLE ARTIFACT REGISTRY",
+        Text(text = stringResource(R.string.auto_dfb5b1bd4f37),
             style = MaterialTheme.concordance.overline,
             color = ElectricCyan
         )
-        Text(
-            text = "Permanent, SHA-256 verifiable claim capsules with DOI-like resolvable identities (e.g. concordance.app/c/<id>).",
+        Text(text = stringResource(R.string.auto_d5f84ee3f873),
             style = MaterialTheme.concordance.bodyDense,
             color = TextSecondary
         )
@@ -146,10 +147,10 @@ fun CapsulesScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Cloud sync status row
-        val s3Status by AwsCloudManager.syncStatus.collectAsState()
-        val r2Status by CloudflareR2Manager.syncStatus.collectAsState()
-        val s3Synced by AwsCloudManager.syncedObjects.collectAsState()
-        val r2Synced by CloudflareR2Manager.syncedObjects.collectAsState()
+        val s3Status by AwsCloudManager.syncStatus.collectAsStateWithLifecycle()
+        val r2Status by CloudflareR2Manager.syncStatus.collectAsStateWithLifecycle()
+        val s3Synced by AwsCloudManager.syncedObjects.collectAsStateWithLifecycle()
+        val r2Synced by CloudflareR2Manager.syncedObjects.collectAsStateWithLifecycle()
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = "S3: ${s3Status.label} (${s3Synced.size})",
@@ -187,7 +188,7 @@ fun CapsulesScreen(
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("Cryptographic Verifier", style = MaterialTheme.concordance.buttonSmall) }
+                text = { Text(stringResource(R.string.auto_68bbe690d931), style = MaterialTheme.concordance.buttonSmall) }
             )
         }
 
@@ -259,13 +260,11 @@ fun CapsulesScreen(
                             .padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Text(
-                            text = "PASTE CAPSULE JSON TO AUDIT",
+                        Text(text = stringResource(R.string.auto_59b7ea36f8e9),
                             style = MaterialTheme.concordance.overline,
                             color = ElectricCyan
                         )
-                        Text(
-                            text = "Tamper detection: Recomputes the SHA-256 digest over the canonical JSON payload to guarantee inputs and results have not been altered.",
+                        Text(text = stringResource(R.string.auto_696d55639930),
                             style = MaterialTheme.concordance.bodyDense,
                             color = TextSecondary
                         )
@@ -276,7 +275,7 @@ fun CapsulesScreen(
                                 jsonToVerify = it
                                 viewModel.clearVerification()
                             },
-                            placeholder = { Text("Paste capsule JSON here...", style = MaterialTheme.concordance.caption, color = TextMuted) },
+                            placeholder = { Text(stringResource(R.string.auto_6aefe7a7dcef), style = MaterialTheme.concordance.caption, color = TextMuted) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(140.dp),
@@ -300,7 +299,7 @@ fun CapsulesScreen(
                                     shape = RoundedCornerShape(8.dp),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Load Recent", style = MaterialTheme.concordance.buttonSmall)
+                                    Text(stringResource(R.string.auto_d1d80372e9d6), style = MaterialTheme.concordance.buttonSmall)
                                 }
                             }
 
@@ -317,7 +316,7 @@ fun CapsulesScreen(
                             ) {
                                 Icon(Icons.Default.Verified, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("Verify Hash", style = MaterialTheme.concordance.buttonSmall)
+                                Text(stringResource(R.string.auto_22f00aebd46f), style = MaterialTheme.concordance.buttonSmall)
                             }
                         }
                     }
@@ -526,10 +525,9 @@ fun CapsuleCard(
                     .padding(top = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Divider(color = SlateCardBorder)
+                HorizontalDivider(color = SlateCardBorder)
 
-                Text(
-                    text = "CITABLE REFERENCE (Formatted for papers & preprints):",
+                Text(text = stringResource(R.string.auto_4518b34a63d0),
                     style = MaterialTheme.concordance.overline,
                     color = ElectricCyan
                 )
@@ -605,7 +603,7 @@ fun CapsuleCard(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Copy Markdown", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_937b780ded6f), style = MaterialTheme.concordance.buttonSmall)
                     }
 
                     OutlinedButton(
@@ -613,7 +611,7 @@ fun CapsuleCard(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Copy JSON", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_35db7b6e0480), style = MaterialTheme.concordance.buttonSmall)
                     }
 
                     OutlinedButton(
@@ -621,7 +619,7 @@ fun CapsuleCard(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Sync to Cloud", style = MaterialTheme.concordance.buttonSmall)
+                        Text(stringResource(R.string.auto_d0d5475fd11f), style = MaterialTheme.concordance.buttonSmall)
                     }
 
                     IconButton(

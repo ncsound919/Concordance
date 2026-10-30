@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
@@ -50,6 +51,9 @@ import com.example.concordance.ui.components.EmptyState
 import com.example.concordance.ui.components.ModelLearningTab
 import com.example.ui.theme.*
 import java.util.Locale
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.example.R
 
 @Composable
 fun IntegrationsScreen(
@@ -61,44 +65,44 @@ fun IntegrationsScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
 
     // API Rotation State
-    val apiProviders by viewModel.apiProviders.collectAsState()
-    val rotationStrategy by viewModel.rotationStrategy.collectAsState()
+    val apiProviders by viewModel.apiProviders.collectAsStateWithLifecycle()
+    val rotationStrategy by viewModel.rotationStrategy.collectAsStateWithLifecycle()
 
     // Kaggle State
-    val kaggleDatasets by viewModel.kaggleDatasets.collectAsState()
-    val kaggleJobs by viewModel.kaggleJobs.collectAsState()
+    val kaggleDatasets by viewModel.kaggleDatasets.collectAsStateWithLifecycle()
+    val kaggleJobs by viewModel.kaggleJobs.collectAsStateWithLifecycle()
 
     // AWS State
-    val awsStatus by viewModel.awsSyncStatus.collectAsState()
-    val awsRegion by viewModel.awsRegion.collectAsState()
-    val awsBucket by viewModel.awsBucketName.collectAsState()
-    val syncedObjects by viewModel.syncedS3Objects.collectAsState()
-    val savedCapsules by viewModel.savedCapsules.collectAsState()
+    val awsStatus by viewModel.awsSyncStatus.collectAsStateWithLifecycle()
+    val awsRegion by viewModel.awsRegion.collectAsStateWithLifecycle()
+    val awsBucket by viewModel.awsBucketName.collectAsStateWithLifecycle()
+    val syncedObjects by viewModel.syncedS3Objects.collectAsStateWithLifecycle()
+    val savedCapsules by viewModel.savedCapsules.collectAsStateWithLifecycle()
 
     // Science Paper State
-    val sciencePapers by viewModel.sciencePapers.collectAsState()
-    val paperEngine by viewModel.paperAnalysisEngine.collectAsState()
-    val isAnalyzing by viewModel.isAnalyzingPaper.collectAsState()
-    val latestAnalysis by viewModel.latestPaperAnalysis.collectAsState()
-    val isLoadingMorePapers by viewModel.isLoadingMorePapers.collectAsState()
+    val sciencePapers by viewModel.sciencePapers.collectAsStateWithLifecycle()
+    val paperEngine by viewModel.paperAnalysisEngine.collectAsStateWithLifecycle()
+    val isAnalyzing by viewModel.isAnalyzingPaper.collectAsStateWithLifecycle()
+    val latestAnalysis by viewModel.latestPaperAnalysis.collectAsStateWithLifecycle()
+    val isLoadingMorePapers by viewModel.isLoadingMorePapers.collectAsStateWithLifecycle()
 
     // INDRA prior knowledge (public literature via the agent)
-    val indraKnowledge by viewModel.indraKnowledge.collectAsState()
-    val indraContradictions by viewModel.indraContradictions.collectAsState()
-    val indraLoading by viewModel.indraLoading.collectAsState()
-    val indraError by viewModel.indraError.collectAsState()
+    val indraKnowledge by viewModel.indraKnowledge.collectAsStateWithLifecycle()
+    val indraContradictions by viewModel.indraContradictions.collectAsStateWithLifecycle()
+    val indraLoading by viewModel.indraLoading.collectAsStateWithLifecycle()
+    val indraError by viewModel.indraError.collectAsStateWithLifecycle()
     var indraSubject by remember { mutableStateOf("") }
     var indraObject by remember { mutableStateOf("") }
 
     // PubChem State
-    val pubChemCompounds by viewModel.pubChemCompounds.collectAsState()
+    val pubChemCompounds by viewModel.pubChemCompounds.collectAsStateWithLifecycle()
 
     // Clinical Trials State
-    val clinicalTrials by viewModel.clinicalTrials.collectAsState()
-    val isLoadingMoreTrials by viewModel.isLoadingMoreTrials.collectAsState()
+    val clinicalTrials by viewModel.clinicalTrials.collectAsStateWithLifecycle()
+    val isLoadingMoreTrials by viewModel.isLoadingMoreTrials.collectAsStateWithLifecycle()
 
     // Live API provenance log
-    val provenanceRecords by viewModel.provenanceRecords.collectAsState()
+    val provenanceRecords by viewModel.provenanceRecords.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
     var toastMessage by remember { mutableStateOf<String?>(null) }
@@ -131,15 +135,13 @@ fun IntegrationsScreen(
     ) {
         Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = "SCIENTIFIC APIS & COMPUTE PLATFORM",
+        Text(text = stringResource(R.string.auto_4eeb91917045),
             style = MaterialTheme.concordance.overline,
             fontWeight = FontWeight.Bold,
             color = ElectricCyan,
             letterSpacing = 1.sp
         )
-        Text(
-            text = "Free open APIs: NCBI, arXiv, PubChem, ClinicalTrials.gov, CIViC, cBioPortal, Kaggle Compute, AWS Vault, and Local Model.",
+        Text(text = stringResource(R.string.auto_e61e6986ca03),
             style = MaterialTheme.concordance.overline,
             color = TextSecondary,
             lineHeight = 16.sp
@@ -162,57 +164,57 @@ fun IntegrationsScreen(
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
-                text = { Text("Papers & arXiv", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_559b6766d818), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
-                text = { Text("PubChem Drugs", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_4db60fe975c7), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 2,
                 onClick = { selectedTab = 2 },
-                text = { Text("Clinical Trials", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_65221b74cec6), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 3,
                 onClick = { selectedTab = 3 },
-                text = { Text("Async Job Queue", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_60583a4e2fd3), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 4,
                 onClick = { selectedTab = 4 },
-                text = { Text("Imaging", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_731feee62c52), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 5,
                 onClick = { selectedTab = 5 },
-                text = { Text("Kaggle Compute", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_d872ba64aeed), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 6,
                 onClick = { selectedTab = 6 },
-                text = { Text("AWS S3 Vault", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_f9db41ecaa32), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 7,
                 onClick = { selectedTab = 7 },
-                text = { Text("API Rotation", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_c751387a8705), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 8,
                 onClick = { selectedTab = 8 },
-                text = { Text("Variant Evidence", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_d6547c65b7fc), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 9,
                 onClick = { selectedTab = 9 },
-                text = { Text("Settings & Keys", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_a329e545bb93), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
             Tab(
                 selected = selectedTab == 10,
                 onClick = { selectedTab = 10 },
-                text = { Text("Self-Learning", style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
+                text = { Text(stringResource(R.string.auto_6f29939312f4), style = MaterialTheme.concordance.bodyDense, fontWeight = FontWeight.Bold) }
             )
         }
 
@@ -237,8 +239,7 @@ fun IntegrationsScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "EXTRACTION INFERENCE ENGINE",
+                            Text(text = stringResource(R.string.auto_9a03cb3666d8),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
@@ -250,13 +251,13 @@ fun IntegrationsScreen(
                                 FilterChip(
                                     selected = paperEngine == AnalysisEngine.LOCAL_RULE_EXTRACTOR,
                                     onClick = { viewModel.setPaperAnalysisEngine(AnalysisEngine.LOCAL_RULE_EXTRACTOR) },
-                                    label = { Text("Small Local Model (0ms, Offline)", style = MaterialTheme.concordance.bodyDense) },
+                                    label = { Text(stringResource(R.string.auto_aa5f40d7fbc3), style = MaterialTheme.concordance.bodyDense) },
                                     modifier = Modifier.weight(1f)
                                 )
                                 FilterChip(
                                     selected = paperEngine == AnalysisEngine.LOCAL_LLM,
                                     onClick = { viewModel.setPaperAnalysisEngine(AnalysisEngine.LOCAL_LLM) },
-                                    label = { Text("On-device LLM (llama.cpp)", style = MaterialTheme.concordance.bodyDense) },
+                                    label = { Text(stringResource(R.string.auto_432b21495980), style = MaterialTheme.concordance.bodyDense) },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -287,8 +288,7 @@ fun IntegrationsScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "EXTRACTED GENOMIC CLAIM",
+                                    Text(text = stringResource(R.string.auto_40a0f7fb531e),
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.concordance.overline,
                                         color = NeonEmerald
@@ -360,7 +360,7 @@ fun IntegrationsScreen(
                                 ) {
                                     Icon(Icons.Default.DownloadDone, contentDescription = null, modifier = Modifier.size(16.dp))
                                     Spacer(Modifier.width(6.dp))
-                                    Text("Import as Living Claim & Adjudicate Now", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.auto_44d49e8b71ec), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -387,7 +387,7 @@ fun IntegrationsScreen(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search PubMed, arXiv, OpenAlex, Crossref (e.g. ESR1, 2603.09142)...", style = MaterialTheme.concordance.bodyDense) },
+                            placeholder = { Text(stringResource(R.string.auto_c983b73c2568), style = MaterialTheme.concordance.bodyDense) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextMuted) },
                             modifier = Modifier.fillMaxWidth(),
                             textStyle = MaterialTheme.concordance.bodyDense
@@ -404,7 +404,7 @@ fun IntegrationsScreen(
                         ) {
                             Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Search Live APIs (Europe PMC + OpenAlex)", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_df864abf56d6), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -463,14 +463,12 @@ fun IntegrationsScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                text = "NCBI PUBCHEM PUG-REST BIOCHEMISTRY ENGINE",
+                            Text(text = stringResource(R.string.auto_0d72818522c8),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
                             )
-                            Text(
-                                text = "Explore therapeutic compounds (SERDs, SERMs, CDK4/6i) targeting ESR1 resistance mutations and their Blood-Brain Barrier (BBB) penetrance profiles.",
+                            Text(text = stringResource(R.string.auto_fb470ab9e1d6),
                                 style = MaterialTheme.concordance.bodyDense,
                                 color = TextSecondary
                             )
@@ -481,7 +479,7 @@ fun IntegrationsScreen(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search PubChem compound (e.g. Elacestrant, Camizestrant, 54726192)...", style = MaterialTheme.concordance.bodyDense) },
+                            placeholder = { Text(stringResource(R.string.auto_05012ed1ef20), style = MaterialTheme.concordance.bodyDense) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextMuted) },
                             modifier = Modifier.fillMaxWidth(),
                             textStyle = MaterialTheme.concordance.bodyDense
@@ -530,14 +528,12 @@ fun IntegrationsScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                text = "CLINICALTRIALS.GOV V2 REST API TRACKER",
+                            Text(text = stringResource(R.string.auto_f59d53d9a863),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
                             )
-                            Text(
-                                text = "Monitor clinical studies evaluating brain metastases, CNS recurrence, and serial plasma ctDNA tracking for ESR1 resistance mutations.",
+                            Text(text = stringResource(R.string.auto_14844d7d360d),
                                 style = MaterialTheme.concordance.bodyDense,
                                 color = TextSecondary
                             )
@@ -548,7 +544,7 @@ fun IntegrationsScreen(
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search studies (e.g. EMERALD, SERENA, NCT03778931)...", style = MaterialTheme.concordance.bodyDense) },
+                            placeholder = { Text(stringResource(R.string.auto_7ebddbb3ee32), style = MaterialTheme.concordance.bodyDense) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextMuted) },
                             modifier = Modifier.fillMaxWidth(),
                             textStyle = MaterialTheme.concordance.bodyDense
@@ -565,7 +561,7 @@ fun IntegrationsScreen(
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Query Live ClinicalTrials.gov v2 API", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.auto_2f3b03c408ae), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                         }
                     }
 
@@ -622,8 +618,8 @@ fun IntegrationsScreen(
             4 -> {
                 // TAB 4: IMAGING & TABLE EXTRACTION
                 Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                    Text("Imaging System", style = MaterialTheme.concordance.metricValue, fontWeight = FontWeight.Bold)
-                    Text("Turn scans into validated claim rows.", style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
+                    Text(stringResource(R.string.auto_5f6efc3f3a23), style = MaterialTheme.concordance.metricValue, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.auto_ff7db755227b), style = MaterialTheme.concordance.bodyDense, color = TextSecondary)
                 }
             }
 
@@ -644,14 +640,12 @@ fun IntegrationsScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "REMOTE KAGGLE COMPUTE CLUSTER",
+                            Text(text = stringResource(R.string.auto_858fe55ed620),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
                             )
-                            Text(
-                                text = "Execute heavy statistical kernels on Kaggle compute kernels to audit claim robustness.",
+                            Text(text = stringResource(R.string.auto_f7ea4992d131),
                                 style = MaterialTheme.concordance.bodyDense,
                                 color = TextSecondary
                             )
@@ -668,7 +662,7 @@ fun IntegrationsScreen(
                                 ) {
                                     Icon(Icons.Default.Terminal, contentDescription = null, modifier = Modifier.size(14.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("10k Permutation Test", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.auto_55fbdb734f14), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
                                 }
 
                                 Button(
@@ -679,7 +673,7 @@ fun IntegrationsScreen(
                                 ) {
                                     Icon(Icons.Default.Memory, contentDescription = null, modifier = Modifier.size(14.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("1k Bootstrap CI", style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.auto_0b1a745e5c55), style = MaterialTheme.concordance.overline, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -688,8 +682,7 @@ fun IntegrationsScreen(
                     // Running / Completed Kaggle Jobs
                     if (kaggleJobs.isNotEmpty()) {
                         item {
-                            Text(
-                                text = "DISPATCHED KAGGLE KERNELS",
+                            Text(text = stringResource(R.string.auto_0b96d5672c90),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = TextMuted
@@ -702,8 +695,7 @@ fun IntegrationsScreen(
 
                     // Kaggle Datasets for Ingestion
                     item {
-                        Text(
-                            text = "AVAILABLE KAGGLE ONCOLOGY DATASETS",
+                        Text(text = stringResource(R.string.auto_3408fdf42fa2),
                             style = MaterialTheme.concordance.overline,
                             fontWeight = FontWeight.Bold,
                             color = TextMuted
@@ -744,8 +736,7 @@ fun IntegrationsScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "AWS S3 CLOUD VAULT",
+                                Text(text = stringResource(R.string.auto_c8cb41d4532e),
                                     style = MaterialTheme.concordance.overline,
                                     fontWeight = FontWeight.Bold,
                                     color = ElectricCyan
@@ -815,8 +806,7 @@ fun IntegrationsScreen(
                                 .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "ACTIVE ROTATION STRATEGY",
+                            Text(text = stringResource(R.string.auto_a406e0d581e7),
                                 style = MaterialTheme.concordance.overline,
                                 fontWeight = FontWeight.Bold,
                                 color = ElectricCyan
@@ -863,7 +853,7 @@ fun IntegrationsScreen(
                             )
                             if (provenanceRecords.isNotEmpty()) {
                                 TextButton(onClick = { viewModel.clearProvenanceLog() }) {
-                                    Text("Clear", style = MaterialTheme.concordance.buttonSmall, color = TextMuted)
+                                    Text(stringResource(R.string.auto_719ea396ad92), style = MaterialTheme.concordance.buttonSmall, color = TextMuted)
                                 }
                             }
                         }
@@ -890,7 +880,7 @@ fun IntegrationsScreen(
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Reset Request Counters & Latency Metrics", style = MaterialTheme.concordance.buttonSmall)
+                            Text(stringResource(R.string.auto_1fb253f88fb0), style = MaterialTheme.concordance.buttonSmall)
                         }
                     }
                 }
@@ -999,7 +989,7 @@ fun SciencePaperCard(
             ) {
                 Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Citation", style = MaterialTheme.concordance.buttonSmall)
+                Text(stringResource(R.string.auto_6eb491555213), style = MaterialTheme.concordance.buttonSmall)
             }
 
             Button(
@@ -1067,15 +1057,15 @@ fun PubChemCompoundCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text("Formula", style = MaterialTheme.concordance.monoId, color = TextMuted)
+                Text(stringResource(R.string.auto_720f58fb1f93), style = MaterialTheme.concordance.monoId, color = TextMuted)
                 Text(compound.molecularFormula, style = MaterialTheme.concordance.monoId, color = TextPrimary, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
             Column {
-                Text("Molecular Wt", style = MaterialTheme.concordance.monoId, color = TextMuted)
+                Text(stringResource(R.string.auto_04f70a558111), style = MaterialTheme.concordance.monoId, color = TextMuted)
                 Text("${compound.molecularWeight} g/mol", style = MaterialTheme.concordance.monoId, color = TextPrimary, fontFamily = FontFamily.Monospace)
             }
             Column {
-                Text("Associated Variants", style = MaterialTheme.concordance.monoId, color = TextMuted)
+                Text(stringResource(R.string.auto_74fe04f61aa5), style = MaterialTheme.concordance.monoId, color = TextMuted)
                 Text(compound.associatedMutations.joinToString(", "), style = MaterialTheme.concordance.monoId, color = NeonEmerald, fontWeight = FontWeight.Bold)
             }
         }
@@ -1099,7 +1089,7 @@ fun PubChemCompoundCard(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
+            Icon(Icons.AutoMirrored.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(6.dp))
             Text("Open PubChem Entry (CID: ${compound.cid})", style = MaterialTheme.concordance.bodyDense)
         }
@@ -1164,8 +1154,7 @@ fun ClinicalTrialCard(
                 .padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                text = "CNS Metastasis Criteria:",
+            Text(text = stringResource(R.string.auto_f3375524136c),
                 style = MaterialTheme.concordance.bodyDense,
                 fontWeight = FontWeight.Bold,
                 color = WarningGold
@@ -1176,8 +1165,7 @@ fun ClinicalTrialCard(
                 color = TextSecondary,
                 lineHeight = 15.sp
             )
-            Text(
-                text = "ESR1 ctDNA Tracking:",
+            Text(text = stringResource(R.string.auto_796045dc8b24),
                 style = MaterialTheme.concordance.bodyDense,
                 fontWeight = FontWeight.Bold,
                 color = NeonEmerald
@@ -1197,7 +1185,7 @@ fun ClinicalTrialCard(
         ) {
             Icon(Icons.Default.Link, contentDescription = null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(6.dp))
-            Text("Open ClinicalTrials.gov Record", style = MaterialTheme.concordance.buttonSmall)
+            Text(stringResource(R.string.auto_17693fa9f563), style = MaterialTheme.concordance.buttonSmall)
         }
     }
 }
@@ -1360,7 +1348,7 @@ fun KaggleDatasetCard(
             ) {
                 Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(12.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Ingest to Paired Matrix", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.auto_81b6213f7859), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1437,7 +1425,7 @@ fun S3ObjectCard(
         ) {
             Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(12.dp))
             Spacer(Modifier.width(4.dp))
-            Text("Copy Presigned S3 Review URL (Valid 24h)", style = MaterialTheme.concordance.monoId)
+            Text(stringResource(R.string.auto_2037efeba9da), style = MaterialTheme.concordance.monoId)
         }
     }
 }
@@ -1479,14 +1467,12 @@ private fun IndraCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "PRIOR KNOWLEDGE · INDRA",
+            Text(text = stringResource(R.string.auto_d93aa0d6c632),
                 style = MaterialTheme.concordance.overline,
                 fontWeight = FontWeight.Bold,
                 color = IcyBlue
             )
-            Text(
-                text = "PUBLIC ONLY",
+            Text(text = stringResource(R.string.auto_c87dd7d75900),
                 style = MaterialTheme.concordance.chip,
                 color = TextMuted
             )
@@ -1504,7 +1490,7 @@ private fun IndraCard(
             OutlinedTextField(
                 value = subject,
                 onValueChange = onSubjectChange,
-                label = { Text("Gene / protein", style = MaterialTheme.concordance.caption) },
+                label = { Text(stringResource(R.string.auto_555036161d76), style = MaterialTheme.concordance.caption) },
                 singleLine = true,
                 textStyle = MaterialTheme.concordance.bodyDense,
                 modifier = Modifier.weight(1f)
@@ -1512,7 +1498,7 @@ private fun IndraCard(
             OutlinedTextField(
                 value = partner,
                 onValueChange = onPartnerChange,
-                label = { Text("Partner (optional)", style = MaterialTheme.concordance.caption) },
+                label = { Text(stringResource(R.string.auto_029bb2611cc8), style = MaterialTheme.concordance.caption) },
                 singleLine = true,
                 textStyle = MaterialTheme.concordance.bodyDense,
                 modifier = Modifier.weight(1f)
@@ -1531,7 +1517,7 @@ private fun IndraCard(
             ) {
                 Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(14.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Look up", style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.auto_6d7049b88568), style = MaterialTheme.concordance.buttonSmall, fontWeight = FontWeight.Bold)
             }
             if (loading) {
                 CircularProgressIndicator(
@@ -1539,15 +1525,14 @@ private fun IndraCard(
                     strokeWidth = 2.dp,
                     color = IcyBlue
                 )
-                Text(
-                    text = "Querying INDRA (can take 1-2 min)...",
+                Text(text = stringResource(R.string.auto_a3e0eef49402),
                     style = MaterialTheme.concordance.caption,
                     color = TextSecondary
                 )
             }
             if (!loading && (knowledge != null || error != null)) {
                 TextButton(onClick = onClear) {
-                    Text("Clear", style = MaterialTheme.concordance.buttonSmall, color = TextMuted)
+                    Text(stringResource(R.string.auto_719ea396ad92), style = MaterialTheme.concordance.buttonSmall, color = TextMuted)
                 }
             }
         }
@@ -1599,8 +1584,7 @@ private fun IndraCard(
                             color = TextSecondary
                         )
                     }
-                    Text(
-                        text = "Review before relying on this relationship; the app does not resolve it.",
+                    Text(text = stringResource(R.string.auto_2ed45c604c5a),
                         style = MaterialTheme.concordance.caption,
                         color = TextMuted
                     )
